@@ -10,13 +10,14 @@ defmodule ApiWeb.Router do
   end
 
   pipeline :api do
-    plug :accepts, ["json"]
+    plug :accepts, ["json", "json-api"]
   end
 
-  scope "/", ApiWeb do
-    pipe_through :browser # Use the default browser stack
+  scope "/", ApiWeb, as: :api do
+    pipe_through :api # Use the default browser stack
 
     get "/", PageController, :index
+    resources "/users", UserController, only: [:index, :show]
   end
 
   # Other scopes may use custom stacks.
