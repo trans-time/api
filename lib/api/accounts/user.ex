@@ -2,6 +2,7 @@ defmodule Api.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
   alias Api.Accounts.User
+  alias Api.Profile.{UserIdentity, UserProfile, UserTagSummary}
 
 
   schema "users" do
@@ -10,6 +11,10 @@ defmodule Api.Accounts.User do
     field :is_moderator, :boolean, default: false
     field :pronouns, :string
     field :username, :string
+
+    has_many :user_identities, UserIdentity
+    has_one :user_profile, UserProfile
+    many_to_many :user_tag_summaries, UserTagSummary, join_through: "user_tag_summaries_relationships"
 
     timestamps()
   end
