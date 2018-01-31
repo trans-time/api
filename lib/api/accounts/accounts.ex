@@ -17,8 +17,8 @@ defmodule Api.Accounts do
       [%User{}, ...]
 
   """
-  def list_users do
-    Repo.all(User)
+  def list_users(opts) do
+    Repo.all(User, opts)
   end
 
   @doc """
