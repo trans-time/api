@@ -1,16 +1,19 @@
 defmodule ApiWeb.UserView do
-  use JSONAPI.View, type: "users"
+  use ApiWeb, :view
+  use JaSerializer.PhoenixView
   alias ApiWeb.{UserIdentityView, UserProfileView, UserView}
 
-  def render("show.json", %{user: user, conn: conn, params: params}) do
-    UserView.show(user, conn, params)
-  end
+  attributes [:avatar, :display_name, :is_moderator, :pronouns, :username]
 
-  def fields do
-    [:avatar, :display_name, :is_moderator, :pronouns, :username]
-  end
+  has_many :user_identities,
+    serializer: UserIdentityView,
+    include: false
 
-  def relationships do
-    [userIdentities: UserIdentityView, userProfile: UserProfileView]
+  has_one :user_profile,
+    serializer: UserProfileView,
+    include: false
+
+  def preload(record_or_records, _conn, include_opts) do
+    Api.Repo.preload(record_or_records, include_opts)
   end
 end

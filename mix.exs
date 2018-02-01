@@ -44,7 +44,8 @@ defmodule Api.Mixfile do
       {:cowboy, "~> 1.0"},
       {:ex_machina, "~> 2.1"},
       {:faker, "~> 0.9", only: :dev},
-      {:jsonapi, "~> 0.6"}
+      {:ja_resource, "~> 0.3"},
+      {:ja_serializer, "~> 0.12"}
     ]
   end
 

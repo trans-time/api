@@ -17,8 +17,8 @@ defmodule Api.Accounts do
       [%User{}, ...]
 
   """
-  def list_users(opts) do
-    Repo.all(User, opts)
+  def list_users() do
+    Repo.all(User)
   end
 
   @doc """
@@ -36,22 +36,6 @@ defmodule Api.Accounts do
 
   """
   def get_user!(id), do: Repo.get!(User, id)
-
-  @doc """
-  Gets a single user by query.
-
-  Raises `Ecto.NoResultsError` if the User does not exist.
-
-  ## Examples
-
-      iex> get_user!(%{username: 'celeste'})
-      %User{}
-
-      iex> get_user!(%{username: 'notpresent'})
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_by_user!(clauses), do: Repo.get_by!(User, clauses)
 
   @doc """
   Creates a user.

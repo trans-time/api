@@ -22,11 +22,17 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+config :phoenix, :format_encoders,
+  "json-api": Poison
+
 config :mime, :types, %{
   "application/vnd.api+json" => ["json-api"]
 }
 
-config :jsonapi, underscore_to_dash: true
+config :phoenix, PhoenixExample.Endpoint,
+  render_errors: [view: PhoenixExample.ErrorView, accepts: ~w(html json json-api)]
+
+config :ja_resource, repo: Api.Repo
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

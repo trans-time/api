@@ -1,12 +1,10 @@
 defmodule ApiWeb.IdentityView do
-  use JSONAPI.View, type: "identity"
+  use ApiWeb, :view
+  use JaSerializer.PhoenixView
   alias ApiWeb.{UserIdentityView}
 
-  def fields do
-    [:name]
-  end
+  attributes [:name]
 
-  def relationships do
-    [userIdentities: UserIdentityView]
-  end
+  has_many :user_identities,
+    serializer: UserIdentityView
 end

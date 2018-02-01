@@ -1,12 +1,13 @@
 defmodule ApiWeb.UserTagSummaryView do
-  use JSONAPI.View, type: "user_tag_summaries"
+  use ApiWeb, :view
+  use JaSerializer.PhoenixView
   alias ApiWeb.{TagView, UserView}
 
-  def fields do
-    [:summary]
-  end
+  attributes [:summary]
 
-  def relationships do
-    [relationships: UserView, tags: TagView]
-  end
+  # has_many :relationships,
+  #   serializer: UserView
+
+  has_many :tags,
+    serializer: TagView
 end

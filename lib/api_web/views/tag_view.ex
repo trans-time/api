@@ -1,7 +1,6 @@
 defmodule ApiWeb.TagView do
-  use JSONAPI.View, type: "tags"
+  use ApiWeb, :view
+  use JaSerializer.PhoenixView
 
-  def fields do
-    [:name]
-  end
+  attributes [:name]
 end

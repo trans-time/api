@@ -1,12 +1,17 @@
 defmodule ApiWeb.UserIdentityView do
-  use JSONAPI.View, type: "user_identity"
+  use ApiWeb, :view
+  use JaSerializer.PhoenixView
   alias ApiWeb.{IdentityView, UserView}
 
-  def fields do
-    [:end_date, :start_date]
-  end
+  attributes [:end_date, :start_date]
 
-  def relationships do
-    [identity: IdentityView, user: UserView]
-  end
+  has_one :identity,
+    serializer: IdentityView
+
+  has_one :user,
+    serializer: UserView
+
+  def user(%{user: %Ecto.Association.NotLoaded{}, user_id: nil}, _conn), do: nil
+  def user(%{user: %Ecto.Association.NotLoaded{}, user_id: id}, _conn), do: %{id: id}
+  def user(%{user: user}, _conn), do: user
 end
