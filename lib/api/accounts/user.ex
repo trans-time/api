@@ -14,7 +14,7 @@ defmodule Api.Accounts.User do
 
     has_many :user_identities, UserIdentity
     has_one :user_profile, UserProfile
-    many_to_many :user_tag_summaries, UserTagSummary, join_through: "user_tag_summaries_relationships"
+    many_to_many :user_tag_summaries, UserTagSummary, join_through: "user_tag_summaries_users"
 
     timestamps()
   end

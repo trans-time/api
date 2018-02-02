@@ -8,7 +8,7 @@ defmodule Api.Profile.UserTagSummary do
 
   schema "user_tag_summaries" do
     field :summary, :map
-    many_to_many :relationships, User, join_through: "user_tag_summaries_relationships"
+    many_to_many :users, User, join_through: "user_tag_summaries_users"
     many_to_many :tags, Tag, join_through: "user_tag_summaries_tags"
     belongs_to :user_profile, UserProfile
 
