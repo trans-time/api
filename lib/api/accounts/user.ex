@@ -3,6 +3,7 @@ defmodule Api.Accounts.User do
   import Ecto.Changeset
   alias Api.Accounts.User
   alias Api.Profile.{UserIdentity, UserProfile, UserTagSummary}
+  alias Api.Timeline.TimelineItem
 
 
   schema "users" do
@@ -12,6 +13,7 @@ defmodule Api.Accounts.User do
     field :pronouns, :string
     field :username, :string
 
+    has_many :timeline_items, TimelineItem
     has_many :user_identities, UserIdentity
     has_one :user_profile, UserProfile
     many_to_many :user_tag_summaries, UserTagSummary, join_through: "user_tag_summaries_users"

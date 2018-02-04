@@ -2,6 +2,18 @@ defmodule Api.Factory do
   # with Ecto
   use ExMachina.Ecto, repo: Api.Repo
 
+  def tag_factory do
+    %Api.Timeline.Tag{
+      name: Faker.Superhero.power
+    }
+  end
+
+  def timeline_item_factory do
+    %Api.Timeline.TimelineItem{
+      date: Faker.DateTime.backward(4)
+    }
+  end
+
   def user_factory do
     %Api.Accounts.User{
       avatar: Faker.Avatar.image_url(200, 200),

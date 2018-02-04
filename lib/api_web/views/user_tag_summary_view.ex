@@ -1,13 +1,13 @@
 defmodule ApiWeb.UserTagSummaryView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{TagView, UserView}
+  alias ApiWeb.{TagView, UserBareView}
 
   attributes [:summary]
 
-  # has_many :relationships,
-  #   serializer: UserView
-
   has_many :tags,
     serializer: TagView
+
+  has_many :users,
+    serializer: UserBareView
 end

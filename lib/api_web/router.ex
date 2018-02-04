@@ -19,7 +19,7 @@ defmodule ApiWeb.Router do
     pipe_through :api # Use the default browser stack
 
     get "/", PageController, :index
-    resources "/users", UserController, only: [:index, :show]
+    resources "/users", UserController, only: [:show]
   end
 
   # Other scopes may use custom stacks.
