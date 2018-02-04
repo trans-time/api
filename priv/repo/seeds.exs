@@ -16,24 +16,24 @@ celeste = insert(:user, %{username: "celeste"})
 other_users = insert_list(5, :user)
 timeline_items = []
 
-timeline_items = for _ <- 1..10, do: insert(:timeline_item, %{user: celeste, tags: Enum.take_random(tags, 3), users: Enum.take_random(other_users, 2)})
-summary = Enum.reduce(timeline_items, %{celeste: %{tags: %{}, users: %{}}}, fn(item, summary) ->
-  %{ celeste: %{tags: Enum.reduce(item.tags, summary.celeste.tags, fn(tag, tags) ->
+timeline_items = for _ <- 1..10, do: insert(:timeline_item, %{user: celeste, tags: Enum.take_random(tags, 3), users: Enum.take_random(other_users, 2), private: Enum.random([true, false])})
+summary = Enum.reduce(timeline_items, Map.put(%{}, celeste.id, %{tags: %{}, users: %{}, private: []}), fn(item, summary) ->
+  Map.put(%{}, celeste.id, %{tags: Enum.reduce(item.tags, summary[celeste.id].tags, fn(tag, tags) ->
     if Map.has_key?(tags, tag.id) do
       Map.put(tags, tag.id, tags[tag.id] ++ [item.id])
     else
       Map.put(tags, tag.id, [item.id])
     end
-  end), users: Enum.reduce(item.users, summary.celeste.users, fn(user, users) ->
+  end), users: Enum.reduce(item.users, summary[celeste.id].users, fn(user, users) ->
     if Map.has_key?(users, user.id) do
       Map.put(users, user.id, users[user.id] ++ [item.id])
     else
       Map.put(users, user.id, [item.id])
     end
-  end)}}
+  end), private: (if (item.private), do: [item.id | summary[celeste.id].private], else: summary[celeste.id].private)})
 end)
-summary_tag_ids = Map.keys(summary.celeste.tags)
-summary_user_ids = Map.keys(summary.celeste.users)
+summary_tag_ids = Map.keys(summary[celeste.id].tags)
+summary_user_ids = Map.keys(summary[celeste.id].users)
 
 Api.Repo.preload(celeste.user_profile.user_tag_summary, [:tags, :users]) |> Ecto.Changeset.change(%{
   summary: summary
