@@ -45,7 +45,8 @@ defmodule Api.Mixfile do
       {:ex_machina, "~> 2.1"},
       {:faker, "~> 0.9", only: :dev},
       {:ja_resource, "~> 0.3"},
-      {:ja_serializer, "~> 0.12"}
+      {:ja_serializer, "~> 0.12"},
+      {:scrivener_ecto, "~> 1.3"}
     ]
   end
 

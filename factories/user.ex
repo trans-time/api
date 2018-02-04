@@ -14,6 +14,13 @@ defmodule Api.Factory do
     }
   end
 
+  def follow_factory do
+    %Api.Relationship.Follow{
+      can_view_private: Enum.random([true, false]),
+      requested_private: false
+    }
+  end
+
   def user_factory do
     %Api.Accounts.User{
       avatar: Faker.Avatar.image_url(200, 200),

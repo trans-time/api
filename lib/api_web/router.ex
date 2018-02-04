@@ -20,6 +20,7 @@ defmodule ApiWeb.Router do
 
     get "/", PageController, :index
     resources "/users", UserController, only: [:show]
+    resources "/follows", FollowController, only: [:index, :show]
   end
 
   # Other scopes may use custom stacks.

@@ -13,7 +13,7 @@ import Api.Factory
 import Ecto.Query
 tags = insert_list(12, :tag)
 celeste = insert(:user, %{username: "celeste"})
-other_users = insert_list(5, :user)
+other_users = insert_list(15, :user)
 timeline_items = []
 
 timeline_items = for _ <- 1..10, do: insert(:timeline_item, %{user: celeste, tags: Enum.take_random(tags, 3), users: Enum.take_random(other_users, 2), private: Enum.random([true, false])})
@@ -38,3 +38,8 @@ summary_user_ids = Map.keys(summary[celeste.id].users)
 Api.Repo.preload(celeste.user_profile.user_tag_summary, [:tags, :users]) |> Ecto.Changeset.change(%{
   summary: summary
 }) |> Ecto.Changeset.put_assoc(:tags, Api.Timeline.Tag |> where([p], p.id in ^summary_tag_ids) |> Api.Repo.all) |> Ecto.Changeset.put_assoc(:users, Api.Accounts.User |> where([p], p.id in ^summary_user_ids) |> Api.Repo.all) |> Api.Repo.update!
+
+Enum.each(other_users, fn(user) ->
+  insert(:follow, %{followed: user, follower: celeste})
+  insert(:follow, %{followed: celeste, follower: user})
+end)
