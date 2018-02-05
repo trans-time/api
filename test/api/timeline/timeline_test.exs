@@ -188,4 +188,132 @@ defmodule Api.TimelineTest do
       assert %Ecto.Changeset{} = Timeline.change_timeline_item_user(timeline_item_user)
     end
   end
+
+  describe "posts" do
+    alias Api.Timeline.Post
+
+    @valid_attrs %{nsfw: true, text: "some text"}
+    @update_attrs %{nsfw: false, text: "some updated text"}
+    @invalid_attrs %{nsfw: nil, text: nil}
+
+    def post_fixture(attrs \\ %{}) do
+      {:ok, post} =
+        attrs
+        |> Enum.into(@valid_attrs)
+        |> Timeline.create_post()
+
+      post
+    end
+
+    test "list_posts/0 returns all posts" do
+      post = post_fixture()
+      assert Timeline.list_posts() == [post]
+    end
+
+    test "get_post!/1 returns the post with given id" do
+      post = post_fixture()
+      assert Timeline.get_post!(post.id) == post
+    end
+
+    test "create_post/1 with valid data creates a post" do
+      assert {:ok, %Post{} = post} = Timeline.create_post(@valid_attrs)
+      assert post.nsfw == true
+      assert post.text == "some text"
+    end
+
+    test "create_post/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Timeline.create_post(@invalid_attrs)
+    end
+
+    test "update_post/2 with valid data updates the post" do
+      post = post_fixture()
+      assert {:ok, post} = Timeline.update_post(post, @update_attrs)
+      assert %Post{} = post
+      assert post.nsfw == false
+      assert post.text == "some updated text"
+    end
+
+    test "update_post/2 with invalid data returns error changeset" do
+      post = post_fixture()
+      assert {:error, %Ecto.Changeset{}} = Timeline.update_post(post, @invalid_attrs)
+      assert post == Timeline.get_post!(post.id)
+    end
+
+    test "delete_post/1 deletes the post" do
+      post = post_fixture()
+      assert {:ok, %Post{}} = Timeline.delete_post(post)
+      assert_raise Ecto.NoResultsError, fn -> Timeline.get_post!(post.id) end
+    end
+
+    test "change_post/1 returns a post changeset" do
+      post = post_fixture()
+      assert %Ecto.Changeset{} = Timeline.change_post(post)
+    end
+  end
+
+  describe "panels" do
+    alias Api.Timeline.Panel
+
+    @valid_attrs %{filename: "some filename", filesize: 42, order: 42, src: "some src"}
+    @update_attrs %{filename: "some updated filename", filesize: 43, order: 43, src: "some updated src"}
+    @invalid_attrs %{filename: nil, filesize: nil, order: nil, src: nil}
+
+    def panel_fixture(attrs \\ %{}) do
+      {:ok, panel} =
+        attrs
+        |> Enum.into(@valid_attrs)
+        |> Timeline.create_panel()
+
+      panel
+    end
+
+    test "list_panels/0 returns all panels" do
+      panel = panel_fixture()
+      assert Timeline.list_panels() == [panel]
+    end
+
+    test "get_panel!/1 returns the panel with given id" do
+      panel = panel_fixture()
+      assert Timeline.get_panel!(panel.id) == panel
+    end
+
+    test "create_panel/1 with valid data creates a panel" do
+      assert {:ok, %Panel{} = panel} = Timeline.create_panel(@valid_attrs)
+      assert panel.filename == "some filename"
+      assert panel.filesize == 42
+      assert panel.order == 42
+      assert panel.src == "some src"
+    end
+
+    test "create_panel/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Timeline.create_panel(@invalid_attrs)
+    end
+
+    test "update_panel/2 with valid data updates the panel" do
+      panel = panel_fixture()
+      assert {:ok, panel} = Timeline.update_panel(panel, @update_attrs)
+      assert %Panel{} = panel
+      assert panel.filename == "some updated filename"
+      assert panel.filesize == 43
+      assert panel.order == 43
+      assert panel.src == "some updated src"
+    end
+
+    test "update_panel/2 with invalid data returns error changeset" do
+      panel = panel_fixture()
+      assert {:error, %Ecto.Changeset{}} = Timeline.update_panel(panel, @invalid_attrs)
+      assert panel == Timeline.get_panel!(panel.id)
+    end
+
+    test "delete_panel/1 deletes the panel" do
+      panel = panel_fixture()
+      assert {:ok, %Panel{}} = Timeline.delete_panel(panel)
+      assert_raise Ecto.NoResultsError, fn -> Timeline.get_panel!(panel.id) end
+    end
+
+    test "change_panel/1 returns a panel changeset" do
+      panel = panel_fixture()
+      assert %Ecto.Changeset{} = Timeline.change_panel(panel)
+    end
+  end
 end

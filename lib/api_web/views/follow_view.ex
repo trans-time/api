@@ -1,16 +1,16 @@
 defmodule ApiWeb.FollowView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{UserBareView}
+  alias ApiWeb.{UserView}
 
   attributes [:can_view_private, :requested_private]
 
   has_one :followed,
-    serializer: UserBareView,
+    serializer: UserView,
     include: false
 
   has_one :follower,
-    serializer: UserBareView,
+    serializer: UserView,
     include: false
 
   def followed(%{followed: %Ecto.Association.NotLoaded{}, followed_id: nil}, _conn), do: nil

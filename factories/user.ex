@@ -14,6 +14,20 @@ defmodule Api.Factory do
     }
   end
 
+  def post_factory do
+    %Api.Timeline.Post{
+      text: Faker.Lorem.Shakespeare.hamlet,
+      images: insert_list(4, :image)
+    }
+  end
+
+  def image_factory do
+    %Api.Timeline.Image{
+      src: Faker.Internet.image_url,
+      order: 1
+    }
+  end
+
   def follow_factory do
     %Api.Relationship.Follow{
       can_view_private: Enum.random([true, false]),

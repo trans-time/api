@@ -1,7 +1,7 @@
 defmodule ApiWeb.TimelineItemView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{TagView, UserView}
+  alias ApiWeb.{PostView, TagView, UserView}
 
   attributes [:comments_locked, :date, :deleted, :private, :total_comments]
 
@@ -14,4 +14,13 @@ defmodule ApiWeb.TimelineItemView do
 
   has_many :users,
     serializer: UserView
+
+  has_one :post,
+    serializer: PostView
+
+  def current_user_reaction(_params, _conn), do: nil
+
+  def preload(record_or_records, _conn, include_opts) do
+    Api.Repo.preload(record_or_records, include_opts)
+  end
 end
