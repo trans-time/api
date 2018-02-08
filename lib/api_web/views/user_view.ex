@@ -13,11 +13,28 @@ defmodule ApiWeb.UserView do
     serializer: UserProfileView,
     include: false
 
-  def user_profile(%{user_profile: %Ecto.Association.NotLoaded{}, user_profile_id: nil}, _conn), do: nil
-  def user_profile(%{user_profile: %Ecto.Association.NotLoaded{}, user_profile_id: id}, _conn), do: %{id: id}
-  def user_profile(%{user_profile: user_profile}, _conn), do: user_profile
-
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)
+  end
+
+  def relationships(user, _conn) do
+    relationships = %{}
+
+    if Ecto.assoc_loaded?(user.user_profile) do
+      relationships = Map.put(relationships, :user_profile, %HasOne{
+        serializer: UserProfileView,
+        include: true,
+        data: user.user_profile
+      })
+    end
+    if Ecto.assoc_loaded?(user.user_identities) do
+      relationships = Map.put(relationships, :user_identities, %HasMany{
+        serializer: UserIdentityView,
+        include: true,
+        data: user.user_identities
+      })
+    end
+
+    relationships
   end
 end
