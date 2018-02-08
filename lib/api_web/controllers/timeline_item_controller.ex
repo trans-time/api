@@ -17,14 +17,14 @@ defmodule ApiWeb.TimelineItemController do
     tag_ids = Enum.map(tag_ids, fn(x) -> String.to_integer(x) end)
     join(query, :inner, [ti], tit in "timeline_items_tags", tit.timeline_item_id == ti.id and tit.tag_id in ^tag_ids) |>
     group_by([ti], ti.id) |>
-    having([ti, tit], fragment("? <@ array_agg(?)", ^tag_ids, tit.tag_id))
+    having([ti, ..., tit], fragment("? <@ array_agg(?)", ^tag_ids, tit.tag_id))
   end
 
   def filter(_conn, query, "user_ids", user_ids) do
     user_ids = Enum.map(user_ids, fn(x) -> String.to_integer(x) end)
     join(query, :inner, [ti], tis in "timeline_items_users", tis.timeline_item_id == ti.id and tis.user_id in ^user_ids) |>
     group_by([ti], ti.id) |>
-    having([ti, tis], fragment("? <@ array_agg(?)", ^user_ids, tis.user_id))
+    having([ti, ..., tis], fragment("? <@ array_agg(?)", ^user_ids, tis.user_id))
   end
 
   def sort(_conn, query, "date", direction) do
