@@ -4,7 +4,7 @@ defmodule Api.Accounts.User do
   alias Api.Accounts.User
   alias Api.Profile.{UserIdentity, UserProfile, UserTagSummary}
   alias Api.Relationship.Follow
-  alias Api.Timeline.TimelineItem
+  alias Api.Timeline.{Reaction, TimelineItem}
 
 
   schema "users" do
@@ -16,6 +16,7 @@ defmodule Api.Accounts.User do
 
     has_many :followeds, Follow, foreign_key: :follower_id
     has_many :followers, Follow, foreign_key: :followed_id
+    has_many :reactions, Reaction
     has_many :timeline_items, TimelineItem
     has_many :user_identities, UserIdentity
     has_one :user_profile, UserProfile

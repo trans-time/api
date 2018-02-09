@@ -316,4 +316,64 @@ defmodule Api.TimelineTest do
       assert %Ecto.Changeset{} = Timeline.change_panel(panel)
     end
   end
+
+  describe "reactions" do
+    alias Api.Timeline.Reaction
+
+    @valid_attrs %{type: 42}
+    @update_attrs %{type: 43}
+    @invalid_attrs %{type: nil}
+
+    def reaction_fixture(attrs \\ %{}) do
+      {:ok, reaction} =
+        attrs
+        |> Enum.into(@valid_attrs)
+        |> Timeline.create_reaction()
+
+      reaction
+    end
+
+    test "list_reactions/0 returns all reactions" do
+      reaction = reaction_fixture()
+      assert Timeline.list_reactions() == [reaction]
+    end
+
+    test "get_reaction!/1 returns the reaction with given id" do
+      reaction = reaction_fixture()
+      assert Timeline.get_reaction!(reaction.id) == reaction
+    end
+
+    test "create_reaction/1 with valid data creates a reaction" do
+      assert {:ok, %Reaction{} = reaction} = Timeline.create_reaction(@valid_attrs)
+      assert reaction.type == 42
+    end
+
+    test "create_reaction/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Timeline.create_reaction(@invalid_attrs)
+    end
+
+    test "update_reaction/2 with valid data updates the reaction" do
+      reaction = reaction_fixture()
+      assert {:ok, reaction} = Timeline.update_reaction(reaction, @update_attrs)
+      assert %Reaction{} = reaction
+      assert reaction.type == 43
+    end
+
+    test "update_reaction/2 with invalid data returns error changeset" do
+      reaction = reaction_fixture()
+      assert {:error, %Ecto.Changeset{}} = Timeline.update_reaction(reaction, @invalid_attrs)
+      assert reaction == Timeline.get_reaction!(reaction.id)
+    end
+
+    test "delete_reaction/1 deletes the reaction" do
+      reaction = reaction_fixture()
+      assert {:ok, %Reaction{}} = Timeline.delete_reaction(reaction)
+      assert_raise Ecto.NoResultsError, fn -> Timeline.get_reaction!(reaction.id) end
+    end
+
+    test "change_reaction/1 returns a reaction changeset" do
+      reaction = reaction_fixture()
+      assert %Ecto.Changeset{} = Timeline.change_reaction(reaction)
+    end
+  end
 end

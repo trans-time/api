@@ -7,7 +7,10 @@ defmodule Api.Repo.Migrations.CreateTimelineItems do
       add :date, :utc_datetime
       add :deleted, :boolean, default: false, null: false
       add :private, :boolean, default: false, null: false
-      add :total_comments, :integer
+      add :total_comments, :integer, default: 0, null: false
+      add :total_moons, :integer, default: 0, null: false
+      add :total_stars, :integer, default: 0, null: false
+      add :total_suns, :integer, default: 0, null: false
       add :user_id, references(:users)
 
       timestamps()

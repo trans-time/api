@@ -37,6 +37,21 @@ end)
 summary_tag_ids = Map.keys(summary[celeste.id].tags)
 summary_user_ids = Map.keys(summary[celeste.id].users)
 
+Enum.each(timeline_items, fn(timeline_item) ->
+  changeset = Enum.reduce(other_users, %{total_stars: 0, total_suns: 0, total_moons: 0}, fn(user, changeset) ->
+    reaction = insert(:reaction, %{timeline_item: timeline_item, user: user})
+    cond do
+      reaction.type == 1 -> type = :total_stars
+      reaction.type == 2 -> type = :total_suns
+      reaction.type == 3 -> type = :total_moons
+    end
+
+    Map.put(changeset, type, Map.get(changeset, type) + 1)
+  end)
+
+  timeline_item |> Ecto.Changeset.change(changeset) |> Api.Repo.update!
+end)
+
 Api.Repo.preload(celeste.user_profile.user_tag_summary, [:tags, :users]) |> Ecto.Changeset.change(%{
   summary: summary
 }) |> Ecto.Changeset.put_assoc(:tags, Api.Timeline.Tag |> where([p], p.id in ^summary_tag_ids) |> Api.Repo.all) |> Ecto.Changeset.put_assoc(:users, Api.Accounts.User |> where([p], p.id in ^summary_user_ids) |> Api.Repo.all) |> Api.Repo.update!

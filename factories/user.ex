@@ -8,6 +8,12 @@ defmodule Api.Factory do
     }
   end
 
+  def reaction_factory do
+    %Api.Timeline.Reaction{
+      type: Enum.random([1, 2, 3])
+    }
+  end
+
   def timeline_item_factory do
     %Api.Timeline.TimelineItem{
       date: Faker.DateTime.backward(4)

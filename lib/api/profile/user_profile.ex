@@ -7,7 +7,7 @@ defmodule Api.Profile.UserProfile do
 
   schema "user_profiles" do
     field :description, :string
-    field :total_posts, :integer
+    field :total_posts, :integer, default: 0
     field :website, :string
 
     belongs_to :user, User
