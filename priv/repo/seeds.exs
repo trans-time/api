@@ -37,9 +37,9 @@ end)
 summary_tag_ids = Map.keys(summary[celeste.id].tags)
 summary_user_ids = Map.keys(summary[celeste.id].users)
 
-Enum.each(timeline_items, fn(timeline_item) ->
+Enum.each(Api.Repo.all(Api.Timeline.Post), fn(post) ->
   changeset = Enum.reduce(other_users, %{total_stars: 0, total_suns: 0, total_moons: 0}, fn(user, changeset) ->
-    reaction = insert(:reaction, %{timeline_item: timeline_item, user: user})
+    reaction = Api.Repo.insert!(Ecto.build_assoc(post, :reactions, %{user: user, type: Enum.random([1, 2, 3])}))
     cond do
       reaction.type == 1 -> type = :total_stars
       reaction.type == 2 -> type = :total_suns
@@ -49,7 +49,7 @@ Enum.each(timeline_items, fn(timeline_item) ->
     Map.put(changeset, type, Map.get(changeset, type) + 1)
   end)
 
-  timeline_item |> Ecto.Changeset.change(changeset) |> Api.Repo.update!
+  post |> Ecto.Changeset.change(changeset) |> Api.Repo.update!
 end)
 
 Api.Repo.preload(celeste.user_profile.user_tag_summary, [:tags, :users]) |> Ecto.Changeset.change(%{

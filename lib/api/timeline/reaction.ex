@@ -5,10 +5,10 @@ defmodule Api.Timeline.Reaction do
   alias Api.Timeline.{Reaction, TimelineItem}
 
 
-  schema "reactions" do
+  schema "abstract table: reactions" do
     field :type, :integer
+    field :reactable_id, :integer
 
-    belongs_to :timeline_item, TimelineItem
     belongs_to :user, User
 
     timestamps()
