@@ -5,6 +5,7 @@ defmodule Api.Repo.Migrations.CreatePosts do
     create table(:posts) do
       add :nsfw, :boolean, default: false, null: false
       add :text, :string
+      add :total_comments, :integer, default: 0, null: false
       add :total_moons, :integer, default: 0, null: false
       add :total_stars, :integer, default: 0, null: false
       add :total_suns, :integer, default: 0, null: false

@@ -20,6 +20,12 @@ defmodule Api.Factory do
     }
   end
 
+  def comment_factory do
+    %Api.Timeline.Comment{
+      text: Faker.Lorem.Shakespeare.hamlet
+    }
+  end
+
   def post_factory do
     %Api.Timeline.Post{
       text: Faker.Lorem.Shakespeare.hamlet,

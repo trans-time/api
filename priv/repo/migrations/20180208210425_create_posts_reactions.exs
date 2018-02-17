@@ -1,4 +1,4 @@
-defmodule Api.Repo.Migrations.CreateReactions do
+defmodule Api.Repo.Migrations.CreatePostsReactions do
   use Ecto.Migration
 
   def change do
@@ -11,6 +11,5 @@ defmodule Api.Repo.Migrations.CreateReactions do
     end
 
     create index(:posts_reactions, [:reactable_id])
-    create index(:posts_reactions, [:user_id])
   end
 end
