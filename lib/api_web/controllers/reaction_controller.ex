@@ -7,20 +7,20 @@ defmodule ApiWeb.ReactionController do
 
   alias Api.Timeline.Reaction
 
-  def records(conn) do
-    table_name = Inflex.pluralize(conn.params["filter"]["reactable_type"]) <> "_reactions"
+  def model, do: Reaction
 
-    from r in {table_name, Reaction}
+  def filter(_conn, query, "comment_id", comment_id) do
+    where(query, comment_id: ^comment_id)
   end
 
-  def filter(_conn, query, "reactable_id", reactable_id) do
-    where(query, reactable_id: ^reactable_id)
+  def filter(_conn, query, "post_id", post_id) do
+    where(query, post_id: ^post_id)
   end
 
   def handle_index_query(%{query_params: qp}, query) do
     repo().paginate(query, qp)
   end
-  
+
   def serialization_opts(_conn, params, models) do
     %{
       include: params["include"],

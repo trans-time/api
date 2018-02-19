@@ -2,13 +2,14 @@ defmodule Api.Timeline.Reaction do
   use Ecto.Schema
   import Ecto.Changeset
   alias Api.Accounts.User
-  alias Api.Timeline.{Reaction, TimelineItem}
+  alias Api.Timeline.{Comment, Post, Reaction, TimelineItem}
 
 
-  schema "abstract table: reactions" do
+  schema "reactions" do
     field :type, :integer
-    field :reactable_id, :integer
 
+    belongs_to :comment, Comment
+    belongs_to :post, Post
     belongs_to :user, User
 
     timestamps()
