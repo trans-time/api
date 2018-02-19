@@ -34,7 +34,7 @@ defmodule Api.Timeline.Reaction do
 
       Ecto.assoc(changeset.data, polymorph)
       |> Repo.update_all(inc: inc)
-IO.write('reaction prepare_changes')
+      
       changeset
     end)
   end
