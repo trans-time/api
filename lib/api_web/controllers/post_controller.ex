@@ -4,10 +4,4 @@ defmodule ApiWeb.PostController do
   plug JaResource
 
   def model, do: Api.Timeline.Post
-
-  # def record(conn, username) do
-  #   conn
-  #   |> records
-  #   |> Api.Repo.get_by(username: username)
-  # end
 end

@@ -19,7 +19,7 @@ defmodule ApiWeb.Router do
     pipe_through :api # Use the default browser stack
 
     get "/", PageController, :index
-    resources "/comments", CommentController, only: [:index]
+    resources "/comments", CommentController, only: [:index, :show]
     resources "/follows", FollowController, only: [:index]
     resources "/posts", PostController, only: [:show]
     resources "/reactions", ReactionController, only: [:index]

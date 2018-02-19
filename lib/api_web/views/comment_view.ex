@@ -1,11 +1,15 @@
 defmodule ApiWeb.CommentView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{CommentView, UserView}
+  alias ApiWeb.{CommentView, PostView, UserView}
 
   def type(_post,_conn), do: "comment"
 
   attributes [:inserted_at, :deleted, :text, :comment_count, :moon_count, :star_count, :sun_count]
+
+  has_one :post,
+    serializer: PostView,
+    include: false
 
   has_one :user,
     serializer: UserView,
@@ -18,6 +22,10 @@ defmodule ApiWeb.CommentView do
   has_many :children,
     serializer: CommentView,
     include: false
+
+  def post(%{post: %Ecto.Association.NotLoaded{}, post_id: nil}, _conn), do: nil
+  def post(%{post: %Ecto.Association.NotLoaded{}, post_id: id}, _conn), do: %{id: id}
+  def post(%{post: post}, _conn), do: post
 
   def user(%{user: %Ecto.Association.NotLoaded{}, user_id: nil}, _conn), do: nil
   def user(%{user: %Ecto.Association.NotLoaded{}, user_id: id}, _conn), do: %{id: id}
