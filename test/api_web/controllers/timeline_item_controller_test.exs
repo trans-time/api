@@ -4,9 +4,9 @@ defmodule ApiWeb.TimelineItemControllerTest do
   alias Api.Timeline
   alias Api.Timeline.TimelineItem
 
-  @create_attrs %{comments_locked: true, date: "2010-04-17 14:00:00.000000Z", deleted: true, private: true, total_comments: 42}
-  @update_attrs %{comments_locked: false, date: "2011-05-18 15:01:01.000000Z", deleted: false, private: false, total_comments: 43}
-  @invalid_attrs %{comments_locked: nil, date: nil, deleted: nil, private: nil, total_comments: nil}
+  @create_attrs %{comments_locked: true, date: "2010-04-17 14:00:00.000000Z", deleted: true, private: true, comment_count: 42}
+  @update_attrs %{comments_locked: false, date: "2011-05-18 15:01:01.000000Z", deleted: false, private: false, comment_count: 43}
+  @invalid_attrs %{comments_locked: nil, date: nil, deleted: nil, private: nil, comment_count: nil}
 
   def fixture(:timeline_item) do
     {:ok, timeline_item} = Timeline.create_timeline_item(@create_attrs)
@@ -36,7 +36,7 @@ defmodule ApiWeb.TimelineItemControllerTest do
         "date" => "2010-04-17 14:00:00.000000Z",
         "deleted" => true,
         "private" => true,
-        "total_comments" => 42}
+        "comment_count" => 42}
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
@@ -59,7 +59,7 @@ defmodule ApiWeb.TimelineItemControllerTest do
         "date" => "2011-05-18 15:01:01.000000Z",
         "deleted" => false,
         "private" => false,
-        "total_comments" => 43}
+        "comment_count" => 43}
     end
 
     test "renders errors when data is invalid", %{conn: conn, timeline_item: timeline_item} do

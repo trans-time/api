@@ -5,7 +5,7 @@ defmodule ApiWeb.CommentView do
 
   def type(_post,_conn), do: "comment"
 
-  attributes [:inserted_at, :deleted, :text]
+  attributes [:inserted_at, :deleted, :text, :comment_count, :moon_count, :star_count, :sun_count]
 
   has_one :user,
     serializer: UserView,

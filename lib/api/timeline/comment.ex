@@ -8,6 +8,10 @@ defmodule Api.Timeline.Comment do
   schema "comments" do
     field :deleted, :boolean, default: false
     field :text, :string
+    field :moon_count, :integer, default: 0
+    field :star_count, :integer, default: 0
+    field :sun_count, :integer, default: 0
+    field :comment_count, :integer, default: 0
 
     belongs_to :user, User
     belongs_to :post, Post
@@ -22,5 +26,14 @@ defmodule Api.Timeline.Comment do
     comment
     |> cast(attrs, [:deleted, :text])
     |> validate_required([:deleted, :text])
+    |> prepare_changes(fn (changeset) ->
+      Ecto.assoc(changeset.data, :post)
+      |> Repo.update_all(inc: [comment_count: 1])
+
+      Ecto.assoc(changeset.data, :parent)
+      |> Repo.update_all(inc: [comment_count: 1])
+
+      changeset
+    end)
   end
 end

@@ -7,10 +7,10 @@ defmodule Api.Timeline.Post do
   schema "posts" do
     field :nsfw, :boolean, default: false
     field :text, :string
-    field :total_moons, :integer, default: 0
-    field :total_stars, :integer, default: 0
-    field :total_suns, :integer, default: 0
-    field :total_comments, :integer, default: 0
+    field :moon_count, :integer, default: 0
+    field :star_count, :integer, default: 0
+    field :sun_count, :integer, default: 0
+    field :comment_count, :integer, default: 0
 
     has_many :comments, Comment
     has_many :images, Image

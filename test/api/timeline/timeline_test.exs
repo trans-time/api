@@ -66,9 +66,9 @@ defmodule Api.TimelineTest do
   describe "timeline_items" do
     alias Api.Timeline.TimelineItem
 
-    @valid_attrs %{comments_locked: true, date: "2010-04-17 14:00:00.000000Z", deleted: true, private: true, total_comments: 42}
-    @update_attrs %{comments_locked: false, date: "2011-05-18 15:01:01.000000Z", deleted: false, private: false, total_comments: 43}
-    @invalid_attrs %{comments_locked: nil, date: nil, deleted: nil, private: nil, total_comments: nil}
+    @valid_attrs %{comments_locked: true, date: "2010-04-17 14:00:00.000000Z", deleted: true, private: true, comment_count: 42}
+    @update_attrs %{comments_locked: false, date: "2011-05-18 15:01:01.000000Z", deleted: false, private: false, comment_count: 43}
+    @invalid_attrs %{comments_locked: nil, date: nil, deleted: nil, private: nil, comment_count: nil}
 
     def timeline_item_fixture(attrs \\ %{}) do
       {:ok, timeline_item} =
@@ -95,7 +95,7 @@ defmodule Api.TimelineTest do
       assert timeline_item.date == DateTime.from_naive!(~N[2010-04-17 14:00:00.000000Z], "Etc/UTC")
       assert timeline_item.deleted == true
       assert timeline_item.private == true
-      assert timeline_item.total_comments == 42
+      assert timeline_item.comment_count == 42
     end
 
     test "create_timeline_item/1 with invalid data returns error changeset" do
@@ -110,7 +110,7 @@ defmodule Api.TimelineTest do
       assert timeline_item.date == DateTime.from_naive!(~N[2011-05-18 15:01:01.000000Z], "Etc/UTC")
       assert timeline_item.deleted == false
       assert timeline_item.private == false
-      assert timeline_item.total_comments == 43
+      assert timeline_item.comment_count == 43
     end
 
     test "update_timeline_item/2 with invalid data returns error changeset" do

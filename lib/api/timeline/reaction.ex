@@ -20,5 +20,22 @@ defmodule Api.Timeline.Reaction do
     reaction
     |> cast(attrs, [:type])
     |> validate_required([:type])
+    |> prepare_changes(fn (changeset) ->
+      inc = case changeset.data.type do
+        1 -> [star_count: 1]
+        2 -> [sun_count: 1]
+        3 -> [moon_count: 1]
+      end
+
+      polymorph = cond do
+        get_change(changeset, :post_id) -> :post
+        get_change(changeset, :comment_id) -> :comment
+      end
+
+      Ecto.assoc(changeset.data, polymorph)
+      |> Repo.update_all(inc: inc)
+IO.write('reaction prepare_changes')
+      changeset
+    end)
   end
 end
