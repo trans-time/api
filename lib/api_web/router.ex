@@ -23,6 +23,7 @@ defmodule ApiWeb.Router do
     resources "/follows", FollowController, only: [:index]
     resources "/posts", PostController, only: [:show]
     resources "/reactions", ReactionController, only: [:index]
+    resources "/search-queries", SearchQueryController, only: [:index]
     resources "/timeline-items", TimelineItemController, only: [:index]
     resources "/users", UserController, only: [:show]
   end
