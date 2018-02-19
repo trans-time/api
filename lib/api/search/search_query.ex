@@ -8,6 +8,8 @@ defmodule Api.Search.SearchQuery do
 
 
   schema "search_queries" do
+    field :query, :string
+
     has_many :identities, Identity
     has_many :tags, Tag
     has_many :users, User
@@ -18,7 +20,7 @@ defmodule Api.Search.SearchQuery do
   @doc false
   def changeset(%SearchQuery{} = search_query, attrs) do
     search_query
-    |> cast(attrs, [])
+    |> cast(attrs, [:query])
     |> validate_required([])
   end
 end

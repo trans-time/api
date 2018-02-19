@@ -3,7 +3,7 @@ defmodule ApiWeb.SearchQueryView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{IdentityView, TagView, UserView}
 
-  def id(_post,_conn), do: 0
+  def id(struct,_conn), do: struct.query
 
   has_many :identities,
     serializer: IdentityView,

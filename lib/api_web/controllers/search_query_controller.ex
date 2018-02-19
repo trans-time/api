@@ -8,19 +8,43 @@ defmodule ApiWeb.SearchQueryController do
   def model, do: Api.Search.SearchQuery
 
   def handle_index_query(%{query_params: qp}, _query) do
-    query = qp["filter"]["query"]
-    safe_query = "%#{String.replace(query, "%", "\\%")}%"
-    identities = from t in Api.Profile.Identity,
-      where: ilike(t.name, ^safe_query)
-    tags = from t in Api.Timeline.Tag,
-      where: ilike(t.name, ^safe_query)
-    users = from t in Api.Accounts.User,
-      where: ilike(t.username, ^safe_query) or ilike(t.display_name, ^safe_query)
+    full_query = qp["filter"]["query"]
+    query_type = case String.at(full_query, 0) do
+      "@" -> :user
+      "#" -> :tag
+      "*" -> :identity
+      _ -> :generic
+    end
+
+    main_query = if (query_type == :generic), do: full_query, else: String.slice(full_query, 1..-1)
+    safe_query = "%#{String.replace(main_query, "%", "\\%")}%"
+    identities = if (query_type == :generic || query_type == :identity), do: identities_query(safe_query), else: []
+    tags = if (query_type == :generic || query_type == :tag), do: tags_query(safe_query), else: []
+    users = if (query_type == :generic || query_type == :user), do: users_query(safe_query), else: []
 
     %Api.Search.SearchQuery{
-      identities: identities |> Api.Repo.all,
-      tags: tags |> Api.Repo.all,
-      users: users |> Api.Repo.all
+      identities: identities,
+      tags: tags,
+      users: users,
+      query: full_query
     }
+  end
+
+  def identities_query(query) do
+    Api.Repo.all(from t in Api.Profile.Identity,
+      where: ilike(t.name, ^query),
+      limit: 5)
+  end
+
+  def tags_query(query) do
+    Api.Repo.all(from t in Api.Timeline.Tag,
+      where: ilike(t.name, ^query),
+      limit: 5)
+  end
+
+  def users_query(query) do
+    Api.Repo.all(from t in Api.Accounts.User,
+      where: ilike(t.username, ^query) or ilike(t.display_name, ^query),
+      limit: 5)
   end
 end
