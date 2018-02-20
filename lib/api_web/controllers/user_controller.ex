@@ -5,9 +5,9 @@ defmodule ApiWeb.UserController do
 
   def model, do: Api.Accounts.User
 
-  # def record(conn, username) do
-  #   conn
-  #   |> records
-  #   |> Api.Repo.get_by(username: username)
-  # end
+  def record(conn, username) do
+    conn
+    |> records
+    |> Api.Repo.get_by(username: username)
+  end
 end

@@ -5,7 +5,7 @@ defmodule Api.Profile.UserIdentity do
   alias Api.Profile.{Identity, UserIdentity}
 
 
-  schema "user_indentities" do
+  schema "user_identities" do
     field :end_date, :utc_datetime
     field :start_date, :utc_datetime
     belongs_to :identity, Identity

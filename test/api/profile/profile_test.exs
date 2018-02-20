@@ -187,7 +187,7 @@ defmodule Api.ProfileTest do
     end
   end
 
-  describe "user_indentities" do
+  describe "user_identities" do
     alias Api.Profile.UserIdentity
 
     @valid_attrs %{end_date: "2010-04-17 14:00:00.000000Z", start_date: "2010-04-17 14:00:00.000000Z"}
@@ -203,9 +203,9 @@ defmodule Api.ProfileTest do
       user_identity
     end
 
-    test "list_user_indentities/0 returns all user_indentities" do
+    test "list_user_identities/0 returns all user_identities" do
       user_identity = user_identity_fixture()
-      assert Profile.list_user_indentities() == [user_identity]
+      assert Profile.list_user_identities() == [user_identity]
     end
 
     test "get_user_identity!/1 returns the user_identity with given id" do

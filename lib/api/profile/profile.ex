@@ -297,15 +297,15 @@ defmodule Api.Profile do
   alias Api.Profile.UserIdentity
 
   @doc """
-  Returns the list of user_indentities.
+  Returns the list of user_identities.
 
   ## Examples
 
-      iex> list_user_indentities()
+      iex> list_user_identities()
       [%UserIdentity{}, ...]
 
   """
-  def list_user_indentities do
+  def list_user_identities do
     Repo.all(UserIdentity)
   end
 

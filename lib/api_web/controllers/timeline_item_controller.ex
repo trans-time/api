@@ -22,9 +22,39 @@ defmodule ApiWeb.TimelineItemController do
 
   def filter(_conn, query, "user_ids", user_ids) do
     user_ids = Enum.map(user_ids, fn(x) -> String.to_integer(x) end)
-    join(query, :inner, [ti], tis in "timeline_items_users", tis.timeline_item_id == ti.id and tis.user_id in ^user_ids) |>
+    join(query, :inner, [ti], tiu in "timeline_items_users", tiu.timeline_item_id == ti.id and tiu.user_id in ^user_ids) |>
     group_by([ti], ti.id) |>
-    having([ti, ..., tis], fragment("? <@ array_agg(?)", ^user_ids, tis.user_id))
+    having([ti, ..., tiu], fragment("? <@ array_agg(?)", ^user_ids, tiu.user_id))
+  end
+
+  def filter(_conn, query, "query", query_string) do
+    Enum.reduce(String.split(query_string), query, fn(query_part, query) ->
+      query_type = case String.at(query_part, 0) do
+        "*" -> :identity
+        "#" -> :tag
+        "@" -> :user
+        _ -> :generic
+      end
+
+      main_query = if (query_type == :generic), do: query_part, else: String.slice(query_part, 1..-1)
+
+      case query_type do
+        :identity ->
+          join(query, :inner, [ti], u in "users", ti.user_id == u.id) |>
+            join(:inner, [ti, ..., u], ui in "user_identities", ui.user_id == u.id) |>
+            join(:inner, [ti, ..., ui], i in "identities", ui.identity_id == i.id) |>
+            group_by([ti, ..., i], [ti.id, i.name]) |>
+            having([ti, ..., i], i.name == ^main_query)
+        :user ->
+          join(query, :inner, [ti], u in "users", ti.user_id == u.id and u.username == ^main_query) |>
+            group_by([ti], ti.id)
+        _ ->
+          join(query, :inner, [ti], tit in "timeline_items_tags", tit.timeline_item_id == ti.id) |>
+            join(:inner, [ti, ..., tit], t in "tags", tit.tag_id == t.id) |>
+            group_by([ti, ..., t], [ti.id, t.name]) |>
+            having([ti, ..., t], t.name == ^main_query)
+      end
+    end)
   end
 
   def sort(_conn, query, "date", direction) do
