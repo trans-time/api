@@ -36,7 +36,7 @@ defmodule ApiWeb.TimelineItemController do
         _ -> :generic
       end
 
-      main_query = if (query_type == :generic), do: query_part, else: String.slice(query_part, 1..-1)
+      main_query = String.downcase(if (query_type == :generic), do: query_part, else: String.slice(query_part, 1..-1))
 
       case query_type do
         :identity ->
@@ -44,15 +44,15 @@ defmodule ApiWeb.TimelineItemController do
             join(:inner, [ti, ..., u], ui in "user_identities", ui.user_id == u.id) |>
             join(:inner, [ti, ..., ui], i in "identities", ui.identity_id == i.id) |>
             group_by([ti, ..., i], [ti.id, i.name]) |>
-            having([ti, ..., i], i.name == ^main_query)
+            having([ti, ..., i], fragment("lower(?)", i.name) == ^main_query)
         :user ->
-          join(query, :inner, [ti], u in "users", ti.user_id == u.id and u.username == ^main_query) |>
+          join(query, :inner, [ti], u in "users", ti.user_id == u.id and fragment("lower(?)", u.username) == ^main_query) |>
             group_by([ti], ti.id)
         _ ->
           join(query, :inner, [ti], tit in "timeline_items_tags", tit.timeline_item_id == ti.id) |>
             join(:inner, [ti, ..., tit], t in "tags", tit.tag_id == t.id) |>
             group_by([ti, ..., t], [ti.id, t.name]) |>
-            having([ti, ..., t], t.name == ^main_query)
+            having([ti, ..., t], fragment("lower(?)", t.name) == ^main_query)
       end
     end)
   end
