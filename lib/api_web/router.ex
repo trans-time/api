@@ -15,21 +15,29 @@ defmodule ApiWeb.Router do
     plug JaSerializer.Deserializer
   end
 
-  scope "/", ApiWeb, as: :api do
-    pipe_through :api # Use the default browser stack
+  pipeline :api_auth do
+    plug :accepts, ["json", "json-api"]
+    plug ApiWeb.Guardian.AuthPipeline
+    plug JaSerializer.ContentTypeNegotiation
+    plug JaSerializer.Deserializer
+  end
+
+  scope "/api/v1", ApiWeb, as: :api do
+    pipe_through :api_auth
 
     get "/", PageController, :index
+    delete "/logout", AuthController, :delete
     resources "/comments", CommentController, only: [:index, :show]
     resources "/follows", FollowController, only: [:index]
     resources "/posts", PostController, only: [:show]
     resources "/reactions", ReactionController, only: [:index]
     resources "/search-queries", SearchQueryController, only: [:index]
     resources "/timeline-items", TimelineItemController, only: [:index]
-    resources "/users", UserController, only: [:show]
+    resources "/users", UserController, only: [:create, :show]
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", ApiWeb do
-  #   pipe_through :api
-  # end
+  scope "/api/v1/auth", ApiWeb do
+    pipe_through :api
+    post "/identity/callback", AuthController, :identity_callback
+  end
 end

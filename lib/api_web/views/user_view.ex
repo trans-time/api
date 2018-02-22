@@ -1,9 +1,21 @@
 defmodule ApiWeb.UserView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{UserIdentityView, UserProfileView, UserView}
+  alias ApiWeb.{BlockView, FollowView, UserIdentityView, UserProfileView, UserView}
 
   attributes [:avatar, :display_name, :is_moderator, :pronouns, :username]
+
+  has_many :blockeds,
+    serializer: BlockView,
+    include: false
+
+  has_many :blockers,
+    serializer: BlockView,
+    include: false
+
+  has_many :followeds,
+    serializer: FollowView,
+    include: false
 
   has_many :user_identities,
     serializer: UserIdentityView,

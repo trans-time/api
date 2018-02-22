@@ -12,8 +12,8 @@
 import Api.Factory
 import Ecto.Query
 tags = insert_list(12, :tag)
-celeste = insert(:user, %{username: "celeste"})
-other_users = insert_list(15, :user)
+celeste = insert(:user, %{username: "celeste", email: "celeste@trans.time"})
+other_users = insert_list(5, :user)
 timeline_items = []
 
 timeline_items = for _ <- 1..30, do: insert(:timeline_item, %{user: celeste, tags: Enum.take_random(tags, 3), users: Enum.take_random(other_users, 2), post: insert(:post), private: Enum.random([true, false])})

@@ -3,7 +3,10 @@ defmodule ApiWeb.UserController do
   use JaResource # Optionally put in web/web.ex
   plug JaResource
 
-  def model, do: Api.Accounts.User
+  alias Api.Accounts.Guardian
+  alias Api.Accounts.User
+
+  def model, do: User
 
   def record(conn, username) do
     conn

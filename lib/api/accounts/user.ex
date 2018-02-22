@@ -1,19 +1,25 @@
+import Ecto.Query
+
 defmodule Api.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
   alias Api.Accounts.User
   alias Api.Profile.{UserIdentity, UserProfile, UserTagSummary}
-  alias Api.Relationship.Follow
+  alias Api.Relationship.{Block, Follow}
   alias Api.Timeline.{Reaction, TimelineItem}
 
 
   schema "users" do
     field :avatar, :string
+    field :email, :string
     field :display_name, :string
     field :is_moderator, :boolean, default: false
+    field :password, :string
     field :pronouns, :string
     field :username, :string
 
+    has_many :blockeds, Block, foreign_key: :blocker_id
+    has_many :blockers, Block, foreign_key: :blocked_id
     has_many :followeds, Follow, foreign_key: :follower_id
     has_many :followers, Follow, foreign_key: :followed_id
     has_many :reactions, Reaction
@@ -25,11 +31,31 @@ defmodule Api.Accounts.User do
     timestamps()
   end
 
+  def get_user_by_identification(identification) do
+    cond do
+      String.contains?(identification, "@") ->
+        User |> where(email: ^identification) |> Api.Repo.one!
+      true ->
+        User |> where(username: ^identification) |> Api.Repo.one!
+    end
+  end
+
+  def validate_password(user, password) do
+    Comeonin.Argon2.checkpw(password, user.password)
+  end
+
   @doc false
   def changeset(%User{} = user, attrs) do
     user
-    |> cast(attrs, [:avatar, :display_name, :is_moderator, :pronouns, :username])
-    |> validate_required([:avatar, :display_name, :is_moderator, :pronouns, :username])
+    |> cast(attrs, [:avatar, :display_name, :email, :is_moderator, :password, :pronouns, :username])
+    |> validate_required([:email, :password, :username])
+    |> unique_constraint(:email)
     |> unique_constraint(:username)
+    |> put_pass_hash()
   end
+
+  defp put_pass_hash(%Ecto.Changeset{valid?: true, changes: %{password: password}} = changeset) do
+    change(changeset, %{ password: Comeonin.Argon2.hashpwsalt(password) })
+  end
+  defp put_pass_hash(changeset), do: changeset
 end

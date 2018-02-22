@@ -13,7 +13,7 @@ config :api,
 config :api, ApiWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "yh0q8V9izXEh5hrGED8ZGKyP3SPKFBOktZA4YTpgCOgvmngJu/dX96Lp3PQ1hPhG",
-  render_errors: [view: ApiWeb.ErrorView, accepts: ~w(html json)],
+  render_errors: [view: ApiWeb.ErrorView, accepts: ~w(html json json-api)],
   pubsub: [name: Api.PubSub,
            adapter: Phoenix.PubSub.PG2]
 
@@ -33,6 +33,18 @@ config :phoenix, PhoenixExample.Endpoint,
   render_errors: [view: PhoenixExample.ErrorView, accepts: ~w(html json json-api)]
 
 config :ja_resource, repo: Api.Repo
+
+config :ueberauth, Ueberauth,
+  providers: [
+    identity: {Ueberauth.Strategy.Identity, [
+      callback_methods: ["POST"],
+      param_nesting: ["data", "attributes"]
+    ]}
+  ]
+
+config :api, Api.Accounts.Guardian,
+  issuer: "api",
+  secret_key: "iZYJkEAaViic3E24ihM6n587JYXBkXdYSKHZkxfe2s9HoyZ0GNW9p4u7nJv6IdtN"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

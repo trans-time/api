@@ -11,7 +11,6 @@ defmodule Api.Repo.Migrations.CreateReactions do
       timestamps()
     end
 
-    create index(:reactions, [:comment_id])
-    create index(:reactions, [:post_id])
+    create index(:reactions, [:comment_id, :post_id])
   end
 end
