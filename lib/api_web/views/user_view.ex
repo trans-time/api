@@ -46,6 +46,27 @@ defmodule ApiWeb.UserView do
         data: user.user_identities
       })
     end
+    if Ecto.assoc_loaded?(user.followeds) do
+      relationships = Map.put(relationships, :followeds, %HasMany{
+        serializer: FollowView,
+        include: true,
+        data: user.followeds
+      })
+    end
+    if Ecto.assoc_loaded?(user.blockeds) do
+      relationships = Map.put(relationships, :blockeds, %HasMany{
+        serializer: BlockView,
+        include: true,
+        data: user.blockeds
+      })
+    end
+    if Ecto.assoc_loaded?(user.blockers) do
+      relationships = Map.put(relationships, :blockers, %HasMany{
+        serializer: BlockView,
+        include: true,
+        data: user.blockers
+      })
+    end
 
     relationships
   end

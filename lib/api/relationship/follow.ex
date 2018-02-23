@@ -18,7 +18,9 @@ defmodule Api.Relationship.Follow do
   @doc false
   def changeset(%Follow{} = follow, attrs) do
     follow
-    |> cast(attrs, [:can_view_private, :requested_private])
+    |> cast(attrs, [:can_view_private, :requested_private, :follower_id, :followed_id])
     |> validate_required([:can_view_private, :requested_private])
+    |> assoc_constraint(:followed)
+    |> assoc_constraint(:follower)
   end
 end

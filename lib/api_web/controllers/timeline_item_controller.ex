@@ -27,6 +27,15 @@ defmodule ApiWeb.TimelineItemController do
     having([ti, ..., tiu], fragment("? <@ array_agg(?)", ^user_ids, tiu.user_id))
   end
 
+  def filter(conn, query, "follower_id", follower_id) do
+    if (Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] === follower_id) do
+      join(query, :inner, [ti], f in "follows", f.follower_id == ^String.to_integer(follower_id) and ti.user_id == f.followed_id) |>
+        group_by([ti], ti.id)
+    else
+      query
+    end
+  end
+
   def filter(_conn, query, "query", query_string) do
     Enum.reduce(String.split(query_string), query, fn(query_part, query) ->
       query_type = case String.at(query_part, 0) do
@@ -74,14 +83,14 @@ defmodule ApiWeb.TimelineItemController do
 
     if from_id && byte_size(from_id) > 0 do
       order = "ORDER BY date DESC"
-      [offset | tail] = repo().all(
+      offset = List.first(repo().all(
         from e in subquery(
           from t in query,
             select: %{id: t.id, rn: fragment("row_number() OVER(ORDER BY date DESC)")}
         ),
           where: e.id == ^String.to_integer(from_id),
           select: e.rn
-      )
+      )) || 0
 
       cond do
         qp["initial_query"] && String.to_existing_atom(qp["initial_query"]) ->
