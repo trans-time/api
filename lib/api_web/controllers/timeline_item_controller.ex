@@ -75,6 +75,7 @@ defmodule ApiWeb.TimelineItemController do
     query = filter_under_moderation(conn, query)
     query = filter_private(conn, query)
     query = filter_blocked(conn, query)
+
     [limit, offset] = get_limit_and_offset(qp, query)
 
     repo().all(query |> limit(^limit) |> offset(^offset))
