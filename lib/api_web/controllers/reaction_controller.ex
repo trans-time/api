@@ -9,6 +9,33 @@ defmodule ApiWeb.ReactionController do
 
   def model, do: Reaction
 
+  def handle_create(conn, attributes) do
+    current_user_id = Api.Accounts.Guardian.Plug.current_claims(conn)["sub"]
+  
+    case attributes["user_id"] do
+      ^current_user_id -> Reaction.changeset(%Reaction{}, attributes)
+      _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
+    end
+  end
+
+  def handle_delete(conn, record) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
+
+    case record.user_id do
+      ^current_user_id -> super(conn, record)
+      _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
+    end
+  end
+
+  def handle_update(conn, record, attributes) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
+
+    case record.user_id do
+      ^current_user_id -> Reaction.changeset(record, attributes)
+      _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
+    end
+  end
+
   def filter(_conn, query, "comment_id", comment_id) do
     where(query, comment_id: ^comment_id)
   end
