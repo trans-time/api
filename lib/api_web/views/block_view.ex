@@ -3,8 +3,6 @@ defmodule ApiWeb.BlockView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{UserView}
 
-  attributes [:can_view_private, :requested_private]
-
   has_one :blocked,
     serializer: UserView,
     include: false

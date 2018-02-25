@@ -15,7 +15,8 @@ defmodule Api.Relationship.Block do
   @doc false
   def changeset(%Block{} = block, attrs) do
     block
-    |> cast(attrs, [])
-    |> validate_required([])
+    |> cast(attrs, [:blocker_id, :blocked_id])
+    |> assoc_constraint(:blocked)
+    |> assoc_constraint(:blocker)
   end
 end
