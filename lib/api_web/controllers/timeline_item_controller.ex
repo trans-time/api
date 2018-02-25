@@ -86,8 +86,7 @@ defmodule ApiWeb.TimelineItemController do
 
   def filter_under_moderation(conn, query) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
-    where(query, under_moderation: ^false) |>
-      or_where(user_id: ^current_user_id)
+    where(query, [ti], ti.under_moderation == ^false or ti.user_id == ^current_user_id)
   end
 
   def filter_private(conn, query) do
