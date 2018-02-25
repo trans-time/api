@@ -92,7 +92,7 @@ defmodule ApiWeb.TimelineItemController do
 
   def filter_private(conn, query) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
-    where(query, [ti], ti.private == ^false or fragment("exists(select 1 from follows f where f.follower_id = ? and f.followed_id = ? and f.can_view_private = true)", ^current_user_id, ti.user_id))
+    where(query, [ti], ti.private == ^false or ti.user_id == ^current_user_id or fragment("exists(select 1 from follows f where f.follower_id = ? and f.followed_id = ? and f.can_view_private = true)", ^current_user_id, ti.user_id))
   end
 
   def filter_blocked(conn, query) do
