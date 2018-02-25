@@ -1,3 +1,5 @@
+import Ecto.Query, only: [where: 2]
+
 defmodule ApiWeb.UserController do
   use ApiWeb, :controller
   use JaResource # Optionally put in web/web.ex
@@ -8,9 +10,7 @@ defmodule ApiWeb.UserController do
 
   def model, do: User
 
-  def record(conn, username) do
-    conn
-    |> records
-    |> Api.Repo.get_by(username: username)
+  def filter(_conn, query, "username", username) do
+    where(query, username: ^username)
   end
 end

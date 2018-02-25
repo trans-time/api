@@ -34,7 +34,7 @@ defmodule ApiWeb.Router do
     resources "/reactions", ReactionController, only: [:index]
     resources "/search-queries", SearchQueryController, only: [:index]
     resources "/timeline-items", TimelineItemController, only: [:index]
-    resources "/users", UserController, only: [:create, :show]
+    resources "/users", UserController, only: [:create, :index]
   end
 
   scope "/api/v1/auth", ApiWeb do
