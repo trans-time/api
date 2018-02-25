@@ -11,6 +11,6 @@ defmodule Api.Repo.Migrations.CreateFollows do
       timestamps()
     end
 
-    create index(:follows, [:followed_id, :follower_id])
+    create index(:follows, [:followed_id, :follower_id, :requested_private])
   end
 end

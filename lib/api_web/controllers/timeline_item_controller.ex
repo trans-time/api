@@ -70,10 +70,34 @@ defmodule ApiWeb.TimelineItemController do
     order_by(query, [{^direction, :date}])
   end
 
-  def handle_index_query(%{query_params: qp}, query) do
+  def handle_index_query(%{query_params: qp} = conn, query) do
+    query = filter_deleted(conn, query)
+    query = filter_under_moderation(conn, query)
+    query = filter_private(conn, query)
+    query = filter_blocked(conn, query)
     [limit, offset] = get_limit_and_offset(qp, query)
 
     repo().all(query |> limit(^limit) |> offset(^offset))
+  end
+
+  def filter_deleted(_conn, query) do
+    where(query, deleted: ^false)
+  end
+
+  def filter_under_moderation(conn, query) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
+    where(query, under_moderation: ^false) |>
+      or_where(user_id: ^current_user_id)
+  end
+
+  def filter_private(conn, query) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
+    where(query, [ti], ti.private == ^false or fragment("exists(select 1 from follows f where f.follower_id = ? and f.followed_id = ? and f.can_view_private = true)", ^current_user_id, ti.user_id))
+  end
+
+  def filter_blocked(conn, query) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
+    where(query, [ti], fragment("not exists(select 1 from blocks b where b.blocked_id = ? and b.blocker_id = ?)", ^current_user_id, ti.user_id))
   end
 
   def get_limit_and_offset(qp, query) do
