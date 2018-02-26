@@ -3,7 +3,7 @@ defmodule ApiWeb.UserProfileView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{UserTagSummaryView, UserView}
 
-  attributes [:description, :total_posts, :website]
+  attributes [:description, :post_count, :website]
 
   has_one :user_tag_summary,
     serializer: UserTagSummaryView

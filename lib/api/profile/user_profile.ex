@@ -7,7 +7,7 @@ defmodule Api.Profile.UserProfile do
 
   schema "user_profiles" do
     field :description, :string
-    field :total_posts, :integer, default: 0
+    field :post_count, :integer, default: 0
     field :website, :string
 
     belongs_to :user, User
@@ -19,7 +19,7 @@ defmodule Api.Profile.UserProfile do
   @doc false
   def changeset(%UserProfile{} = user_profile, attrs) do
     user_profile
-    |> cast(attrs, [:description, :total_posts, :website])
-    |> validate_required([:description, :total_posts, :website])
+    |> cast(attrs, [:description, :post_count, :website])
+    |> validate_required([:post_count])
   end
 end

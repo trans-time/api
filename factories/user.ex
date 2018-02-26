@@ -50,6 +50,7 @@ defmodule Api.Factory do
   def user_factory do
     %Api.Accounts.User{
       avatar: Faker.Avatar.image_url(200, 200),
+      current_user: insert(:current_user),
       email: Faker.Internet.email,
       display_name: Faker.Pokemon.name,
       is_moderator: true,
@@ -61,10 +62,16 @@ defmodule Api.Factory do
     }
   end
 
+  def current_user_factory do
+    %Api.Accounts.CurrentUser{
+      language: "en-us"
+    }
+  end
+
   def user_profile_factory do
     %Api.Profile.UserProfile{
       description: Faker.Lorem.Shakespeare.hamlet,
-      total_posts: 7,
+      post_count: 7,
       website: Faker.Internet.url,
       user_tag_summary: insert(:user_tag_summary)
     }

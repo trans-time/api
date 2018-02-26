@@ -4,7 +4,7 @@ defmodule Api.Repo.Migrations.CreateUserProfiles do
   def change do
     create table(:user_profiles) do
       add :description, :string
-      add :total_posts, :integer, default: 0, null: false
+      add :post_count, :integer, default: 0, null: false
       add :website, :string
       add :user_id, references(:users)
 

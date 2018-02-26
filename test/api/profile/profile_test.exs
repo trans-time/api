@@ -6,9 +6,9 @@ defmodule Api.ProfileTest do
   describe "user_profiles" do
     alias Api.Profile.UserProfile
 
-    @valid_attrs %{description: "some description", total_posts: 42, website: "some website"}
-    @update_attrs %{description: "some updated description", total_posts: 43, website: "some updated website"}
-    @invalid_attrs %{description: nil, total_posts: nil, website: nil}
+    @valid_attrs %{description: "some description", post_count: 42, website: "some website"}
+    @update_attrs %{description: "some updated description", post_count: 43, website: "some updated website"}
+    @invalid_attrs %{description: nil, post_count: nil, website: nil}
 
     def user_profile_fixture(attrs \\ %{}) do
       {:ok, user_profile} =
@@ -32,7 +32,7 @@ defmodule Api.ProfileTest do
     test "create_user_profile/1 with valid data creates a user_profile" do
       assert {:ok, %UserProfile{} = user_profile} = Profile.create_user_profile(@valid_attrs)
       assert user_profile.description == "some description"
-      assert user_profile.total_posts == 42
+      assert user_profile.post_count == 42
       assert user_profile.website == "some website"
     end
 
@@ -45,7 +45,7 @@ defmodule Api.ProfileTest do
       assert {:ok, user_profile} = Profile.update_user_profile(user_profile, @update_attrs)
       assert %UserProfile{} = user_profile
       assert user_profile.description == "some updated description"
-      assert user_profile.total_posts == 43
+      assert user_profile.post_count == 43
       assert user_profile.website == "some updated website"
     end
 

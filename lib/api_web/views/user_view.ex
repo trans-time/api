@@ -1,7 +1,7 @@
 defmodule ApiWeb.UserView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{BlockView, FollowView, UserIdentityView, UserProfileView, UserView}
+  alias ApiWeb.{BlockView, CurrentUserView, FollowView, UserIdentityView, UserProfileView, UserView}
 
   attributes [:avatar, :display_name, :is_moderator, :pronouns, :username]
 
@@ -11,6 +11,10 @@ defmodule ApiWeb.UserView do
 
   has_many :blockers,
     serializer: BlockView,
+    include: false
+
+  has_one :current_user,
+    serializer: CurrentUserView,
     include: false
 
   has_many :followeds,
@@ -31,28 +35,6 @@ defmodule ApiWeb.UserView do
 
   def relationships(user, _conn) do
     relationships = %{}
-
-    if Ecto.assoc_loaded?(user.user_profile) do
-      relationships = Map.put(relationships, :user_profile, %HasOne{
-        serializer: UserProfileView,
-        include: true,
-        data: user.user_profile
-      })
-    end
-    if Ecto.assoc_loaded?(user.user_identities) do
-      relationships = Map.put(relationships, :user_identities, %HasMany{
-        serializer: UserIdentityView,
-        include: true,
-        data: user.user_identities
-      })
-    end
-    if Ecto.assoc_loaded?(user.followeds) do
-      relationships = Map.put(relationships, :followeds, %HasMany{
-        serializer: FollowView,
-        include: true,
-        data: user.followeds
-      })
-    end
     if Ecto.assoc_loaded?(user.blockeds) do
       relationships = Map.put(relationships, :blockeds, %HasMany{
         serializer: BlockView,
@@ -65,6 +47,34 @@ defmodule ApiWeb.UserView do
         serializer: BlockView,
         include: true,
         data: user.blockers
+      })
+    end
+    if Ecto.assoc_loaded?(user.current_user) do
+      relationships = Map.put(relationships, :current_user, %HasOne{
+        serializer: CurrentUserView,
+        include: true,
+        data: user.current_user
+      })
+    end
+    if Ecto.assoc_loaded?(user.followeds) do
+      relationships = Map.put(relationships, :followeds, %HasMany{
+        serializer: FollowView,
+        include: true,
+        data: user.followeds
+      })
+    end
+    if Ecto.assoc_loaded?(user.user_profile) do
+      relationships = Map.put(relationships, :user_profile, %HasOne{
+        serializer: UserProfileView,
+        include: true,
+        data: user.user_profile
+      })
+    end
+    if Ecto.assoc_loaded?(user.user_identities) do
+      relationships = Map.put(relationships, :user_identities, %HasMany{
+        serializer: UserIdentityView,
+        include: true,
+        data: user.user_identities
       })
     end
 
