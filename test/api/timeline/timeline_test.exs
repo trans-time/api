@@ -320,9 +320,9 @@ defmodule Api.TimelineTest do
   describe "reactions" do
     alias Api.Timeline.Reaction
 
-    @valid_attrs %{type: 42}
-    @update_attrs %{type: 43}
-    @invalid_attrs %{type: nil}
+    @valid_attrs %{reaction_type: 42}
+    @update_attrs %{reaction_type: 43}
+    @invalid_attrs %{reaction_type: nil}
 
     def reaction_fixture(attrs \\ %{}) do
       {:ok, reaction} =
@@ -345,7 +345,7 @@ defmodule Api.TimelineTest do
 
     test "create_reaction/1 with valid data creates a reaction" do
       assert {:ok, %Reaction{} = reaction} = Timeline.create_reaction(@valid_attrs)
-      assert reaction.type == 42
+      assert reaction.reaction_type == 42
     end
 
     test "create_reaction/1 with invalid data returns error changeset" do
@@ -356,7 +356,7 @@ defmodule Api.TimelineTest do
       reaction = reaction_fixture()
       assert {:ok, reaction} = Timeline.update_reaction(reaction, @update_attrs)
       assert %Reaction{} = reaction
-      assert reaction.type == 43
+      assert reaction.reaction_type == 43
     end
 
     test "update_reaction/2 with invalid data returns error changeset" do

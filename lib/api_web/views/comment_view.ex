@@ -3,8 +3,6 @@ defmodule ApiWeb.CommentView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{CommentView, PostView, UserView}
 
-  def type(_post,_conn), do: "comment"
-
   attributes [:inserted_at, :deleted, :text, :comment_count, :moon_count, :star_count, :sun_count]
 
   has_one :post,

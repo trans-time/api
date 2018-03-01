@@ -10,7 +10,7 @@ defmodule Api.Factory do
 
   def reaction_factory do
     %Api.Timeline.Reaction{
-      type: Enum.random([1, 2, 3])
+      reaction_type: Enum.random([1, 2, 3])
     }
   end
 

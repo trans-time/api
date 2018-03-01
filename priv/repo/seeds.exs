@@ -38,8 +38,9 @@ summary_tag_ids = Map.keys(summary[celeste.id].tags)
 summary_user_ids = Map.keys(summary[celeste.id].users)
 
 Enum.each(Api.Repo.all(Api.Timeline.Post), fn(post) ->
+  insert(:reaction, %{user: celeste, post: post, reaction_type: Enum.random([1, 2, 3])})
   Enum.each(other_users, fn(user) ->
-    insert(:reaction, %{user: user, post: post, type: Enum.random([1, 2, 3])})
+    insert(:reaction, %{user: user, post: post, reaction_type: Enum.random([1, 2, 3])})
 
     parent = insert(:comment, %{user: Enum.random(other_users), post: post})
     insert(:comment, %{user: Enum.random(other_users), parent: parent, post: post})

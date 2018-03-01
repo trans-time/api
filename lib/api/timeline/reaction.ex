@@ -6,7 +6,7 @@ defmodule Api.Timeline.Reaction do
 
 
   schema "reactions" do
-    field :type, :integer
+    field :reaction_type, :integer
 
     belongs_to :comment, Comment
     belongs_to :post, Post
@@ -18,10 +18,10 @@ defmodule Api.Timeline.Reaction do
   @doc false
   def changeset(%Reaction{} = reaction, attrs) do
     reaction
-    |> cast(attrs, [:type])
-    |> validate_required([:type])
+    |> cast(attrs, [:reaction_type])
+    |> validate_required([:reaction_type])
     |> prepare_changes(fn (changeset) ->
-      inc = case changeset.data.type do
+      inc = case changeset.data.reaction_type do
         1 -> [star_count: 1]
         2 -> [sun_count: 1]
         3 -> [moon_count: 1]
@@ -33,8 +33,8 @@ defmodule Api.Timeline.Reaction do
       end
 
       Ecto.assoc(changeset.data, polymorph)
-      |> Repo.update_all(inc: inc)
-      
+      |> Api.Repo.update(inc: inc)
+
       changeset
     end)
   end

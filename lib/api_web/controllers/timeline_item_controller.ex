@@ -5,6 +5,7 @@ defmodule ApiWeb.TimelineItemController do
   use JaResource # Optionally put in web/web.ex
   plug JaResource
 
+  alias Api.Timeline.Reaction
   alias Api.Timeline.TimelineItem
 
   def model, do: TimelineItem
@@ -71,33 +72,46 @@ defmodule ApiWeb.TimelineItemController do
   end
 
   def handle_index_query(%{query_params: qp} = conn, query) do
+    current_user_id = Api.Accounts.Guardian.Plug.current_claims(conn)["sub"]
     query = filter_deleted(conn, query)
-    query = filter_under_moderation(conn, query)
-    query = filter_private(conn, query)
-    query = filter_blocked(conn, query)
+
+    if (current_user_id) do
+      current_user_id = String.to_integer(current_user_id)
+      query = filter_under_moderation(conn, query, current_user_id)
+      query = filter_private(conn, query, current_user_id)
+      query = filter_blocked(conn, query, current_user_id)
+    end
 
     [limit, offset] = get_limit_and_offset(qp, query)
 
-    repo().all(query |> limit(^limit) |> offset(^offset))
+    query = query |> limit(^limit) |> offset(^offset)
+
+    query = preload_current_user_reaction(conn, query, current_user_id || -1)
+
+    repo().all(query)
   end
 
   def filter_deleted(_conn, query) do
     where(query, deleted: ^false)
   end
 
-  def filter_under_moderation(conn, query) do
-    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
+  def filter_under_moderation(_conn, query, current_user_id) do
     where(query, [ti], ti.under_moderation == ^false or ti.user_id == ^current_user_id)
   end
 
-  def filter_private(conn, query) do
-    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
+  def filter_private(_conn, query, current_user_id) do
     where(query, [ti], ti.private == ^false or ti.user_id == ^current_user_id or fragment("exists(select 1 from follows f where f.follower_id = ? and f.followed_id = ? and f.can_view_private = true)", ^current_user_id, ti.user_id))
   end
 
-  def filter_blocked(conn, query) do
-    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
+  def filter_blocked(_conn, query, current_user_id) do
     where(query, [ti], fragment("not exists(select 1 from blocks b where b.blocked_id = ? and b.blocker_id = ?)", ^current_user_id, ti.user_id))
+  end
+
+  def preload_current_user_reaction(_conn, query, current_user_id) do
+    current_user_reaction_query = where(Reaction, [r], r.user_id == ^current_user_id)
+    join(query, :left, [ti], p in assoc(ti, :post))
+    |> join(:left, [ti, ..., p], r in assoc(p, :reactions))
+    |> preload([ti, ..., p, r], [post: {p, reactions: ^current_user_reaction_query}])
   end
 
   def get_limit_and_offset(qp, query) do

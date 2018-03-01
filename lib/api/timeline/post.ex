@@ -14,7 +14,7 @@ defmodule Api.Timeline.Post do
 
     has_many :comments, Comment
     has_many :images, Image
-    has_many :reactions, {"posts_reactions", Reaction}, foreign_key: :reactable_id
+    has_many :reactions, Reaction
     has_one :timeline_item, TimelineItem
 
     timestamps()

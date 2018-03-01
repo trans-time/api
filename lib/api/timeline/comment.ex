@@ -2,7 +2,7 @@ defmodule Api.Timeline.Comment do
   use Ecto.Schema
   import Ecto.Changeset
   alias Api.Accounts.User
-  alias Api.Timeline.{Comment, Post, TimelineItem}
+  alias Api.Timeline.{Comment, Post, Reaction, TimelineItem}
 
 
   schema "comments" do
@@ -17,6 +17,7 @@ defmodule Api.Timeline.Comment do
     belongs_to :post, Post
     belongs_to :parent, Comment
     has_many :children, Comment, foreign_key: :parent_id
+    has_many :reactions, Reaction
 
     timestamps()
   end
@@ -28,10 +29,10 @@ defmodule Api.Timeline.Comment do
     |> validate_required([:deleted, :text])
     |> prepare_changes(fn (changeset) ->
       Ecto.assoc(changeset.data, :post)
-      |> Repo.update_all(inc: [comment_count: 1])
+      |> Api.Repo.update(inc: [comment_count: 1])
 
       Ecto.assoc(changeset.data, :parent)
-      |> Repo.update_all(inc: [comment_count: 1])
+      |> Api.Repo.update(inc: [comment_count: 1])
 
       changeset
     end)
