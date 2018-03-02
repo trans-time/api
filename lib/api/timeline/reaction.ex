@@ -18,24 +18,10 @@ defmodule Api.Timeline.Reaction do
   @doc false
   def changeset(%Reaction{} = reaction, attrs) do
     reaction
-    |> cast(attrs, [:reaction_type])
+    |> cast(attrs, [:reaction_type, :comment_id, :post_id, :user_id])
     |> validate_required([:reaction_type])
-    |> prepare_changes(fn (changeset) ->
-      inc = case changeset.data.reaction_type do
-        1 -> [star_count: 1]
-        2 -> [sun_count: 1]
-        3 -> [moon_count: 1]
-      end
-
-      polymorph = cond do
-        get_change(changeset, :post_id) -> :post
-        get_change(changeset, :comment_id) -> :comment
-      end
-
-      Ecto.assoc(changeset.data, polymorph)
-      |> Api.Repo.update(inc: inc)
-
-      changeset
-    end)
+    |> assoc_constraint(:comment)
+    |> assoc_constraint(:post)
+    |> assoc_constraint(:user)
   end
 end

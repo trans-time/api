@@ -6,32 +6,29 @@ defmodule ApiWeb.ReactionController do
   plug JaResource
 
   alias Api.Timeline.Reaction
+  alias ApiWeb.Service.ReactionManager
 
   def model, do: Reaction
 
   def handle_create(conn, attributes) do
-    current_user_id = Api.Accounts.Guardian.Plug.current_claims(conn)["sub"]
-  
-    case attributes["user_id"] do
-      ^current_user_id -> Reaction.changeset(%Reaction{}, attributes)
-      _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
-    end
+    handle_request(conn, String.to_integer(attributes["user_id"]), ReactionManager.insert(attributes))
   end
 
   def handle_delete(conn, record) do
-    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
-
-    case record.user_id do
-      ^current_user_id -> super(conn, record)
-      _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
-    end
+    handle_request(conn, record.user_id, ReactionManager.delete(record))
   end
 
   def handle_update(conn, record, attributes) do
+    handle_request(conn, record.user_id, ReactionManager.update(record, attributes))
+  end
+
+  defp handle_request(conn, user_id, multi) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
 
-    case record.user_id do
-      ^current_user_id -> Reaction.changeset(record, attributes)
+    case user_id do
+      ^current_user_id ->
+        transaction = Api.Repo.transaction(multi)
+        if Kernel.elem(transaction, 0) === :ok, do: Kernel.elem(transaction, 1).reaction, else: transaction
       _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
     end
   end

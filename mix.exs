@@ -40,6 +40,7 @@ defmodule Api.Mixfile do
       {:faker, "~> 0.9", only: :dev},
       {:guardian, "~> 1.0"},
       {:gettext, "~> 0.11"},
+      {:indifferent, "~> 0.9"},
       {:ja_resource, "~> 0.3"},
       {:ja_serializer, "~> 0.12"},
       {:phoenix, "~> 1.3.0"},
