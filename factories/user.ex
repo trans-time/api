@@ -50,14 +50,12 @@ defmodule Api.Factory do
   def user_factory do
     %Api.Accounts.User{
       avatar: Faker.Avatar.image_url(200, 200),
-      current_user: insert(:current_user),
       email: Faker.Internet.email,
       display_name: Faker.Pokemon.name,
       is_moderator: true,
       password: Comeonin.Argon2.hashpwsalt("asdfasdf"),
       pronouns: Enum.random(["she/her", "he/him", "they/them", "she/her; they/them", "he/him; they/them"]),
       username: Faker.Pokemon.name,
-      user_profile: insert(:user_profile),
       user_identities: insert_list(4, :user_identity)
     }
   end
@@ -72,8 +70,7 @@ defmodule Api.Factory do
     %Api.Profile.UserProfile{
       description: Faker.Lorem.Shakespeare.hamlet,
       post_count: 7,
-      website: Faker.Internet.url,
-      user_tag_summary: insert(:user_tag_summary)
+      website: Faker.Internet.url
     }
   end
 

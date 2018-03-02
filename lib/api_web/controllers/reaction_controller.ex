@@ -6,7 +6,7 @@ defmodule ApiWeb.ReactionController do
   plug JaResource
 
   alias Api.Timeline.Reaction
-  alias ApiWeb.Service.ReactionManager
+  alias ApiWeb.Services.ReactionManager
 
   def model, do: Reaction
 

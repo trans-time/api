@@ -1,6 +1,6 @@
 import Ecto.Query
 
-defmodule ApiWeb.Service.ReactionManager do
+defmodule ApiWeb.Services.ReactionManager do
   alias Api.Timeline.{Comment, Post, Reaction}
   alias Ecto.Multi
 

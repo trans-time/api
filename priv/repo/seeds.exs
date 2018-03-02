@@ -12,8 +12,10 @@
 import Api.Factory
 import Ecto.Query
 tags = insert_list(12, :tag)
-celeste = insert(:user, %{username: "celeste", email: "celeste@trans.time"})
-other_users = insert_list(5, :user)
+celeste = Kernel.elem(Api.Repo.transaction(ApiWeb.Services.UserManager.insert_user(params_for(:user, %{username: "celeste", email: "celeste@trans.time"}))), 1).user
+other_users = Enum.map(1..5, fn(_i) ->
+  Kernel.elem(Api.Repo.transaction(ApiWeb.Services.UserManager.insert_user(params_for(:user))), 1).user
+end)
 timeline_items = []
 
 timeline_items = for _ <- 1..30, do: insert(:timeline_item, %{user: celeste, tags: Enum.take_random(tags, 3), users: Enum.take_random(other_users, 2), post: insert(:post), private: Enum.random([true, false])})
@@ -47,9 +49,18 @@ Enum.each(Api.Repo.all(Api.Timeline.Post), fn(post) ->
   end)
 end)
 
-Api.Repo.preload(celeste.user_profile.user_tag_summary, [:tags, :users]) |> Ecto.Changeset.change(%{
-  summary: summary
-}) |> Ecto.Changeset.put_assoc(:tags, Api.Timeline.Tag |> where([p], p.id in ^summary_tag_ids) |> Api.Repo.all) |> Ecto.Changeset.put_assoc(:users, Api.Accounts.User |> where([p], p.id in ^summary_user_ids) |> Api.Repo.all) |> Api.Repo.update!
+Api.Repo.preload(celeste.user_profile, [:user_tag_summary])
+|> Ecto.assoc(:user_tag_summary)
+|> Api.Repo.one!
+|> Api.Repo.preload([:tags, :users])
+|> Ecto.Changeset.change(%{summary: summary})
+|> Ecto.Changeset.put_assoc(:tags, Api.Timeline.Tag
+  |> where([p], p.id in ^summary_tag_ids)
+  |> Api.Repo.all)
+|> Ecto.Changeset.put_assoc(:users, Api.Accounts.User
+  |> where([p], p.id in ^summary_user_ids)
+  |> Api.Repo.all)
+|> Api.Repo.update!
 
 Enum.each(other_users, fn(user) ->
   insert(:follow, %{followed: user, follower: celeste})
