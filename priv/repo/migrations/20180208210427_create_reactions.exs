@@ -12,5 +12,6 @@ defmodule Api.Repo.Migrations.CreateReactions do
     end
 
     create index(:reactions, [:comment_id, :post_id])
+    create constraint(:reactions, :only_one_reactable, check: "count_not_nulls(comment_id, post_id) = 1")
   end
 end

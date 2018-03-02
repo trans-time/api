@@ -18,5 +18,6 @@ defmodule Api.Repo.Migrations.CreateComments do
     end
 
     create index(:comments, [:post_id])
+    create constraint(:comments, :only_one_commentable, check: "count_not_nulls(post_id) = 1")
   end
 end
