@@ -20,8 +20,8 @@ defmodule Api.Timeline.Reaction do
     reaction
     |> cast(attrs, [:reaction_type, :comment_id, :post_id, :user_id])
     |> validate_required([:reaction_type])
-    |> unique_constraint(:comment_id, name: :reactions_comment_id_user_id_index)
-    |> unique_constraint(:post_id, name: :reactions_post_id_user_id_index)
+    |> unique_constraint(:comment_id, name: :reactions_comment_id_user_id_index, message: "remote.errors.detail.unique.reaction")
+    |> unique_constraint(:post_id, name: :reactions_post_id_user_id_index, message: "remote.errors.detail.unique.reaction")
     |> assoc_constraint(:comment)
     |> assoc_constraint(:post)
     |> assoc_constraint(:user)
