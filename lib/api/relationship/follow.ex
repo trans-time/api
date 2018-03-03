@@ -20,7 +20,7 @@ defmodule Api.Relationship.Follow do
     follow
     |> cast(attrs, [:can_view_private, :requested_private, :follower_id, :followed_id])
     |> validate_required([:can_view_private, :requested_private])
-    |> unique_constraint(:followed_id, name: :follows_followed_id_follower_id_index)
+    |> unique_constraint(:followed_id, name: :follows_followed_id_follower_id_index, message: "remote.errors.detail.unique.follow")
     |> assoc_constraint(:followed)
     |> assoc_constraint(:follower)
   end
