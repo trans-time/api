@@ -10,29 +10,23 @@ defmodule ApiWeb.FollowController do
   def model, do: Follow
 
   def handle_create(conn, attributes) do
-    current_user_id = Api.Accounts.Guardian.Plug.current_claims(conn)["sub"]
-
-    case attributes["follower_id"] do
-      ^current_user_id -> Follow.changeset(%Follow{}, attributes)
-      _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/follower/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
-    end
+    handle_request(conn,  String.to_integer(attributes["follower_id"]), Follow.changeset(%Follow{}, attributes))
   end
 
   def handle_delete(conn, record) do
-    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
-
-    case record.follower_id do
-      ^current_user_id -> super(conn, record)
-      _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/follower/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
-    end
+    handle_request(conn, record.follower_id, super(conn, record))
   end
 
   def handle_update(conn, record, attributes) do
+    handle_request(conn, record.follower_id, Follow.changeset(record, attributes))
+  end
+
+  defp handle_request(conn, user_id, changeset) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
 
-    case record.follower_id do
-      ^current_user_id -> Follow.changeset(record, attributes)
-      _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/follower/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
+    case user_id do
+      ^current_user_id -> changeset
+      _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
     end
   end
 

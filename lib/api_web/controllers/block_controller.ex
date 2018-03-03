@@ -8,20 +8,19 @@ defmodule ApiWeb.BlockController do
   def model, do: Block
 
   def handle_create(conn, attributes) do
-    current_user_id = Api.Accounts.Guardian.Plug.current_claims(conn)["sub"]
-
-    case attributes["blocker_id"] do
-      ^current_user_id -> Block.changeset(%Block{}, attributes)
-      _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/blocker/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
-    end
+    handle_request(conn,  String.to_integer(attributes["blocker_id"]), Block.changeset(%Block{}, attributes))
   end
 
   def handle_delete(conn, record) do
+    handle_request(conn, record.blocker_id, super(conn, record))
+  end
+
+  defp handle_request(conn, user_id, changeset) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
 
-    case record.blocker_id do
-      ^current_user_id -> super(conn, record)
-      _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/blocker/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
+    case user_id do
+      ^current_user_id -> changeset
+      _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
     end
   end
 end
