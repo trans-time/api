@@ -11,13 +11,13 @@ defmodule Api.Repo.Migrations.CreateComments do
       add :sun_count, :integer, default: 0, null: false
 
       add :post_id, references(:posts, on_delete: :nothing)
-      add :user_id, references(:users, on_delete: :nothing)
+      add :user_id, references(:users, on_delete: :nothing), null: false
       add :parent_id, references(:comments, on_delete: :nothing)
 
       timestamps()
     end
 
-    create index(:comments, [:post_id])
+    create index(:comments, [:post_id], using: :hash)
     create constraint(:comments, :only_one_commentable, check: "count_not_nulls(post_id) = 1")
   end
 end

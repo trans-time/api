@@ -8,5 +8,7 @@ defmodule Api.Repo.Migrations.CreateIdentities do
       timestamps()
     end
 
+    create unique_index(:identities, [:name])
+    create index(:identities, ["lower(name) gin_trgm_ops"], using: :gin)
   end
 end

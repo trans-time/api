@@ -14,7 +14,9 @@ defmodule Api.Repo.Migrations.CreateUsers do
       timestamps()
     end
 
-    create unique_index(:users, [:email, :username])
-    create index(:users, [:display_name])
+    create unique_index(:users, [:email])
+    create unique_index(:users, [:username])
+    create index(:users, ["lower(username) gin_trgm_ops"], using: :gin)
+    create index(:users, ["lower(display_name) gin_trgm_ops"], using: :gin)
   end
 end

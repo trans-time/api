@@ -17,5 +17,6 @@ defmodule Api.Profile.Identity do
     identity
     |> cast(attrs, [:name])
     |> validate_required([:name])
+    |> unique_constraint(:name)
   end
 end

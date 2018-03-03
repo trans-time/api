@@ -19,5 +19,6 @@ defmodule Api.Profile.UserIdentity do
     user_identity
     |> cast(attrs, [:start_date, :end_date])
     |> validate_required([:start_date, :end_date])
+    |> unique_constraint(:identity_id, name: :user_identities_identity_id_user_id_index)
   end
 end

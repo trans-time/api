@@ -29,7 +29,7 @@ defmodule Api.Factory do
   def post_factory do
     %Api.Timeline.Post{
       text: Faker.Lorem.Shakespeare.hamlet,
-      images: insert_list(4, :image)
+      images: build_list(4, :image)
     }
   end
 
@@ -56,7 +56,7 @@ defmodule Api.Factory do
       password: Comeonin.Argon2.hashpwsalt("asdfasdf"),
       pronouns: Enum.random(["she/her", "he/him", "they/them", "she/her; they/them", "he/him; they/them"]),
       username: Faker.Pokemon.name,
-      user_identities: insert_list(4, :user_identity)
+      user_identities: build_list(2, :user_identity)
     }
   end
 

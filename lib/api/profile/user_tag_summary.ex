@@ -20,5 +20,6 @@ defmodule Api.Profile.UserTagSummary do
     user_tag_summary
     |> cast(attrs, [:summary])
     |> validate_required([:summary])
+    |> unique_constraint(:user_profile_id)
   end
 end

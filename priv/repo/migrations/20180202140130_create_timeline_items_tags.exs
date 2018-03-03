@@ -3,11 +3,10 @@ defmodule Api.Repo.Migrations.CreateTimelineItemsTags do
 
   def change do
     create table(:timeline_items_tags, primary_key: false) do
-      add :tag_id, references(:tags, on_delete: :nothing)
-      add :timeline_item_id, references(:timeline_items, on_delete: :nothing)
+      add :tag_id, references(:tags, on_delete: :nothing), null: false
+      add :timeline_item_id, references(:timeline_items, on_delete: :nothing), null: false
     end
 
-    create index(:timeline_items_tags, [:tag_id])
-    create index(:timeline_items_tags, [:timeline_item_id])
+    create unique_index(:timeline_items_tags, [:tag_id, :timeline_item_id])
   end
 end

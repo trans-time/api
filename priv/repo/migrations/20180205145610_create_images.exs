@@ -7,11 +7,11 @@ defmodule Api.Repo.Migrations.CreateImages do
       add :filesize, :integer
       add :order, :integer
       add :src, :string
-      add :post_id, references(:posts)
+      add :post_id, references(:posts), null: false
 
       timestamps()
     end
 
-    create index(:images, [:post_id])
+    create index(:images, [:post_id], using: :hash)
   end
 end

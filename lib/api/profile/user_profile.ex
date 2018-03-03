@@ -21,5 +21,6 @@ defmodule Api.Profile.UserProfile do
     user_profile
     |> cast(attrs, [:description, :post_count, :website])
     |> validate_required([:post_count])
+    |> unique_constraint(:user_id)
   end
 end

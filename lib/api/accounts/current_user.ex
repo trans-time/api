@@ -20,5 +20,6 @@ defmodule Api.Accounts.CurrentUser do
     user
     |> cast(attrs, [:language, :unread_notification_count])
     |> validate_required([:language, :unread_notification_count])
+    |> unique_constraint(:user_id)
   end
 end

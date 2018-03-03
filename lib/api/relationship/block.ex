@@ -16,6 +16,7 @@ defmodule Api.Relationship.Block do
   def changeset(%Block{} = block, attrs) do
     block
     |> cast(attrs, [:blocker_id, :blocked_id])
+    |> unique_constraint(:blocked_id, name: :blocks_blocked_id_blocker_id_index)
     |> assoc_constraint(:blocked)
     |> assoc_constraint(:blocker)
   end
