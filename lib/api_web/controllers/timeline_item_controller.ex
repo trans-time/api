@@ -87,7 +87,7 @@ defmodule ApiWeb.TimelineItemController do
 
     query = query |> limit(^limit) |> offset(^offset)
 
-    query = preload_current_user_reaction(conn, query, current_user_id || -1)
+    query = preload_current_user_reaction(conn, query, current_user_id)
 
     repo().all(query)
   end
