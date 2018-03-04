@@ -67,20 +67,21 @@ defmodule ApiWeb.TimelineItemController do
     end)
   end
 
+  def filter(_conn, query, "refresh_timeline_item_ids", refresh_timeline_item_ids) do
+    refresh_timeline_item_ids = Enum.map(String.split(refresh_timeline_item_ids, ","), fn(x) -> String.to_integer(x) end)
+    where(query, [ti], ti.id in ^refresh_timeline_item_ids)
+  end
+
   def sort(_conn, query, "date", direction) do
     order_by(query, [{^direction, :date}])
   end
 
   def handle_index_query(%{query_params: qp} = conn, query) do
-    current_user_id = Api.Accounts.Guardian.Plug.current_claims(conn)["sub"]
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
     query = filter_deleted(conn, query)
-
-    if (current_user_id) do
-      current_user_id = String.to_integer(current_user_id)
-      query = filter_under_moderation(conn, query, current_user_id)
-      query = filter_private(conn, query, current_user_id)
-      query = filter_blocked(conn, query, current_user_id)
-    end
+    query = filter_under_moderation(conn, query, current_user_id)
+    query = filter_private(conn, query, current_user_id)
+    query = filter_blocked(conn, query, current_user_id)
 
     [limit, offset] = get_limit_and_offset(qp, query)
 

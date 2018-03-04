@@ -17,7 +17,7 @@ defmodule ApiWeb.AuthController do
       nil -> invalid_identity(conn)
       user ->
         if User.validate_password(user, Map.get(attributes, "password")) do
-          {:ok, jwt, _} = Guardian.encode_and_sign(user)
+          {:ok, _, _} = Guardian.encode_and_sign(user)
           auth_conn = Guardian.Plug.sign_in(conn, user)
           jwt = Guardian.Plug.current_token(auth_conn)
           auth_conn
