@@ -35,9 +35,9 @@ defmodule Api.Accounts.User do
   def get_user_by_identification(identification) do
     cond do
       String.contains?(identification, "@") ->
-        User |> where(email: ^identification) |> Api.Repo.one!
+        User |> where(email: ^identification) |> Api.Repo.one
       true ->
-        User |> where(username: ^identification) |> Api.Repo.one!
+        User |> where(username: ^identification) |> Api.Repo.one
     end
   end
 
