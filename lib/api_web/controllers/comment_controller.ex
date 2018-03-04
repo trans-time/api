@@ -13,6 +13,10 @@ defmodule ApiWeb.CommentController do
     where(query, post_id: ^post_id)
   end
 
+  def sort(_conn, query, "inserted_at", inserted_at) do
+    order_by(query, [{^inserted_at, :inserted_at}])
+  end
+
   def handle_index_query(%{query_params: qp} = conn, query) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
 
