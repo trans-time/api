@@ -16,22 +16,22 @@ defmodule ApiWeb.TimelineItemController do
 
   def filter(_conn, query, "tag_ids", tag_ids) do
     tag_ids = Enum.map(tag_ids, fn(x) -> String.to_integer(x) end)
-    join(query, :inner, [ti], tit in "timeline_items_tags", tit.timeline_item_id == ti.id and tit.tag_id in ^tag_ids) |>
-    group_by([ti], ti.id) |>
-    having([ti, ..., tit], fragment("? <@ array_agg(?)", ^tag_ids, tit.tag_id))
+    join(query, :inner, [ti], tit in "timeline_items_tags", tit.timeline_item_id == ti.id and tit.tag_id in ^tag_ids)
+    |> group_by([ti], ti.id)
+    |> having([..., tit], fragment("? <@ array_agg(?)", ^tag_ids, tit.tag_id))
   end
 
   def filter(_conn, query, "user_ids", user_ids) do
     user_ids = Enum.map(user_ids, fn(x) -> String.to_integer(x) end)
-    join(query, :inner, [ti], tiu in "timeline_items_users", tiu.timeline_item_id == ti.id and tiu.user_id in ^user_ids) |>
-    group_by([ti], ti.id) |>
-    having([ti, ..., tiu], fragment("? <@ array_agg(?)", ^user_ids, tiu.user_id))
+    join(query, :inner, [ti], tiu in "timeline_items_users", tiu.timeline_item_id == ti.id and tiu.user_id in ^user_ids)
+    |> group_by([ti], ti.id)
+    |> having([..., tiu], fragment("? <@ array_agg(?)", ^user_ids, tiu.user_id))
   end
 
   def filter(conn, query, "follower_id", follower_id) do
     if (Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] === follower_id) do
-      join(query, :inner, [ti], f in "follows", f.follower_id == ^String.to_integer(follower_id) and ti.user_id == f.followed_id) |>
-        group_by([ti], ti.id)
+      join(query, :inner, [ti], f in "follows", f.follower_id == ^String.to_integer(follower_id) and ti.user_id == f.followed_id)
+      |> group_by([ti], ti.id)
     else
       query
     end
@@ -50,19 +50,19 @@ defmodule ApiWeb.TimelineItemController do
 
       case query_type do
         :identity ->
-          join(query, :inner, [ti], u in "users", ti.user_id == u.id) |>
-            join(:inner, [ti, ..., u], ui in "user_identities", ui.user_id == u.id) |>
-            join(:inner, [ti, ..., ui], i in "identities", ui.identity_id == i.id) |>
-            group_by([ti, ..., i], [ti.id, i.name]) |>
-            having([ti, ..., i], fragment("lower(?)", i.name) == ^main_query)
+          join(query, :inner, [ti], u in "users", ti.user_id == u.id)
+          |> join(:inner, [..., u], ui in "user_identities", ui.user_id == u.id)
+          |> join(:inner, [..., ui], i in "identities", ui.identity_id == i.id)
+          |> group_by([ti, ..., i], [ti.id, i.name])
+          |> having([..., i], fragment("lower(?)", i.name) == ^main_query)
         :user ->
-          join(query, :inner, [ti], u in "users", ti.user_id == u.id and fragment("lower(?)", u.username) == ^main_query) |>
-            group_by([ti], ti.id)
+          join(query, :inner, [ti], u in "users", ti.user_id == u.id and fragment("lower(?)", u.username) == ^main_query)
+          |> group_by([ti], ti.id)
         _ ->
-          join(query, :inner, [ti], tit in "timeline_items_tags", tit.timeline_item_id == ti.id) |>
-            join(:inner, [ti, ..., tit], t in "tags", tit.tag_id == t.id) |>
-            group_by([ti, ..., t], [ti.id, t.name]) |>
-            having([ti, ..., t], fragment("lower(?)", t.name) == ^main_query)
+          join(query, :inner, [ti], tit in "timeline_items_tags", tit.timeline_item_id == ti.id)
+          |> join(:inner, [..., tit], t in "tags", tit.tag_id == t.id)
+          |> group_by([ti, ..., t], [ti.id, t.name])
+          |> having([..., t], fragment("lower(?)", t.name) == ^main_query)
       end
     end)
   end
@@ -108,10 +108,10 @@ defmodule ApiWeb.TimelineItemController do
   end
 
   def preload_current_user_reaction(_conn, query, current_user_id) do
-    current_user_reaction_query = where(Reaction, [r], r.user_id == ^current_user_id)
     join(query, :left, [ti], p in assoc(ti, :post))
-    |> join(:left, [ti, ..., p], r in assoc(p, :reactions))
-    |> preload([ti, ..., p, r], [post: {p, reactions: ^current_user_reaction_query}])
+    |> join(:left, [..., p], r in assoc(p, :reactions), r.user_id == ^current_user_id)
+    |> group_by([ti, ..., p, r], [ti.id, p.id, r.id])
+    |> preload([..., p, r], [post: {p, reactions: r}])
   end
 
   def get_limit_and_offset(qp, query) do
