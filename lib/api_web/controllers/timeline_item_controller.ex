@@ -67,9 +67,9 @@ defmodule ApiWeb.TimelineItemController do
     end)
   end
 
-  def filter(_conn, query, "refresh_timeline_item_ids", refresh_timeline_item_ids) do
-    refresh_timeline_item_ids = Enum.map(String.split(refresh_timeline_item_ids, ","), fn(x) -> String.to_integer(x) end)
-    where(query, [ti], ti.id in ^refresh_timeline_item_ids)
+  def filter(_conn, query, "refresh_ids", refresh_ids) do
+    refresh_ids = Enum.map(refresh_ids, fn(x) -> String.to_integer(x) end)
+    where(query, [ti], ti.id in ^refresh_ids)
   end
 
   def sort(_conn, query, "date", direction) do
