@@ -33,8 +33,26 @@ defmodule ApiWeb.CommentController do
     end
   end
 
-  def filter(_conn, query, "post_id", post_id) do
+  def filter(conn, query, "post_id", post_id) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
+
+    post = Api.Repo.get(Api.Timeline.Post, post_id)
+    |> Api.Repo.preload(:timeline_item)
+    
+    if post.timeline_item.user_id !== current_user_id do
+      query = filter_blocked(conn, query, current_user_id)
+    end
+
     where(query, post_id: ^post_id)
+  end
+
+  def filter(_conn, query, "deleted", deleted) do
+    where(query, deleted: ^deleted)
+  end
+
+  def filter(conn, query, "under_moderation", under_moderation) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || -1)
+    where(query, [ti], ti.under_moderation == ^under_moderation or ti.user_id == ^current_user_id)
   end
 
   def sort(_conn, query, "inserted_at", inserted_at) do
@@ -45,6 +63,10 @@ defmodule ApiWeb.CommentController do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
 
     repo().all(preload_current_user_reaction(conn, query, current_user_id))
+  end
+
+  defp filter_blocked(_conn, query, current_user_id) do
+    where(query, [c], fragment("not exists(select 1 from blocks b where b.blocked_id = ? and b.blocker_id = ?)", ^current_user_id, c.user_id))
   end
 
   defp preload_current_user_reaction(_conn, query, current_user_id) do
