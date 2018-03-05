@@ -28,7 +28,7 @@ defmodule ApiWeb.Router do
     get "/", PageController, :index
     delete "/logout", AuthController, :delete
     resources "/blocks", BlockController, only: [:create, :delete]
-    resources "/comments", CommentController, only: [:index, :show]
+    resources "/comments", CommentController, only: [:create, :delete, :index, :show, :update]
     resources "/follows", FollowController, only: [:create, :delete, :index, :update]
     resources "/posts", PostController, only: [:show]
     resources "/reactions", ReactionController, only: [:create, :delete, :index, :update]

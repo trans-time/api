@@ -6,8 +6,32 @@ defmodule ApiWeb.CommentController do
   plug JaResource
 
   alias Api.Timeline.Comment
+  alias ApiWeb.Services.CommentManager
 
   def model, do: Comment
+
+  def handle_create(conn, attributes) do
+    handle_request(conn, String.to_integer(attributes["user_id"]), CommentManager.insert(attributes))
+  end
+
+  def handle_delete(conn, record) do
+    handle_request(conn, record.user_id, CommentManager.delete(record))
+  end
+
+  def handle_update(conn, record, attributes) do
+    handle_request(conn, record.user_id, CommentManager.update(record, attributes))
+  end
+
+  defp handle_request(conn, user_id, multi) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
+
+    case user_id do
+      ^current_user_id ->
+        transaction = Api.Repo.transaction(multi)
+        if Kernel.elem(transaction, 0) === :ok, do: Kernel.elem(transaction, 1).comment, else: transaction
+      _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
+    end
+  end
 
   def filter(_conn, query, "post_id", post_id) do
     where(query, post_id: ^post_id)
