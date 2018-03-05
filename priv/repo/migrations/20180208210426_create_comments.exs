@@ -8,6 +8,7 @@ defmodule Api.Repo.Migrations.CreateComments do
       add :deleted_by_moderator, :boolean, default: false, null: false
       add :ignore_flags, :boolean, default: false, null: false
       add :under_moderation, :boolean, default: false, null: false
+      add :comment_count, :integer, default: 0, null: false
       add :moon_count, :integer, default: 0, null: false
       add :star_count, :integer, default: 0, null: false
       add :sun_count, :integer, default: 0, null: false
@@ -21,6 +22,7 @@ defmodule Api.Repo.Migrations.CreateComments do
 
     create index(:comments, [:inserted_at])
     create index(:comments, [:post_id], using: :hash)
+    create index(:comments, [:parent_id], using: :hash)
     create index(:comments, [:deleted], type: :hash)
     create index(:comments, [:under_moderation], type: :hash)
     create constraint(:comments, :only_one_commentable, check: "count_not_nulls(post_id) = 1")

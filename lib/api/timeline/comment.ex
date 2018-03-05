@@ -11,6 +11,7 @@ defmodule Api.Timeline.Comment do
     field :ignore_flags, :boolean, default: false
     field :text, :string
     field :under_moderation, :boolean, default: false
+    field :comment_count, :integer, default: 0
     field :moon_count, :integer, default: 0
     field :star_count, :integer, default: 0
     field :sun_count, :integer, default: 0
