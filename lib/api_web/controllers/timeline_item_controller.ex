@@ -10,22 +10,17 @@ defmodule ApiWeb.TimelineItemController do
 
   def model, do: TimelineItem
 
-  def filter(_conn, query, "user_id", user_id) do
-    where(query, user_id: ^user_id)
+  def blocked(conn, query, "blocked", blocked) do
+    if blocked do
+      current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || -1)
+      where(query, [ti], fragment("not exists(select 1 from blocks b where b.blocked_id = ? and b.blocker_id = ?)", ^current_user_id, ti.user_id))
+    else
+      query
+    end
   end
 
-  def filter(_conn, query, "tag_ids", tag_ids) do
-    tag_ids = Enum.map(tag_ids, fn(x) -> String.to_integer(x) end)
-    join(query, :inner, [ti], tit in "timeline_items_tags", tit.timeline_item_id == ti.id and tit.tag_id in ^tag_ids)
-    |> group_by([ti], ti.id)
-    |> having([..., tit], fragment("? <@ array_agg(?)", ^tag_ids, tit.tag_id))
-  end
-
-  def filter(_conn, query, "user_ids", user_ids) do
-    user_ids = Enum.map(user_ids, fn(x) -> String.to_integer(x) end)
-    join(query, :inner, [ti], tiu in "timeline_items_users", tiu.timeline_item_id == ti.id and tiu.user_id in ^user_ids)
-    |> group_by([ti], ti.id)
-    |> having([..., tiu], fragment("? <@ array_agg(?)", ^user_ids, tiu.user_id))
+  def filter(_conn, query, "deleted", deleted) do
+    where(query, deleted: ^deleted)
   end
 
   def filter(conn, query, "follower_id", follower_id) do
@@ -67,9 +62,37 @@ defmodule ApiWeb.TimelineItemController do
     end)
   end
 
+  def private(conn, query, "private", private) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || -1)
+    where(query, [ti], ti.private == ^private or ti.user_id == ^current_user_id or fragment("exists(select 1 from follows f where f.follower_id = ? and f.followed_id = ? and f.can_view_private = true)", ^current_user_id, ti.user_id))
+  end
+
   def filter(_conn, query, "refresh_ids", refresh_ids) do
     refresh_ids = Enum.map(refresh_ids, fn(x) -> String.to_integer(x) end)
     where(query, [ti], ti.id in ^refresh_ids)
+  end
+
+  def filter(_conn, query, "tag_ids", tag_ids) do
+    tag_ids = Enum.map(tag_ids, fn(x) -> String.to_integer(x) end)
+    join(query, :inner, [ti], tit in "timeline_items_tags", tit.timeline_item_id == ti.id and tit.tag_id in ^tag_ids)
+    |> group_by([ti], ti.id)
+    |> having([..., tit], fragment("? <@ array_agg(?)", ^tag_ids, tit.tag_id))
+  end
+
+  def filter(conn, query, "under_moderation", under_moderation) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || -1)
+    where(query, [ti], ti.under_moderation == ^under_moderation or ti.user_id == ^current_user_id)
+  end
+
+  def filter(_conn, query, "user_id", user_id) do
+    where(query, user_id: ^user_id)
+  end
+
+  def filter(_conn, query, "user_ids", user_ids) do
+    user_ids = Enum.map(user_ids, fn(x) -> String.to_integer(x) end)
+    join(query, :inner, [ti], tiu in "timeline_items_users", tiu.timeline_item_id == ti.id and tiu.user_id in ^user_ids)
+    |> group_by([ti], ti.id)
+    |> having([..., tiu], fragment("? <@ array_agg(?)", ^user_ids, tiu.user_id))
   end
 
   def sort(_conn, query, "date", direction) do
@@ -78,10 +101,6 @@ defmodule ApiWeb.TimelineItemController do
 
   def handle_index_query(%{query_params: qp} = conn, query) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
-    query = filter_deleted(conn, query)
-    query = filter_under_moderation(conn, query, current_user_id)
-    query = filter_private(conn, query, current_user_id)
-    query = filter_blocked(conn, query, current_user_id)
 
     [limit, offset] = get_limit_and_offset(qp, query)
 
@@ -90,22 +109,6 @@ defmodule ApiWeb.TimelineItemController do
     query = preload_current_user_reaction(conn, query, current_user_id)
 
     repo().all(query)
-  end
-
-  def filter_deleted(_conn, query) do
-    where(query, deleted: ^false)
-  end
-
-  def filter_under_moderation(_conn, query, current_user_id) do
-    where(query, [ti], ti.under_moderation == ^false or ti.user_id == ^current_user_id)
-  end
-
-  def filter_private(_conn, query, current_user_id) do
-    where(query, [ti], ti.private == ^false or ti.user_id == ^current_user_id or fragment("exists(select 1 from follows f where f.follower_id = ? and f.followed_id = ? and f.can_view_private = true)", ^current_user_id, ti.user_id))
-  end
-
-  def filter_blocked(_conn, query, current_user_id) do
-    where(query, [ti], fragment("not exists(select 1 from blocks b where b.blocked_id = ? and b.blocker_id = ?)", ^current_user_id, ti.user_id))
   end
 
   def preload_current_user_reaction(_conn, query, current_user_id) do
