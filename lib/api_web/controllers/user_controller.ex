@@ -15,7 +15,7 @@ defmodule ApiWeb.UserController do
     case Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] do
       nil ->
         transaction = Api.Repo.transaction(UserManager.insert_user(attributes))
-        if Kernel.elem(transaction, 0) === :ok, do: Kernel.elem(transaction, 1).reaction, else: transaction
+        if Kernel.elem(transaction, 0) === :ok, do: Kernel.elem(transaction, 1).user, else: transaction
       _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
     end
   end
