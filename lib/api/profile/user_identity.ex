@@ -17,7 +17,8 @@ defmodule Api.Profile.UserIdentity do
   @doc false
   def changeset(%UserIdentity{} = user_identity, attrs) do
     user_identity
-    |> cast(attrs, [:start_date, :end_date])
-    |> validate_required([:start_date, :end_date])
+    |> cast(attrs, [:end_date, :identity_id, :start_date, :user_id])
+    |> assoc_constraint(:identity)
+    |> assoc_constraint(:user)
   end
 end
