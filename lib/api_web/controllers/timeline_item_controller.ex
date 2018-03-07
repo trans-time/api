@@ -10,9 +10,9 @@ defmodule ApiWeb.TimelineItemController do
 
   def model, do: TimelineItem
 
-  def blocked(conn, query, "blocked", blocked) do
+  def filter(conn, query, "blocked", blocked) do
     if blocked do
-      current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || -1)
+      current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
       where(query, [ti], fragment("not exists(select 1 from blocks b where b.blocked_id = ? and b.blocker_id = ?)", ^current_user_id, ti.user_id))
     else
       query
@@ -49,21 +49,21 @@ defmodule ApiWeb.TimelineItemController do
           |> join(:inner, [..., u], ui in "user_identities", ui.user_id == u.id)
           |> join(:inner, [..., ui], i in "identities", ui.identity_id == i.id)
           |> group_by([ti, ..., i], [ti.id, i.name])
-          |> having([..., i], fragment("lower(?)", i.name) == ^main_query)
+          |> having([..., i], i.name == ^main_query)
         :user ->
-          join(query, :inner, [ti], u in "users", ti.user_id == u.id and fragment("lower(?)", u.username) == ^main_query)
+          join(query, :inner, [ti], u in "users", ti.user_id == u.id and u.username == ^main_query)
           |> group_by([ti], ti.id)
         _ ->
           join(query, :inner, [ti], tit in "timeline_items_tags", tit.timeline_item_id == ti.id)
           |> join(:inner, [..., tit], t in "tags", tit.tag_id == t.id)
           |> group_by([ti, ..., t], [ti.id, t.name])
-          |> having([..., t], fragment("lower(?)", t.name) == ^main_query)
+          |> having([..., t], t.name == ^main_query)
       end
     end)
   end
 
-  def private(conn, query, "private", private) do
-    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || -1)
+  def filter(conn, query, "private", private) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
     where(query, [ti], ti.private == ^private or ti.user_id == ^current_user_id or fragment("exists(select 1 from follows f where f.follower_id = ? and f.followed_id = ? and f.can_view_private = true)", ^current_user_id, ti.user_id))
   end
 
@@ -80,7 +80,7 @@ defmodule ApiWeb.TimelineItemController do
   end
 
   def filter(conn, query, "under_moderation", under_moderation) do
-    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || -1)
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
     where(query, [ti], ti.under_moderation == ^under_moderation or ti.user_id == ^current_user_id)
   end
 
