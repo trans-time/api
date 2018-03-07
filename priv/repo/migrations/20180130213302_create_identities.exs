@@ -3,12 +3,12 @@ defmodule Api.Repo.Migrations.CreateIdentities do
 
   def change do
     create table(:identities) do
-      add :name, :string
+      add :name, :citext
 
       timestamps()
     end
 
     create unique_index(:identities, [:name])
-    create index(:identities, ["lower(name) gin_trgm_ops"], using: :gin)
+    create index(:identities, ["name gin_trgm_ops"], using: :gin)
   end
 end

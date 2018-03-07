@@ -6,6 +6,7 @@ defmodule Api.Repo.Migrations.CreateComments do
       add :text, :string
       add :deleted, :boolean, default: false, null: false
       add :deleted_by_moderator, :boolean, default: false, null: false
+      add :deleted_with_parent, :boolean, default: false, null: false
       add :ignore_flags, :boolean, default: false, null: false
       add :under_moderation, :boolean, default: false, null: false
       add :comment_count, :integer, default: 0, null: false
