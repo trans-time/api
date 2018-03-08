@@ -31,6 +31,7 @@ defmodule Api.Timeline.Comment do
     comment
     |> cast(attrs, [:parent_id, :post_id, :text, :user_id])
     |> validate_required([:text])
+    |> validate_length(:text, max: 8000, message: "remote.errors.detail.length.length")
     |> assoc_constraint(:parent)
     |> assoc_constraint(:post)
     |> assoc_constraint(:user)
