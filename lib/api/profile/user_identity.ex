@@ -20,5 +20,18 @@ defmodule Api.Profile.UserIdentity do
     |> cast(attrs, [:end_date, :identity_id, :start_date, :user_id])
     |> assoc_constraint(:identity)
     |> assoc_constraint(:user)
+    |> validate_date_sequence
+  end
+
+  defp validate_date_sequence(changeset) do
+    start_date = get_field(changeset, :start_date)
+    end_date = get_field(changeset, :end_date)
+
+    cond do
+      start_date && end_date && Date.compare(start_date, end_date) === :gt ->
+        add_error(changeset, :start_date, "remote.errors.detail.invalid.startDateAfterEndDate")
+      true ->
+        changeset
+    end
   end
 end

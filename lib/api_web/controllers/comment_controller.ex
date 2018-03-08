@@ -23,7 +23,7 @@ defmodule ApiWeb.CommentController do
   end
 
   defp handle_request(conn, user_id, multi) do
-    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
 
     case user_id do
       ^current_user_id ->
@@ -38,7 +38,7 @@ defmodule ApiWeb.CommentController do
 
     post = Api.Repo.get(Api.Timeline.Post, post_id)
     |> Api.Repo.preload(:timeline_item)
-    
+
     if post.timeline_item.user_id !== current_user_id do
       query = filter_blocked(conn, query, current_user_id)
     end

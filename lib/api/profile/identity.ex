@@ -17,6 +17,8 @@ defmodule Api.Profile.Identity do
     identity
     |> cast(attrs, [:name])
     |> validate_required([:name])
+    |> validate_length(:name, max: 64, message: "remote.errors.detail.length.length")
+    |> validate_format(:name, ~r/^[a-zA-Z0-9_-]*$/, message: "remote.errors.detail.format.alphanumericUnderscoreDash")
     |> unique_constraint(:name)
   end
 end

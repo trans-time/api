@@ -16,7 +16,7 @@ defmodule ApiWeb.BlockController do
   end
 
   defp handle_request(conn, user_id, changeset) do
-    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"])
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
 
     case user_id do
       ^current_user_id -> changeset
