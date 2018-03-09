@@ -4,7 +4,7 @@ defmodule Api.Repo.Migrations.CreatePosts do
   def change do
     create table(:posts) do
       add :nsfw, :boolean, default: false, null: false
-      add :text, :string
+      add :text, :text
       add :comment_count, :integer, default: 0, null: false
       add :moon_count, :integer, default: 0, null: false
       add :star_count, :integer, default: 0, null: false

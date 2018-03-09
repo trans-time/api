@@ -3,7 +3,7 @@ defmodule Api.Repo.Migrations.CreateComments do
 
   def change do
     create table(:comments) do
-      add :text, :string
+      add :text, :text
       add :deleted, :boolean, default: false, null: false
       add :deleted_by_moderator, :boolean, default: false, null: false
       add :deleted_with_parent, :boolean, default: false, null: false

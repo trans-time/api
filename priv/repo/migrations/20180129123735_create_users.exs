@@ -3,12 +3,12 @@ defmodule Api.Repo.Migrations.CreateUsers do
 
   def change do
     create table(:users) do
-      add :avatar, :string
+      add :avatar, :text
       add :email, :citext, null: false
-      add :display_name, :string
+      add :display_name, :text
       add :is_moderator, :boolean, default: false, null: false
-      add :password, :string
-      add :pronouns, :string
+      add :password, :text
+      add :pronouns, :text
       add :username, :citext, null: false
 
       timestamps()
