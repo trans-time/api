@@ -11,6 +11,7 @@ config :api,
 
 # Configures the endpoint
 config :api, ApiWeb.Endpoint,
+  http: [compress: true],
   url: [host: "localhost"],
   secret_key_base: "yh0q8V9izXEh5hrGED8ZGKyP3SPKFBOktZA4YTpgCOgvmngJu/dX96Lp3PQ1hPhG",
   render_errors: [view: ApiWeb.ErrorView, accepts: ~w(html json json-api)],
@@ -41,6 +42,10 @@ config :ueberauth, Ueberauth,
       param_nesting: ["data", "attributes"]
     ]}
   ]
+
+config :arc,
+  storage: Arc.Storage.S3,
+  bucket: "trans-time-user-uploads--development"
 
 config :api, Api.Accounts.Guardian,
   issuer: "api",

@@ -29,6 +29,10 @@ defmodule ApiWeb.UserView do
     serializer: UserProfileView,
     include: false
 
+  def avatar(user) do
+    Api.Profile.Avatar.url({user.avatar, user}, :thumb)
+  end
+
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)
   end

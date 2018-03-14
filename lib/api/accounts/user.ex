@@ -2,6 +2,7 @@ import Ecto.Query
 
 defmodule Api.Accounts.User do
   use Ecto.Schema
+  use Arc.Ecto.Schema
   import Ecto.Changeset
   alias Api.Accounts.{CurrentUser, User}
   alias Api.Profile.{UserIdentity, UserProfile, UserTagSummary}
@@ -10,7 +11,7 @@ defmodule Api.Accounts.User do
 
 
   schema "users" do
-    field :avatar, :string
+    field :avatar, Api.Profile.Avatar.Type
     field :email, :string
     field :display_name, :string
     field :is_moderator, :boolean, default: false
@@ -48,7 +49,8 @@ defmodule Api.Accounts.User do
   @doc false
   def changeset(%User{} = user, attrs) do
     user
-    |> cast(attrs, [:avatar, :display_name, :email, :password, :pronouns, :username])
+    |> cast(attrs, [:display_name, :email, :password, :pronouns, :username])
+    |> cast_attachments(attrs, [:avatar])
     |> validate_required([:email, :password, :username])
     |> validate_length(:display_name, max: 100, message: "remote.errors.detail.length.length")
     |> validate_length(:email, max: 1000, message: "remote.errors.detail.length.length")

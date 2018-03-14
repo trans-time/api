@@ -8,8 +8,16 @@ defmodule ApiWeb.UserProfileView do
   has_one :user_tag_summary,
     serializer: UserTagSummaryView
 
+  has_one :user,
+    serializer: UserView
+
+  def preload(record_or_records, _conn, include_opts) do
+    Api.Repo.preload(record_or_records, :user)
+  end
+
   def relationships(user, _conn) do
     Enum.reduce([
+      %{key: :user, view: UserView},
       %{key: :user_tag_summary, view: UserTagSummaryView}
     ], %{}, fn(relationship, relationships) ->
       if Ecto.assoc_loaded?(Map.get(user, relationship.key)) do

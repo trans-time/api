@@ -33,13 +33,18 @@ defmodule Api.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:arc, "~> 0.8.0"},
+      {:arc_ecto, "~> 0.7.0"},
       {:argon2_elixir, "~> 1.2"},
       {:comeonin, "~> 4.0"},
       {:cowboy, "~> 1.0"},
+      {:ex_aws, "~> 2.0", override: true},
+      {:ex_aws_s3, "~> 2.0"},
       {:ex_machina, "~> 2.1"},
       {:faker, "~> 0.9", only: :dev},
       {:guardian, "~> 1.0"},
       {:gettext, "~> 0.11"},
+      {:hackney, "~> 1.9"},
       {:indifferent, "~> 0.9"},
       {:ja_resource, "~> 0.3"},
       {:ja_serializer, "~> 0.12"},
@@ -51,6 +56,7 @@ defmodule Api.Mixfile do
       {:phoenix_html, "~> 2.10"},
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:scrivener_ecto, "~> 1.3"},
+      {:sweet_xml, "~> 0.6"},
       {:ueberauth, "~> 0.5"},
       {:ueberauth_identity, "~> 0.2"}
     ]

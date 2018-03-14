@@ -9,13 +9,18 @@ defmodule ApiWeb.Router do
     plug :put_secure_browser_headers
   end
 
-  pipeline :api do
+  pipeline :json_auth do
+    plug :accepts, ["json"]
+    plug ApiWeb.Guardian.AuthPipeline
+  end
+
+  pipeline :json_api do
     plug :accepts, ["json", "json-api"]
     plug JaSerializer.ContentTypeNegotiation
     plug JaSerializer.Deserializer
   end
 
-  pipeline :api_auth do
+  pipeline :json_api_auth do
     plug :accepts, ["json", "json-api"]
     plug ApiWeb.Guardian.AuthPipeline
     plug JaSerializer.ContentTypeNegotiation
@@ -23,7 +28,13 @@ defmodule ApiWeb.Router do
   end
 
   scope "/api/v1", ApiWeb, as: :api do
-    pipe_through :api_auth
+    pipe_through :json_auth
+
+    resources "/avatars", AvatarController, only: [:create]
+  end
+
+  scope "/api/v1", ApiWeb, as: :api do
+    pipe_through :json_api_auth
 
     get "/", PageController, :index
     delete "/logout", AuthController, :delete
@@ -40,7 +51,7 @@ defmodule ApiWeb.Router do
   end
 
   scope "/api/v1/auth", ApiWeb do
-    pipe_through :api
+    pipe_through :json_api
     post "/identity/callback", AuthController, :identity_callback
   end
 end
