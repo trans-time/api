@@ -5,6 +5,10 @@ defmodule Api.Profile.Avatar do
   @versions [:full, :profile, :big_thumb, :thumb]
   @extension_whitelist ~w(.jpg .jpeg .gif .png)
 
+  def get_versions() do
+    @versions
+  end
+
   def transform(:full, _) do
     {:convert, "-strip -thumbnail 1080x1080^ -gravity center -extent 1080x1080 -limit area 10MB -limit disk 100MB"}
   end

@@ -30,6 +30,7 @@ defmodule ApiWeb.Router do
   scope "/api/v1", ApiWeb, as: :api do
     pipe_through :json_auth
 
+    delete "/avatars", AvatarController, :delete
     resources "/avatars", AvatarController, only: [:create]
   end
 
