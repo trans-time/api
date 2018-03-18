@@ -42,7 +42,7 @@ defmodule ApiWeb.Router do
     resources "/blocks", BlockController, only: [:create, :delete]
     resources "/comments", CommentController, only: [:create, :delete, :index, :show, :update]
     resources "/follows", FollowController, only: [:create, :delete, :index, :update]
-    resources "/posts", PostController, only: [:show]
+    resources "/posts", PostController, only: [:create, :delete, :show, :update]
     resources "/reactions", ReactionController, only: [:create, :delete, :index, :update]
     resources "/search-queries", SearchQueryController, only: [:index]
     resources "/timeline-items", TimelineItemController, only: [:index]

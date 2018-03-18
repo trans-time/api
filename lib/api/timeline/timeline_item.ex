@@ -26,7 +26,14 @@ defmodule Api.Timeline.TimelineItem do
   @doc false
   def changeset(%TimelineItem{} = timeline_item, attrs) do
     timeline_item
-    |> cast(attrs, [:comments_locked, :date, :deleted, :deleted_by_moderator, :ignore_flags, :private, :under_moderation])
-    |> validate_required([:comments_locked, :date, :deleted, :deleted_by_moderator, :ignore_flags, :private, :under_moderation])
+    |> cast(attrs, [:date, :private, :user_id])
+    |> validate_required([:date])
+    |> assoc_constraint(:user)
+  end
+
+  @doc false
+  def private_changeset(%TimelineItem{} = timeline_item, attrs) do
+    timeline_item
+    |> cast(attrs, [:deleted])
   end
 end
