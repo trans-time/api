@@ -1,14 +1,13 @@
 defmodule Api.Timeline.Image do
   use Ecto.Schema
+  use Arc.Ecto.Schema
   import Ecto.Changeset
   alias Api.Timeline.{Image, Post}
 
 
   schema "images" do
-    field :filename, :string
-    field :filesize, :integer
     field :order, :integer
-    field :src, :string
+    field :src, Api.Timeline.ImageFile.Type
     belongs_to :post, Post
 
     timestamps()
@@ -17,7 +16,8 @@ defmodule Api.Timeline.Image do
   @doc false
   def changeset(%Image{} = panel, attrs) do
     panel
-    |> cast(attrs, [:filename, :filesize, :order, :src])
-    |> validate_required([:filename, :filesize, :order, :src])
+    |> cast(attrs, [:order, :post_id])
+    |> cast_attachments(attrs, [:src])
+    |> validate_required([:order])
   end
 end

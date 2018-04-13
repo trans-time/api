@@ -3,9 +3,7 @@ defmodule Api.Repo.Migrations.CreateImages do
 
   def change do
     create table(:images) do
-      add :filename, :text
-      add :filesize, :integer
-      add :order, :integer
+      add :order, :integer, null: false
       add :src, :text
       add :post_id, references(:posts), null: false
 

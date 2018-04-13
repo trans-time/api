@@ -32,7 +32,7 @@ defmodule ApiWeb.AvatarController do
           Avatar.delete({Avatar.url({current_user.avatar, current_user}, version), current_user})
         end)
         conn
-        |> put_status(201)
+        |> put_status(204)
         |> put_view(ApiWeb.UserView)
         |> render("show.json-api", data: user)
       {:error, changeset} ->

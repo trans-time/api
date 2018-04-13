@@ -24,6 +24,6 @@ defmodule Api.Timeline.Post do
   def changeset(%Post{} = post, attrs) do
     post
     |> cast(attrs, [:nsfw, :text])
-    |> validate_required([:nsfw, :text])
+    |> validate_required([:nsfw])
   end
 end

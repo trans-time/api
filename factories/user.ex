@@ -28,8 +28,7 @@ defmodule Api.Factory do
 
   def post_factory do
     %Api.Timeline.Post{
-      text: Faker.Lorem.Shakespeare.hamlet,
-      images: build_list(4, :image)
+      text: Faker.Lorem.Shakespeare.hamlet
     }
   end
 

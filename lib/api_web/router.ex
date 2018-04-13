@@ -31,7 +31,10 @@ defmodule ApiWeb.Router do
     pipe_through :json_auth
 
     delete "/avatars", AvatarController, :delete
-    resources "/avatars", AvatarController, only: [:create]
+    post "/avatars", AvatarController, :create
+
+    delete "/images/:image_id/files", ImageFileController, :delete
+    post "/images/:image_id/files", ImageFileController, :create
   end
 
   scope "/api/v1", ApiWeb, as: :api do
@@ -42,6 +45,7 @@ defmodule ApiWeb.Router do
     resources "/blocks", BlockController, only: [:create, :delete]
     resources "/comments", CommentController, only: [:create, :delete, :index, :show, :update]
     resources "/follows", FollowController, only: [:create, :delete, :index, :update]
+    resources "/images", ImageController, only: [:create]
     resources "/posts", PostController, only: [:create, :delete, :show, :update]
     resources "/reactions", ReactionController, only: [:create, :delete, :index, :update]
     resources "/search-queries", SearchQueryController, only: [:index]
