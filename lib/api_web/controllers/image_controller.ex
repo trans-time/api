@@ -14,6 +14,16 @@ defmodule ApiWeb.ImageController do
     handle_request(conn, post.timeline_item.user_id, ImageManager.insert(attributes))
   end
 
+  def handle_delete(conn, record) do
+    post = Api.Repo.one!(Post |> where(id: ^record.post_id) |> preload(:timeline_item))
+    handle_request(conn, post.timeline_item.user_id, ImageManager.delete(record))
+  end
+
+  def handle_update(conn, record, attributes) do
+    post = Api.Repo.one!(Post |> where(id: ^record.post_id) |> preload(:timeline_item))
+    handle_request(conn, post.timeline_item.user_id, ImageManager.update(record, attributes))
+  end
+
   defp handle_request(conn, user_id, multi) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
 

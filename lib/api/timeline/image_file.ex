@@ -19,7 +19,7 @@ defmodule Api.Timeline.ImageFile do
   end
 
   def storage_dir(version, scope) do
-    "uploads/images/files/#{elem(scope, 1).id}"
+    "uploads/images/#{elem(scope, 1).id}"
   end
 
   def filename(version, _), do: version

@@ -33,7 +33,6 @@ defmodule ApiWeb.Router do
     delete "/avatars", AvatarController, :delete
     post "/avatars", AvatarController, :create
 
-    delete "/images/:image_id/files", ImageFileController, :delete
     post "/images/:image_id/files", ImageFileController, :create
   end
 
@@ -45,7 +44,7 @@ defmodule ApiWeb.Router do
     resources "/blocks", BlockController, only: [:create, :delete]
     resources "/comments", CommentController, only: [:create, :delete, :index, :show, :update]
     resources "/follows", FollowController, only: [:create, :delete, :index, :update]
-    resources "/images", ImageController, only: [:create]
+    resources "/images", ImageController, only: [:create, :delete, :update]
     resources "/posts", PostController, only: [:create, :delete, :show, :update]
     resources "/reactions", ReactionController, only: [:create, :delete, :index, :update]
     resources "/search-queries", SearchQueryController, only: [:index]
