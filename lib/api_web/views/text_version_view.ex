@@ -1,9 +1,9 @@
-defmodule ApiWeb.CommentView do
+defmodule ApiWeb.TextVersionView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{CommentView, PostView, ReactionView, UserView}
+  alias ApiWeb.{CommentView, PostView}
 
-  attributes [:inserted_at, :deleted, :text, :comment_count, :moon_count, :star_count, :sun_count]
+  attributes [:inserted_at, :attribute, :text]
 
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)
@@ -11,12 +11,8 @@ defmodule ApiWeb.CommentView do
 
   def relationships(user, _conn) do
     Enum.reduce([
-      %{key: :children, view: CommentView},
-      %{key: :parent, view: CommentView},
-      %{key: :post, view: PostView},
-      %{key: :reactions, view: ReactionView},
-      %{key: :text_versions, view: TextVersionView},
-      %{key: :user, view: UserView}
+      %{key: :comment, view: CommentView},
+      %{key: :post, view: PostView}
     ], %{}, fn(relationship, relationships) ->
       if Ecto.assoc_loaded?(Map.get(user, relationship.key)) do
         Map.put(relationships, relationship.key, %HasMany{

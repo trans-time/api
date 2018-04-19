@@ -1,9 +1,11 @@
 defmodule ApiWeb.UserView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{BlockView, CurrentUserView, FollowView, UserIdentityView, UserProfileView, UserView}
+  alias ApiWeb.{BlockView, CurrentUserView, FollowView, ModerationReportView, UserIdentityView, UserProfileView, UserView}
 
   attributes [:avatar, :display_name, :is_moderator, :pronouns, :username]
+
+  def is_moderator(_a, _b), do: true
 
   has_many :blockeds,
     serializer: BlockView,
@@ -43,6 +45,7 @@ defmodule ApiWeb.UserView do
       %{key: :blockers, view: BlockView},
       %{key: :current_user, view: CurrentUserView},
       %{key: :followeds, view: FollowView},
+      %{key: :indictions, view: ModerationReportView},
       %{key: :user_profile, view: UserProfileView},
       %{key: :user_identities, view: UserIdentityView}
     ], %{}, fn(relationship, relationships) ->

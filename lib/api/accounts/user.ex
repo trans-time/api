@@ -5,6 +5,7 @@ defmodule Api.Accounts.User do
   use Arc.Ecto.Schema
   import Ecto.Changeset
   alias Api.Accounts.{CurrentUser, User}
+  alias Api.Moderation.{Flag, ModerationReport}
   alias Api.Profile.{UserIdentity, UserProfile, UserTagSummary}
   alias Api.Relationship.{Block, Follow}
   alias Api.Timeline.{Reaction, TimelineItem}
@@ -22,6 +23,8 @@ defmodule Api.Accounts.User do
     has_many :blockeds, Block, foreign_key: :blocker_id
     has_many :blockers, Block, foreign_key: :blocked_id
     has_one :current_user, CurrentUser
+    has_many :indictions, ModerationReport, foreign_key: :indicted_id
+    has_many :flags, Flag
     has_many :followeds, Follow, foreign_key: :follower_id
     has_many :followers, Follow, foreign_key: :followed_id
     has_many :reactions, Reaction

@@ -2,6 +2,7 @@ defmodule Api.Timeline.Comment do
   use Ecto.Schema
   import Ecto.Changeset
   alias Api.Accounts.User
+  alias Api.Moderation.TextVersion
   alias Api.Timeline.{Comment, Post, Reaction, TimelineItem}
 
 
@@ -22,6 +23,7 @@ defmodule Api.Timeline.Comment do
     belongs_to :parent, Comment
     has_many :children, Comment, foreign_key: :parent_id
     has_many :reactions, Reaction
+    has_many :text_versions, TextVersion
 
     timestamps()
   end

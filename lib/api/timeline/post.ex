@@ -1,6 +1,7 @@
 defmodule Api.Timeline.Post do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Api.Moderation.TextVersion
   alias Api.Timeline.{Comment, Image, Post, Reaction, TimelineItem}
 
 
@@ -16,6 +17,7 @@ defmodule Api.Timeline.Post do
     has_many :images, Image
     has_many :reactions, Reaction
     has_one :timeline_item, TimelineItem
+    has_many :text_versions, TextVersion
 
     timestamps()
   end
