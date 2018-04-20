@@ -46,7 +46,6 @@ defmodule ApiWeb.Router do
     resources "/flags", FlagController, only: [:create]
     resources "/follows", FollowController, only: [:create, :delete, :index, :update]
     resources "/images", ImageController, only: [:create, :delete, :update]
-    resources "/moderation-reports", ModerationReportController, only: [:index, :show, :update]
     resources "/posts", PostController, only: [:create, :delete, :show, :update]
     resources "/reactions", ReactionController, only: [:create, :delete, :index, :update]
     resources "/search-queries", SearchQueryController, only: [:index]
@@ -54,6 +53,12 @@ defmodule ApiWeb.Router do
     resources "/users", UserController, only: [:create, :index]
     resources "/user-identities", UserIdentityController, only: [:create, :delete, :update]
     resources "/user-profiles", UserProfileController, only: [:update]
+  end
+
+  scope "/api/v1", ApiWeb, as: :api do
+    pipe_through :json_api_auth
+    resources "/moderation-reports", ModerationReportController, only: [:index, :show]
+    resources "/verdicts", VerdictController, only: [:create]
   end
 
   scope "/api/v1/auth", ApiWeb do

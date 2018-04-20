@@ -1,9 +1,9 @@
-defmodule ApiWeb.ModerationReportView do
+defmodule ApiWeb.VerdictView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{CommentView, PostView, FlagView, UserView, VerdictView}
+  alias ApiWeb.{ModerationReportView, UserView}
 
-  attributes [:inserted_at, :was_violation, :resolved]
+  attributes [:inserted_at, :moderator_comment, :was_violation, :action_banned_user, :action_deleted_flaggable, :action_ignore_flags, :action_lock_comments, :ban_user_until, :lock_comments_until]
 
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)
@@ -11,11 +11,8 @@ defmodule ApiWeb.ModerationReportView do
 
   def relationships(flag, _conn) do
     Enum.reduce([
-      %{key: :comment, view: CommentView},
-      %{key: :post, view: PostView},
-      %{key: :indicted, view: UserView},
-      %{key: :verdicts, view: VerdictView},
-      %{key: :flags, view: FlagView}
+      %{key: :moderator, view: UserView},
+      %{key: :moderation_report, view: ModerationReportView}
     ], %{}, fn(relationship, relationships) ->
       if Ecto.assoc_loaded?(Map.get(flag, relationship.key)) do
         Map.put(relationships, relationship.key, %HasMany{

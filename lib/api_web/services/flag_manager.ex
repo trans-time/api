@@ -18,13 +18,16 @@ defmodule ApiWeb.Services.FlagManager do
   end
 
   def find_or_create_moderation_report(attributes) do
-    find_moderation_report(attributes) || create_moderation_report(attributes)
+    moderation_report = find_moderation_report(attributes)
+
+    if (moderation_report == nil), do: create_moderation_report(attributes), else: {:ok, moderation_report}
   end
 
   def find_moderation_report(attributes) do
     cond do
-      attributes["post_id"] !== nil -> {:ok, Api.Repo.one(ModerationReport |> where(post_id: ^attributes["post_id"], resolved: ^false))}
-      attributes["comment_id"] !== nil -> {:ok, Api.Repo.one(ModerationReport |> where(comment_id: ^attributes["comment_id"], resolved: ^false))}
+      attributes["post_id"] !== nil -> Api.Repo.one(ModerationReport |> where(post_id: ^attributes["post_id"], resolved: ^false))
+      attributes["comment_id"] !== nil -> Api.Repo.one(ModerationReport |> where(comment_id: ^attributes["comment_id"], resolved: ^false))
+      true -> nil
     end
   end
 
