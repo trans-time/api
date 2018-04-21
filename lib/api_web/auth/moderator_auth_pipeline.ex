@@ -19,11 +19,12 @@ defmodule ApiWeb.Plugs.IsModerator do
 end
 
 defmodule ApiWeb.Guardian.ModeratorAuthPipeline do
-  use Guardian.Plug.Pipeline, otp_app: :my_app,
+  use Guardian.Plug.Pipeline, otp_app: :api,
                               module: Api.Accounts.Guardian,
                               error_handler: ApiWeb.Guardian.AuthErrorHandler
 
   plug Guardian.Plug.VerifyHeader, realm: "Bearer"
   plug Guardian.Plug.LoadResource, allow_blank: true
+  plug ApiWeb.Plugs.IsNotBanned
   # plug ApiWeb.Plugs.IsModerator
 end

@@ -15,6 +15,7 @@ defmodule Api.Accounts.User do
     field :avatar, Api.Profile.Avatar.Type
     field :email, :string
     field :display_name, :string
+    field :is_banned, :boolean, default: false
     field :is_moderator, :boolean, default: false
     field :password, :string
     field :pronouns, :string
@@ -64,6 +65,12 @@ defmodule Api.Accounts.User do
     |> unique_constraint(:email)
     |> unique_constraint(:username)
     |> put_pass_hash()
+  end
+
+  @doc false
+  def private_changeset(%User{} = user, attrs) do
+    user
+    |> cast(attrs, [:is_banned])
   end
 
   defp put_pass_hash(%Ecto.Changeset{valid?: true, changes: %{password: password}} = changeset) do

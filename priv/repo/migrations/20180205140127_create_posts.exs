@@ -9,6 +9,7 @@ defmodule Api.Repo.Migrations.CreatePosts do
       add :moon_count, :integer, default: 0, null: false
       add :star_count, :integer, default: 0, null: false
       add :sun_count, :integer, default: 0, null: false
+      add :comments_are_locked, :boolean, null: false, default: false
 
       timestamps()
     end
@@ -18,5 +19,7 @@ defmodule Api.Repo.Migrations.CreatePosts do
     end
     create constraint(:timeline_items, :only_one_timelineable, check: "count_not_nulls(post_id) = 1")
     create index(:timeline_items, [:post_id], using: :hash)
+    
+    create index(:posts, [:comments_are_locked], using: :hash)
   end
 end

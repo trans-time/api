@@ -55,8 +55,10 @@ defmodule Api.Mixfile do
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 2.10"},
       {:phoenix_live_reload, "~> 1.0", only: :dev},
+      {:quantum, "~> 2.2"},
       {:scrivener_ecto, "~> 1.3"},
       {:sweet_xml, "~> 0.6"},
+      {:timex, "~> 3.0"},
       {:ueberauth, "~> 0.5"},
       {:ueberauth_identity, "~> 0.2"}
     ]

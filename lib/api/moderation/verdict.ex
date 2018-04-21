@@ -14,8 +14,8 @@ defmodule Api.Moderation.Verdict do
     field :action_deleted_flaggable, :boolean, default: false
     field :action_ignore_flags, :boolean, default: false
     field :action_lock_comments, :boolean, default: false
-    field :ban_user_until, :date
-    field :lock_comments_until, :date
+    field :ban_user_until, :utc_datetime
+    field :lock_comments_until, :utc_datetime
 
     belongs_to :moderation_report, ModerationReport
     belongs_to :moderator, User, foreign_key: :moderator_id

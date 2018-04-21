@@ -34,6 +34,6 @@ defmodule Api.Timeline.TimelineItem do
   @doc false
   def private_changeset(%TimelineItem{} = timeline_item, attrs) do
     timeline_item
-    |> cast(attrs, [:deleted])
+    |> cast(attrs, [:comments_locked, :deleted])
   end
 end

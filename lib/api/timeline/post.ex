@@ -12,6 +12,7 @@ defmodule Api.Timeline.Post do
     field :star_count, :integer, default: 0
     field :sun_count, :integer, default: 0
     field :comment_count, :integer, default: 0
+    field :comments_are_locked, :boolean, default: false
 
     has_many :comments, Comment
     has_many :images, Image

@@ -51,6 +51,13 @@ config :api, Api.Accounts.Guardian,
   issuer: "api",
   secret_key: "iZYJkEAaViic3E24ihM6n587JYXBkXdYSKHZkxfe2s9HoyZ0GNW9p4u7nJv6IdtN"
 
+config :api, Api.Scheduler,
+  jobs: [
+    # Runs every midnight:
+    {"@daily", fn -> Api.CronJobs.UnbanUsers.call() end},
+    {"@daily", fn -> Api.CronJobs.UnlockTimelineItemComments.call() end}
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env}.exs"
