@@ -15,7 +15,7 @@ defmodule ApiWeb.CommentController do
   end
 
   def handle_delete(conn, record) do
-    handle_request(conn, record.user_id, CommentManager.delete(record))
+    handle_request(conn, record.user_id, CommentManager.delete(record, %{deleted_by_user: true}))
   end
 
   def handle_update(conn, record, attributes) do

@@ -55,7 +55,7 @@ config :api, Api.Scheduler,
   jobs: [
     # Runs every midnight:
     {"@daily", fn -> Api.CronJobs.UnbanUsers.call() end},
-    {"@daily", fn -> Api.CronJobs.UnlockTimelineItemComments.call() end}
+    {"@daily", fn -> Api.CronJobs.UnlockComments.call() end}
   ]
 
 # Import environment specific config. This must remain at the bottom

@@ -2,13 +2,14 @@ defmodule Api.Timeline.Comment do
   use Ecto.Schema
   import Ecto.Changeset
   alias Api.Accounts.User
-  alias Api.Moderation.TextVersion
+  alias Api.Moderation.{ModerationReport, TextVersion}
   alias Api.Timeline.{Comment, Post, Reaction, TimelineItem}
 
 
   schema "comments" do
     field :deleted, :boolean, default: false
     field :deleted_by_moderator, :boolean, default: false
+    field :deleted_by_user, :boolean, default: false
     field :deleted_with_parent, :boolean, default: false
     field :ignore_flags, :boolean, default: false
     field :text, :string
@@ -22,6 +23,7 @@ defmodule Api.Timeline.Comment do
     belongs_to :post, Post
     belongs_to :parent, Comment
     has_many :children, Comment, foreign_key: :parent_id
+    has_many :moderation_reports, ModerationReport
     has_many :reactions, Reaction
     has_many :text_versions, TextVersion
 
@@ -42,6 +44,6 @@ defmodule Api.Timeline.Comment do
   @doc false
   def private_changeset(%Comment{} = comment, attrs) do
     comment
-    |> cast(attrs, [:comment_count, :deleted])
+    |> cast(attrs, [:comment_count, :deleted, :deleted_by_moderator, :deleted_by_user, :deleted_with_parent, :ignore_flags, :under_moderation])
   end
 end

@@ -14,6 +14,10 @@ defmodule ApiWeb.ModerationReportController do
     order_by(query, [{^direction, :resolved}])
   end
 
+  def filter(_conn, query, "should_ignore", should_ignore) do
+    where(query, should_ignore: ^should_ignore)
+  end
+
   def handle_index_query(%{query_params: qp}, query) do
     repo().paginate(query, qp)
   end

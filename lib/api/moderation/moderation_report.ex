@@ -12,6 +12,7 @@ defmodule Api.Moderation.ModerationReport do
     field :moderator_comment, :string
     field :was_violation, :boolean, default: false
     field :resolved, :boolean, default: false
+    field :should_ignore, :boolean, default: false
 
     belongs_to :comment, Comment
     belongs_to :post, Post

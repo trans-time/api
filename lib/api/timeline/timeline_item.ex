@@ -6,11 +6,8 @@ defmodule Api.Timeline.TimelineItem do
 
 
   schema "timeline_items" do
-    field :comments_locked, :boolean, default: false
     field :date, :utc_datetime
     field :deleted, :boolean, default: false
-    field :deleted_by_moderator, :boolean, default: false
-    field :ignore_flags, :boolean, default: false
     field :private, :boolean, default: false
     field :under_moderation, :boolean, default: false
 
@@ -34,6 +31,6 @@ defmodule Api.Timeline.TimelineItem do
   @doc false
   def private_changeset(%TimelineItem{} = timeline_item, attrs) do
     timeline_item
-    |> cast(attrs, [:comments_locked, :deleted])
+    |> cast(attrs, [:deleted, :under_moderation])
   end
 end

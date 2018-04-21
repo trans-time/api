@@ -5,6 +5,7 @@ defmodule Api.Repo.Migrations.CreateModerationReports do
     create table(:moderation_reports) do
       add :moderator_comment, :text
       add :resolved, :boolean, default: false, null: false
+      add :should_ignore, :boolean, default: false, null: false
       add :was_violation, :boolean, default: false, null: false
       add :comment_id, references(:comments, on_delete: :nothing)
       add :post_id, references(:posts, on_delete: :nothing)
@@ -16,6 +17,7 @@ defmodule Api.Repo.Migrations.CreateModerationReports do
 
     create index(:moderation_reports, [:comment_id])
     create index(:moderation_reports, [:resolved])
+    create index(:moderation_reports, [:should_ignore])
     create index(:moderation_reports, [:was_violation])
     create index(:moderation_reports, [:post_id])
     create index(:moderation_reports, [:indicted_id])
