@@ -39,11 +39,21 @@ defmodule Api.Timeline.Comment do
     |> assoc_constraint(:parent)
     |> assoc_constraint(:post)
     |> assoc_constraint(:user)
+    |> validate_that_comments_are_unlocked(:post_id)
   end
 
   @doc false
   def private_changeset(%Comment{} = comment, attrs) do
     comment
     |> cast(attrs, [:comment_count, :deleted, :deleted_by_moderator, :deleted_by_user, :deleted_with_parent, :ignore_flags, :under_moderation])
+  end
+
+  def validate_that_comments_are_unlocked(changeset, field, options \\ []) do
+    validate_change(changeset, field, fn _, assoc_id ->
+      case Api.Repo.get(Post, assoc_id).comments_are_locked do
+        true -> [{field, options[:message] || "remote.errors.detail.forbidden.commentsAreLocked"}]
+        false -> []
+      end
+    end)
   end
 end
