@@ -66,6 +66,12 @@ defmodule ApiWeb.Services.Libra do
       # trans masculine
       cuntboy: ~r/c+u+n+t+b+[o0]+[yi1]+/,
       she_he: ~r/[s$]+h+[e3]+[-_]+h+[e3]+/,
+      # weight
+      fat: ~r/f+[a@]+t+/,
+      lard: ~r/[l1]+[a@]+r+d/,
+      plus_size: ~r/p+[l1]+u+[s$]+[\s-_]*[s$]+[i1]+z+[e3]+/,
+      porker: ~r/p+[o0]+r+k+[e3]+r+/,
+      obese: ~r/[o0]+b+[e3]+[s$]+([e3]+|([1]+t+y+))/,
     }
   }
 
