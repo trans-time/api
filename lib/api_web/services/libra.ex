@@ -1,4 +1,6 @@
 defmodule ApiWeb.Services.Libra do
+  use Timex
+
   alias ApiWeb.Services.FlagManager
   alias Ecto.Multi
 
@@ -81,7 +83,14 @@ defmodule ApiWeb.Services.Libra do
       }
     end)
 
-    if (Enum.empty?(infractions.categories)) do
+    if (Timex.before?(Timex.shift(Timex.now, days: -3), get_flaggable_user(flaggable).inserted_at)) do
+      infractions = %{
+        categories: infractions.categories,
+        quotes: ["account under 3 days old"] ++ infractions.quotes
+      }
+    end
+
+    if (Enum.empty?(infractions.quotes)) do
       {:ok, flaggable}
     else
       Api.Repo.transaction(Multi.append(
@@ -114,5 +123,13 @@ defmodule ApiWeb.Services.Libra do
     Enum.reduce(infractions.categories, %{}, fn (category, accumulator) ->
       Map.put(accumulator, category, true)
     end)
+  end
+
+  defp get_flaggable_user(flaggable) do
+    if (flaggable.__struct__ == Api.Timeline.Post) do
+      Api.Repo.preload(flaggable, timeline_item: [:user]).timeline_item.user
+    else
+      Api.Repo.preload(flaggable, :user).user
+    end
   end
 end
