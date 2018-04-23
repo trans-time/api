@@ -1,6 +1,7 @@
 import Ecto.Query
 
 defmodule ApiWeb.Services.CommentManager do
+  alias Api.Moderation.TextVersion
   alias Api.Timeline.{Comment, Post}
   alias ApiWeb.Services.Libra
   alias Ecto.Multi
@@ -42,10 +43,16 @@ defmodule ApiWeb.Services.CommentManager do
   end
 
   def update(record, attributes) do
-    changeset = Comment.changeset(record, attributes)
+    comment_changeset = Comment.changeset(record, attributes)
+    text_version_changeset = TextVersion.changeset(%TextVersion{}, %{
+      text: record.text,
+      attribute: "text",
+      comment_id: record.id
+    })
 
     Multi.new
-    |> Multi.update(:comment, changeset)
+    |> Multi.insert(:text_version, text_version_changeset)
+    |> Multi.update(:comment, comment_changeset)
     |> Multi.run(:libra, fn %{comment: comment} ->
       Libra.review(comment, comment.text)
     end)

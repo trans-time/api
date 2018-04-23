@@ -1,7 +1,7 @@
 defmodule ApiWeb.CommentView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{CommentView, PostView, ReactionView, UserView}
+  alias ApiWeb.{CommentView, PostView, ReactionView, TextVersionView, UserView}
 
   attributes [:inserted_at, :deleted, :text, :comment_count, :moon_count, :star_count, :sun_count]
 

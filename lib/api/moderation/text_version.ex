@@ -20,7 +20,7 @@ defmodule Api.Moderation.TextVersion do
   @doc false
   def changeset(%TextVersion{} = user, attrs) do
     user
-    |> cast(attrs, [:text, :attribute, :comment_id, :post_id, :user_id])
+    |> cast(attrs, [:text, :attribute, :comment_id, :post_id])
     |> validate_required([:text, :attribute])
   end
 end

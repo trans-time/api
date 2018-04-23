@@ -1,6 +1,7 @@
 import Ecto.Query
 
 defmodule ApiWeb.Services.PostManager do
+  alias Api.Moderation.TextVersion
   alias Api.Profile.UserProfile
   alias Api.Timeline.{Post, TimelineItem}
   alias ApiWeb.Services.Libra
@@ -46,8 +47,14 @@ defmodule ApiWeb.Services.PostManager do
 
   def update(record, attributes) do
     changeset = Post.changeset(record, attributes)
+    text_version_changeset = TextVersion.changeset(%TextVersion{}, %{
+      text: record.text,
+      attribute: "text",
+      post_id: record.id
+    })
 
     Multi.new
+    |> Multi.insert(:text_version, text_version_changeset)
     |> Multi.update(:post, changeset)
     |> Multi.run(:libra, fn %{post: post} ->
       Libra.review(post, post.text)
