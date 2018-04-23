@@ -2,6 +2,7 @@ import Ecto.Query
 
 defmodule ApiWeb.Services.CommentManager do
   alias Api.Timeline.{Comment, Post}
+  alias ApiWeb.Services.Libra
   alias Ecto.Multi
 
   def delete(record, attributes) do
@@ -35,6 +36,9 @@ defmodule ApiWeb.Services.CommentManager do
     |> Multi.update_all(:commentable, get_commentable(attributes), inc: [comment_count: 1])
     |> Multi.update_all(:parent, Comment |> where(id: ^attributes["parent_id"]), inc: [comment_count: 1])
     |> Multi.insert(:comment, changeset)
+    |> Multi.run(:libra, fn %{comment: comment} ->
+      Libra.review(comment, comment.text)
+    end)
   end
 
   def update(record, attributes) do
@@ -42,6 +46,9 @@ defmodule ApiWeb.Services.CommentManager do
 
     Multi.new
     |> Multi.update(:comment, changeset)
+    |> Multi.run(:libra, fn %{comment: comment} ->
+      Libra.review(comment, comment.text)
+    end)
   end
 
   defp get_commentable(comment) do

@@ -3,7 +3,7 @@ defmodule ApiWeb.PostView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{ImageView, ReactionView, TextVersionView, TimelineItemView}
 
-  attributes [:nsfw, :text, :comment_count, :moon_count, :star_count, :sun_count]
+  attributes [:nsfw, :text, :comments_are_locked, :comment_count, :moon_count, :star_count, :sun_count]
 
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)

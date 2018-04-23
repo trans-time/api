@@ -3,6 +3,7 @@ import Ecto.Query
 defmodule ApiWeb.Services.PostManager do
   alias Api.Profile.UserProfile
   alias Api.Timeline.{Post, TimelineItem}
+  alias ApiWeb.Services.Libra
   alias Ecto.Multi
 
   def delete(record, timeline_item, attributes) do
@@ -38,6 +39,9 @@ defmodule ApiWeb.Services.PostManager do
     |> Multi.run(:timeline_item, fn %{post: post} ->
       Api.Repo.insert_or_update(Ecto.Changeset.change(timeline_item_changeset, %{post_id: post.id}))
     end)
+    |> Multi.run(:libra, fn %{post: post} ->
+      Libra.review(post, post.text)
+    end)
   end
 
   def update(record, attributes) do
@@ -45,5 +49,8 @@ defmodule ApiWeb.Services.PostManager do
 
     Multi.new
     |> Multi.update(:post, changeset)
+    |> Multi.run(:libra, fn %{post: post} ->
+      Libra.review(post, post.text)
+    end)
   end
 end

@@ -13,6 +13,7 @@ import Api.Factory
 import Ecto.Query
 tags = insert_list(6, :tag)
 celeste = Kernel.elem(Api.Repo.transaction(ApiWeb.Services.UserManager.insert_user(params_for(:user, %{username: "celeste", email: "celeste@trans.time"}))), 1).user
+Api.Repo.transaction(ApiWeb.Services.UserManager.insert_user(params_for(:user, %{username: "libra", email: "libra@trans.time"})))
 other_users = Enum.map(1..5, fn(_i) ->
   Kernel.elem(Api.Repo.transaction(ApiWeb.Services.UserManager.insert_user(params_for(:user))), 1).user
 end)

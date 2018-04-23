@@ -4,11 +4,9 @@ defmodule Api.Repo.Migrations.CreateFlags do
   def change do
     create table(:flags) do
       add :text, :text
-      add :bigotry, :boolean, default: false, null: false
       add :bot, :boolean, default: false, null: false
-      add :harassment, :boolean, default: false, null: false
-      add :sleaze, :boolean, default: false, null: false
-      add :threat, :boolean, default: false, null: false
+      add :illicit_activity, :boolean, default: false, null: false
+      add :trolling, :boolean, default: false, null: false
       add :unconsenting_image, :boolean, default: false, null: false
       add :unmarked_NSFW, :boolean, default: false, null: false
       add :comment_id, references(:comments, on_delete: :nothing)

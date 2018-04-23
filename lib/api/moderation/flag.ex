@@ -10,11 +10,9 @@ defmodule Api.Moderation.Flag do
 
   schema "flags" do
     field :text, :string
-    field :bigotry, :boolean, default: false
+    field :trolling, :boolean, default: false
     field :bot, :boolean, default: false
-    field :harassment, :boolean, default: false
-    field :sleaze, :boolean, default: false
-    field :threat, :boolean, default: false
+    field :illicit_activity, :boolean, default: false
     field :unconsenting_image, :boolean, default: false
     field :unmarked_NSFW, :boolean, default: false
 
@@ -29,7 +27,7 @@ defmodule Api.Moderation.Flag do
   @doc false
   def changeset(%Flag{} = user, attrs) do
     user
-    |> cast(attrs, [:text, :bigotry, :bot, :harassment, :sleaze, :threat, :unconsenting_image, :unmarked_NSFW, :comment_id, :post_id, :user_id, :moderation_report_id])
-    |> validate_required([:bigotry, :bot, :harassment, :sleaze, :threat, :unconsenting_image, :unmarked_NSFW])
+    |> cast(attrs, [:text, :bot, :illicit_activity, :trolling, :unconsenting_image, :unmarked_NSFW, :comment_id, :post_id, :user_id, :moderation_report_id])
+    |> validate_required([:bot, :illicit_activity, :trolling, :unconsenting_image, :unmarked_NSFW])
   end
 end

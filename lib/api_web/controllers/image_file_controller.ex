@@ -12,7 +12,6 @@ defmodule ApiWeb.ImageFileController do
       |> preload([i, p, ti], [post: {p, timeline_item: ti}])
     )
     handle_request(conn, image.post.timeline_item.user_id, fn  ->
-      IO.inspect(params["file"])
       changeset = Image.changeset(image, %{"src" => params["file"]})
 
       case Api.Repo.update(changeset) do
