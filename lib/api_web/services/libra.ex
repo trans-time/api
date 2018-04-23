@@ -67,7 +67,7 @@ defmodule ApiWeb.Services.Libra do
     }
   }
 
-  def review(record, text) do
+  def review(flaggable, text) do
     infractions = Enum.reduce(Map.keys(@infractions), %{categories: [], quotes: []}, fn (category, infractions) ->
       quotes = Enum.reduce(Map.keys(@infractions[category]), [], fn (term, accumulator) ->
         matches = Regex.scan(@infractions[category][term], text)
@@ -82,28 +82,31 @@ defmodule ApiWeb.Services.Libra do
     end)
 
     if (Enum.empty?(infractions.categories)) do
-      {:ok, record}
+      {:ok, flaggable}
     else
       Api.Repo.transaction(Multi.append(
-        mark_record_as_under_moderation(record),
-        insert_flag(infractions, record)
+        insert_flag(infractions, flaggable),
+        mark_flaggable_as_under_moderation(flaggable)
       ))
     end
   end
 
-  defp mark_record_as_under_moderation(record) do
+  defp mark_flaggable_as_under_moderation(flaggable) do
     Multi.new
-    |> Multi.update(:record, record.__struct__.private_changeset(record, %{
+    |> Multi.update(:flaggable, flaggable.__struct__.private_changeset(flaggable, %{
       under_moderation: true
     }))
+    |> Multi.run(:maybe_timeline_item, fn %{} ->
+      FlagManager.put_under_moderation(flaggable)
+    end)
   end
 
-  defp insert_flag(infractions, record) do
+  defp insert_flag(infractions, flaggable) do
     FlagManager.insert(Map.merge(%{
       "text" => "Auto-moderated for: #{Enum.join(Enum.uniq(infractions.quotes), ", ")}",
       "user_id" => Api.Repo.get_by!(Api.Accounts.User, username: "libra").id,
-      "post_id" => (if record.__struct__ == Api.Timeline.Post, do: record.id, else: nil),
-      "comment_id" => (if record.__struct__ == Api.Timeline.Comment, do: record.id, else: nil)
+      "post_id" => (if flaggable.__struct__ == Api.Timeline.Post, do: flaggable.id, else: nil),
+      "comment_id" => (if flaggable.__struct__ == Api.Timeline.Comment, do: flaggable.id, else: nil)
     }, gather_infractions(infractions)))
   end
 
