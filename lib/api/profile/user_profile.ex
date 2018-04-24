@@ -1,5 +1,5 @@
 defmodule Api.Profile.UserProfile do
-  use Ecto.Schema
+  use Api.Schema
   import Ecto.Changeset
   alias Api.Profile.{UserProfile, UserTagSummary}
   alias Api.Accounts.User

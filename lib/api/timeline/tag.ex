@@ -1,5 +1,5 @@
 defmodule Api.Timeline.Tag do
-  use Ecto.Schema
+  use Api.Schema
   import Ecto.Changeset
   alias Api.Timeline.Tag
   alias Api.Profile.UserTagSummary

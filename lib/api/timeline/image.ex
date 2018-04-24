@@ -1,5 +1,5 @@
 defmodule Api.Timeline.Image do
-  use Ecto.Schema
+  use Api.Schema
   use Arc.Ecto.Schema
   import Ecto.Changeset
   alias Api.Timeline.{Image, Post}

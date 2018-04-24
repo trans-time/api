@@ -1,7 +1,7 @@
 import Ecto.Query
 
 defmodule Api.Accounts.CurrentUser do
-  use Ecto.Schema
+  use Api.Schema
   import Ecto.Changeset
   alias Api.Accounts.{CurrentUser, User}
 

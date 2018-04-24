@@ -1,7 +1,7 @@
 import Ecto.Query
 
 defmodule Api.Moderation.ModerationReport do
-  use Ecto.Schema
+  use Api.Schema
   import Ecto.Changeset
   alias Api.Accounts.User
   alias Api.Moderation.{Flag, ModerationReport, Verdict}

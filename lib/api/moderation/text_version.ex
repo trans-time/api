@@ -1,7 +1,7 @@
 import Ecto.Query
 
 defmodule Api.Moderation.TextVersion do
-  use Ecto.Schema
+  use Api.Schema
   import Ecto.Changeset
   alias Api.Moderation.TextVersion
   alias Api.Timeline.{Comment, Post}

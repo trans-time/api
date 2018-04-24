@@ -1,5 +1,5 @@
 defmodule Api.Relationship.Block do
-  use Ecto.Schema
+  use Api.Schema
   import Ecto.Changeset
   alias Api.Accounts.User
   alias Api.Relationship.Block

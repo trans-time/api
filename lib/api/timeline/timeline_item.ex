@@ -1,5 +1,5 @@
 defmodule Api.Timeline.TimelineItem do
-  use Ecto.Schema
+  use Api.Schema
   import Ecto.Changeset
   alias Api.Timeline.{Post, Tag, TimelineItem}
   alias Api.Accounts.User

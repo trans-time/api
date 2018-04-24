@@ -1,5 +1,5 @@
 defmodule Api.Timeline.Post do
-  use Ecto.Schema
+  use Api.Schema
   import Ecto.Changeset
   alias Api.Moderation.{ModerationReport, TextVersion}
   alias Api.Timeline.{Comment, Image, Post, Reaction, TimelineItem}
