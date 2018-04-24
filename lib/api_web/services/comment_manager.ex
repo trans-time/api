@@ -51,8 +51,10 @@ defmodule ApiWeb.Services.CommentManager do
     })
 
     Multi.new
-    |> Multi.insert(:text_version, text_version_changeset)
     |> Multi.update(:comment, comment_changeset)
+    |> Multi.run(:text_version, fn %{} ->
+      if (Map.has_key?(comment_changeset.changes, :text)), do: Api.Repo.insert(text_version_changeset), else: {:ok, record}
+    end)
     |> Multi.run(:libra, fn %{comment: comment} ->
       Libra.review(comment, comment.text)
     end)

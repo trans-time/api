@@ -46,7 +46,7 @@ defmodule ApiWeb.Services.PostManager do
   end
 
   def update(record, attributes) do
-    changeset = Post.changeset(record, attributes)
+    post_changeset = Post.changeset(record, attributes)
     text_version_changeset = TextVersion.changeset(%TextVersion{}, %{
       text: record.text,
       attribute: "text",
@@ -54,8 +54,10 @@ defmodule ApiWeb.Services.PostManager do
     })
 
     Multi.new
-    |> Multi.insert(:text_version, text_version_changeset)
-    |> Multi.update(:post, changeset)
+    |> Multi.update(:post, post_changeset)
+    |> Multi.run(:text_version, fn %{} ->
+      if (Map.has_key?(post_changeset.changes, :text)), do: Api.Repo.insert(text_version_changeset), else: {:ok, record}
+    end)
     |> Multi.run(:libra, fn %{post: post} ->
       Libra.review(post, post.text)
     end)
