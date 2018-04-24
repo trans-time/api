@@ -47,6 +47,7 @@ defmodule ApiWeb.Services.PostManager do
 
   def update(record, attributes) do
     post_changeset = Post.changeset(record, attributes)
+    post_private_changeset = Post.private_changeset(record, %{ignore_flags: false})
     text_version_changeset = TextVersion.changeset(%TextVersion{}, %{
       text: record.text,
       attribute: "text",
@@ -54,7 +55,7 @@ defmodule ApiWeb.Services.PostManager do
     })
 
     Multi.new
-    |> Multi.update(:post, post_changeset)
+    |> Multi.update(:post, Ecto.Changeset.merge(post_changeset, post_private_changeset))
     |> Multi.run(:text_version, fn %{} ->
       if (Map.has_key?(post_changeset.changes, :text)), do: Api.Repo.insert(text_version_changeset), else: {:ok, record}
     end)

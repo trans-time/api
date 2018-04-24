@@ -44,6 +44,7 @@ defmodule ApiWeb.Services.CommentManager do
 
   def update(record, attributes) do
     comment_changeset = Comment.changeset(record, attributes)
+    comment_private_changeset = Comment.private_changeset(record, %{ignore_flags: false})
     text_version_changeset = TextVersion.changeset(%TextVersion{}, %{
       text: record.text,
       attribute: "text",
@@ -51,7 +52,7 @@ defmodule ApiWeb.Services.CommentManager do
     })
 
     Multi.new
-    |> Multi.update(:comment, comment_changeset)
+    |> Multi.update(:comment, Ecto.Changeset.merge(comment_changeset, comment_private_changeset))
     |> Multi.run(:text_version, fn %{} ->
       if (Map.has_key?(comment_changeset.changes, :text)), do: Api.Repo.insert(text_version_changeset), else: {:ok, record}
     end)
