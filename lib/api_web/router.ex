@@ -50,7 +50,7 @@ defmodule ApiWeb.Router do
     delete "/logout", AuthController, :delete
     resources "/blocks", BlockController, only: [:create, :delete]
     resources "/comments", CommentController, only: [:create, :delete, :index, :show, :update]
-    resources "/flags", FlagController, only: [:create]
+    resources "/flags", FlagController, only: [:create, :index, :show]
     resources "/follows", FollowController, only: [:create, :delete, :index, :update]
     resources "/images", ImageController, only: [:create, :delete, :update]
     resources "/posts", PostController, only: [:create, :delete, :show, :update]
