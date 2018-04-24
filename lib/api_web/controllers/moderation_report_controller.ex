@@ -18,6 +18,11 @@ defmodule ApiWeb.ModerationReportController do
     where(query, should_ignore: ^should_ignore)
   end
 
+  def filter(conn, query, "indicted_id", indicted_id) do
+    current_user_id = Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1"
+    if current_user_id == indicted_id, do: where(query, indicted_id: ^indicted_id, was_violation: ^true), else: query
+  end
+
   def handle_index_query(%{query_params: qp}, query) do
     repo().paginate(query, qp)
   end

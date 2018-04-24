@@ -3,7 +3,7 @@ defmodule ApiWeb.TimelineItemView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{PostView, TagView, UserView}
 
-  attributes [:comments_locked, :date, :deleted, :private]
+  attributes [:date, :deleted, :private]
 
   has_one :user,
     serializer: UserView,
