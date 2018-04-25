@@ -18,5 +18,6 @@ defmodule Api.Timeline.Tag do
     |> cast(attrs, [:name])
     |> validate_required([:name])
     |> unique_constraint(:name)
+    |> validate_format(:name, ~r/^[a-zA-Z0-9_]*$/, message: "remote.errors.detail.format.alphanumericUnderscore")
   end
 end

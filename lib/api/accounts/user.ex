@@ -62,6 +62,7 @@ defmodule Api.Accounts.User do
     |> validate_length(:password, max: 1000, message: "remote.errors.detail.length.length")
     |> validate_length(:pronouns, max: 64, message: "remote.errors.detail.length.length")
     |> validate_length(:username, max: 64, message: "remote.errors.detail.length.length")
+    |> validate_format(:username, ~r/^[a-zA-Z0-9_]*$/, message: "remote.errors.detail.format.alphanumericUnderscore")
     |> unique_constraint(:email)
     |> unique_constraint(:username)
     |> put_pass_hash()
