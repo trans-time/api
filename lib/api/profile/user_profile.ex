@@ -11,7 +11,6 @@ defmodule Api.Profile.UserProfile do
     field :website, :string
 
     belongs_to :user, User
-    has_one :user_tag_summary, UserTagSummary
 
     timestamps()
   end

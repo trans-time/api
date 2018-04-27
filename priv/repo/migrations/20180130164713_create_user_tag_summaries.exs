@@ -3,12 +3,14 @@ defmodule Api.Repo.Migrations.CreateUserTagSummaries do
 
   def change do
     create table(:user_tag_summaries) do
-      add :summary, :map
-      add :user_profile_id, references(:user_profiles), null: false
+      add :private_timeline_item_ids, {:array, :integer}, null: false
+      add :author_id, references(:users), null: false
+      add :subject_id, references(:users), null: false
 
       timestamps()
     end
 
-    create unique_index(:user_tag_summaries, [:user_profile_id])
+    create unique_index(:user_tag_summaries, [:subject_id, :author_id])
+    create index(:user_tag_summaries, [:author_id], type: :hash)
   end
 end

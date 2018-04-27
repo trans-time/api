@@ -8,7 +8,7 @@ defmodule ApiWeb.PostController do
   def model, do: Api.Timeline.Post
 
   def handle_create(conn, attributes) do
-    handle_request(conn, String.to_integer(attributes["user_id"]), PostManager.insert(attributes))
+    handle_request(conn, String.to_integer(attributes["user_id"]), PostManager.insert(attributes, Api.Accounts.Guardian.Plug.current_resource(conn)))
   end
 
   def handle_delete(conn, record) do

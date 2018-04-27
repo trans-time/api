@@ -4,7 +4,7 @@ defmodule ApiWeb.Plugs.IsNotBanned do
   def init(default), do: default
 
   def call(conn, _default) do
-    current_user = Api.Repo.get(Api.Accounts.User, String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1"))
+    current_user = Api.Accounts.Guardian.Plug.current_resource(conn)
 
     if (!current_user || !current_user.is_banned) do
       conn

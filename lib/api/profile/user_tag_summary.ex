@@ -2,15 +2,16 @@ defmodule Api.Profile.UserTagSummary do
   use Api.Schema
   import Ecto.Changeset
   alias Api.Accounts.User
-  alias Api.Profile.{UserProfile, UserTagSummary}
-  alias Api.Timeline.Tag
+  alias Api.Profile.{UserTagSummary, UserTagSummaryTag, UserTagSummaryUser}
 
 
   schema "user_tag_summaries" do
-    field :summary, :map
-    many_to_many :users, User, join_through: "user_tag_summaries_users"
-    many_to_many :tags, Tag, join_through: "user_tag_summaries_tags"
-    belongs_to :user_profile, UserProfile
+    field :private_timeline_item_ids, {:array, :integer}, default: []
+
+    has_many :user_tag_summary_tags, UserTagSummaryTag
+    has_many :user_tag_summary_users, UserTagSummaryUser
+    belongs_to :author, User
+    belongs_to :subject, User
 
     timestamps()
   end
@@ -18,9 +19,8 @@ defmodule Api.Profile.UserTagSummary do
   @doc false
   def changeset(%UserTagSummary{} = user_tag_summary, attrs) do
     user_tag_summary
-    |> cast(attrs, [:summary])
-    |> validate_required([:summary])
-    |> unique_constraint(:user_profile_id)
-    |> assoc_constraint(:user_profile)
+    |> cast(attrs, [:author_id, :subject_id])
+    |> assoc_constraint(:author)
+    |> assoc_constraint(:subject)
   end
 end

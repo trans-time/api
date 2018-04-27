@@ -75,7 +75,6 @@ defmodule Api.Factory do
 
   def user_tag_summary_factory do
     %Api.Profile.UserTagSummary{
-      summary: %{}
     }
   end
 

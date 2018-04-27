@@ -1,35 +1,11 @@
 defmodule ApiWeb.UserView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{BlockView, CurrentUserView, FollowView, ModerationReportView, UserIdentityView, UserProfileView, UserView}
+  alias ApiWeb.{BlockView, CurrentUserView, FollowView, ModerationReportView, UserIdentityView, UserProfileView, UserTagSummaryView, UserView}
 
   attributes [:avatar, :display_name, :is_moderator, :pronouns, :username]
 
   def is_moderator(_a, _b), do: true
-
-  has_many :blockeds,
-    serializer: BlockView,
-    include: false
-
-  has_many :blockers,
-    serializer: BlockView,
-    include: false
-
-  has_one :current_user,
-    serializer: CurrentUserView,
-    include: false
-
-  has_many :followeds,
-    serializer: FollowView,
-    include: false
-
-  has_many :user_identities,
-    serializer: UserIdentityView,
-    include: false
-
-  has_one :user_profile,
-    serializer: UserProfileView,
-    include: false
 
   def avatar(user) do
     Api.Profile.Avatar.url({user.avatar, user}, :thumb)
@@ -47,7 +23,9 @@ defmodule ApiWeb.UserView do
       %{key: :followeds, view: FollowView},
       %{key: :indictions, view: ModerationReportView},
       %{key: :user_profile, view: UserProfileView},
-      %{key: :user_identities, view: UserIdentityView}
+      %{key: :user_identities, view: UserIdentityView},
+      %{key: :user_tag_summaries_about_user, view: UserTagSummaryView},
+      %{key: :user_tag_summaries_by_user, view: UserTagSummaryView}
     ], %{}, fn(relationship, relationships) ->
       if Ecto.assoc_loaded?(Map.get(user, relationship.key)) do
         Map.put(relationships, relationship.key, %HasMany{

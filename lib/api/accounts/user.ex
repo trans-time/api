@@ -32,7 +32,8 @@ defmodule Api.Accounts.User do
     has_many :timeline_items, TimelineItem
     has_many :user_identities, UserIdentity
     has_one :user_profile, UserProfile
-    many_to_many :user_tag_summaries, UserTagSummary, join_through: "user_tag_summaries_users"
+    has_many :user_tag_summaries_about_user, UserTagSummary, foreign_key: :subject_id
+    has_many :user_tag_summaries_by_user, UserTagSummary, foreign_key: :author_id
 
     timestamps()
   end
