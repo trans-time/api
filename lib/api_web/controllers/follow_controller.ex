@@ -10,22 +10,28 @@ defmodule ApiWeb.FollowController do
   def model, do: Follow
 
   def handle_create(conn, attributes) do
-    handle_request(conn,  String.to_integer(attributes["follower_id"]), Follow.changeset(%Follow{}, attributes))
+    handle_request(conn,  String.to_integer(attributes["follower_id"]), fn() -> Api.Repo.insert(Follow.follower_changeset(%Follow{}, attributes)) end)
   end
 
   def handle_delete(conn, record) do
-    handle_request(conn, record.follower_id, super(conn, record))
+    handle_request(conn, record.follower_id, fn() -> Api.Repo.delete(record) end)
   end
 
   def handle_update(conn, record, attributes) do
-    handle_request(conn, record.follower_id, Follow.changeset(record, attributes))
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
+    
+    if (current_user_id == record.follower_id) do
+      handle_request(conn, record.follower_id, fn() -> Api.Repo.update(Follow.follower_changeset(record, attributes)) end)
+    else
+      handle_request(conn, record.followed_id, fn() -> Api.Repo.update(Follow.followed_changeset(record, attributes)) end)
+    end
   end
 
-  defp handle_request(conn, user_id, changeset) do
+  defp handle_request(conn, user_id, cb) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
 
     case user_id do
-      ^current_user_id -> changeset
+      ^current_user_id -> cb.()
       _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
     end
   end
