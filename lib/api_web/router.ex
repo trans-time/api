@@ -59,7 +59,8 @@ defmodule ApiWeb.Router do
     resources "/timeline-items", TimelineItemController, only: [:index]
     resources "/users", UserController, only: [:create, :index]
     resources "/user-identities", UserIdentityController, only: [:create, :delete, :update]
-    resources "/user-profiles", UserProfileController, only: [:update]
+    resources "/user-profiles", UserProfileController, only: [:index, :update]
+    resources "/user-tag-summaries", UserTagSummaryController, only: [:index]
   end
 
   scope "/api/v1", ApiWeb, as: :api do

@@ -6,7 +6,7 @@ defmodule ApiWeb.UserTagSummaryUserView do
   attributes [:timeline_item_ids]
 
   def preload(record_or_records, _conn, include_opts) do
-    Api.Repo.preload(record_or_records, :user)
+    Api.Repo.preload(record_or_records, include_opts)
   end
 
   def relationships(user, _conn) do

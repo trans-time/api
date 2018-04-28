@@ -72,11 +72,11 @@ defmodule ApiWeb.TimelineItemController do
     where(query, [ti], ti.id in ^refresh_ids)
   end
 
-  def filter(_conn, query, "tag_ids", tag_ids) do
-    tag_ids = Enum.map(tag_ids, fn(x) -> String.to_integer(x) end)
-    join(query, :inner, [ti], tit in "timeline_items_tags", tit.timeline_item_id == ti.id and tit.tag_id in ^tag_ids)
+  def filter(_conn, query, "tag_names", tag_names) do
+    join(query, :inner, [], t in "tags", t.name in ^tag_names)
+    |> join(:inner, [ti, ..., t], tit in "timeline_items_tags", tit.timeline_item_id == ti.id)
     |> group_by([ti], ti.id)
-    |> having([..., tit], fragment("? <@ array_agg(?)", ^tag_ids, tit.tag_id))
+    |> having([..., t, tit], fragment("array_agg(?) <@ array_agg(?)", t.id, tit.tag_id))
   end
 
   def filter(conn, query, "under_moderation", under_moderation) do
@@ -88,11 +88,11 @@ defmodule ApiWeb.TimelineItemController do
     where(query, user_id: ^user_id)
   end
 
-  def filter(_conn, query, "user_ids", user_ids) do
-    user_ids = Enum.map(user_ids, fn(x) -> String.to_integer(x) end)
-    join(query, :inner, [ti], tiu in "timeline_items_users", tiu.timeline_item_id == ti.id and tiu.user_id in ^user_ids)
+  def filter(_conn, query, "user_usernames", user_usernames) do
+    join(query, :inner, [], u in "users", u.username in ^user_usernames)
+    |> join(:inner, [ti, ..., u], tiu in "timeline_items_users", tiu.timeline_item_id == ti.id)
     |> group_by([ti], ti.id)
-    |> having([..., tiu], fragment("? <@ array_agg(?)", ^user_ids, tiu.user_id))
+    |> having([..., u, tiu], fragment("array_agg(?) <@ array_agg(?)", u.id, tiu.user_id))
   end
 
   def sort(_conn, query, "date", direction) do

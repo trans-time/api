@@ -24,4 +24,8 @@ defmodule ApiWeb.UserProfileController do
       _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
     end
   end
+
+  def filter(_conn, query, "user_id", user_id) do
+    where(query, user_id: ^user_id)
+  end
 end
