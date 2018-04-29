@@ -123,7 +123,7 @@ defmodule ApiWeb.Services.PostManager do
         end)
       end)
 
-      Enum.reduce(user_records, multi, fn (subuser_record, multi) ->
+      Enum.reduce([user | user_records], multi, fn (subuser_record, multi) ->
         if (user_record == subuser_record) do
           multi
         else

@@ -9,8 +9,16 @@ defmodule ApiWeb.UserTagSummaryController do
 
   def model, do: UserTagSummary
 
-  def filter(_conn, query, "author_id", author_id) do
-    where(query, author_id: ^author_id)
+  def filter(_conn, query, "author_usernames", author_usernames) do
+    join(query, :inner, [], u in "users", u.username in ^author_usernames)
+    |> group_by([uts], uts.id)
+    |> having([uts, ..., u], uts.author_id in fragment("array_agg(?)", u.id))
+  end
+
+  def filter(_conn, query, "author_username", author_username) do
+    join(query, :inner, [], u in "users", u.username == ^author_username)
+    |> group_by([uts], uts.id)
+    |> having([uts, ..., u], uts.author_id in fragment("array_agg(?)", u.id))
   end
 
   def filter(_conn, query, "subject_id", subject_id) do
