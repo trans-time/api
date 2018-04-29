@@ -33,5 +33,7 @@ defmodule Api.Moderation.Verdict do
       :moderation_report_id, :moderator_id
     ])
     |> validate_required([:was_violation, :action_banned_user, :action_deleted_flaggable, :action_ignore_flags, :action_lock_comments])
+    |> assoc_constraint(:moderation_report)
+    |> assoc_constraint(:moderator)
   end
 end

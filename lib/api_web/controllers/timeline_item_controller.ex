@@ -84,15 +84,15 @@ defmodule ApiWeb.TimelineItemController do
     where(query, [ti], ti.under_moderation == ^under_moderation or ti.user_id == ^current_user_id)
   end
 
-  def filter(_conn, query, "user_id", user_id) do
-    where(query, user_id: ^user_id)
-  end
-
-  def filter(_conn, query, "user_usernames", user_usernames) do
-    join(query, :inner, [], u in "users", u.username in ^user_usernames)
-    |> join(:inner, [ti, ..., u], tiu in "timeline_items_users", tiu.timeline_item_id == ti.id)
-    |> group_by([ti], ti.id)
-    |> having([..., u, tiu], fragment("array_agg(?) <@ array_agg(?)", u.id, tiu.user_id))
+  def filter(conn, query, "user_id", user_id) do
+    if (conn.query_params["filter"]["user_usernames"] == nil || Kernel.length(conn.query_params["filter"]["user_usernames"]) == 0) do
+      where(query, user_id: ^user_id)
+    else
+      join(query, :inner, [], u in "users", u.username in ^conn.query_params["filter"]["user_usernames"])
+      |> join(:inner, [ti], tiu in "timeline_items_users", tiu.timeline_item_id == ti.id)
+      |> group_by([ti], ti.id)
+      |> having([..., u, tiu], fragment("array_agg(?) <@ array_agg(?)", u.id, tiu.user_id))
+    end
   end
 
   def sort(_conn, query, "date", direction) do

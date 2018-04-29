@@ -29,5 +29,9 @@ defmodule Api.Moderation.Flag do
     user
     |> cast(attrs, [:text, :bot, :illicit_activity, :trolling, :unconsenting_image, :unmarked_NSFW, :comment_id, :post_id, :user_id, :moderation_report_id])
     |> validate_required([:bot, :illicit_activity, :trolling, :unconsenting_image, :unmarked_NSFW])
+    |> assoc_constraint(:comment)
+    |> assoc_constraint(:post)
+    |> assoc_constraint(:user)
+    |> assoc_constraint(:moderation_report)
   end
 end

@@ -69,7 +69,7 @@ defmodule ApiWeb.Services.PostManager do
       Api.Repo.preload(timeline_item, [:tags, :users])
       |> Ecto.Changeset.change
       |> Ecto.Changeset.put_assoc(:tags, aggregated_tag_records)
-      |> Ecto.Changeset.put_assoc(:users, user_records)
+      |> Ecto.Changeset.put_assoc(:users, [user | user_records])
       |> Api.Repo.update
     end)
     multi = Enum.reduce(tags, multi, fn (tag, multi) ->
@@ -102,7 +102,7 @@ defmodule ApiWeb.Services.PostManager do
       end)
       |> Multi.run("find_or_create_user_tag_summary_for_subject_#{user_record.username}", fn %{} ->
         user_tag_summary_record = Enum.find(user_tag_summary_records, fn (user_tag_summary_record) -> user_tag_summary_record.subject_id == user_record.id end)
-        
+
         if (user_tag_summary_record != nil), do: {:ok, user_tag_summary_record}, else: Api.Repo.insert(UserTagSummary.changeset(%UserTagSummary{}, %{author_id: user.id, subject_id: user_record.id}))
       end)
 

@@ -22,5 +22,7 @@ defmodule Api.Moderation.TextVersion do
     user
     |> cast(attrs, [:text, :attribute, :comment_id, :post_id])
     |> validate_required([:text, :attribute])
+    |> assoc_constraint(:comment)
+    |> assoc_constraint(:post)
   end
 end

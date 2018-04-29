@@ -28,5 +28,8 @@ defmodule Api.Moderation.ModerationReport do
     user
     |> cast(attrs, [:moderator_comment, :resolved, :was_violation, :comment_id, :post_id, :indicted_id])
     |> validate_required([:resolved, :was_violation])
+    |> assoc_constraint(:comment)
+    |> assoc_constraint(:post)
+    |> assoc_constraint(:indicted)
   end
 end
