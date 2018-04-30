@@ -13,6 +13,6 @@ defmodule Api.Repo.Migrations.CreateTextVersions do
 
     create index(:text_versions, [:comment_id], using: :hash)
     create index(:text_versions, [:post_id], using: :hash)
-    create constraint(:flags, :only_one_versionable, check: "count_not_nulls(comment_id, post_id) = 1")
+    create constraint(:text_versions, :only_one_versionable, check: "count_not_nulls(comment_id, post_id) = 1")
   end
 end

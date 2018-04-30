@@ -2,7 +2,7 @@ import Ecto.Query
 
 defmodule ApiWeb.Services.CommentManager do
   alias Api.Moderation.TextVersion
-  alias Api.Timeline.{Comment, Post}
+  alias Api.Timeline.{Comment, TimelineItem}
   alias ApiWeb.Services.Libra
   alias Ecto.Multi
 
@@ -65,7 +65,7 @@ defmodule ApiWeb.Services.CommentManager do
     indifferent_comment = Indifferent.access(comment)
 
     cond do
-      indifferent_comment[:post_id] -> Post |> where(id: ^indifferent_comment[:post_id])
+      indifferent_comment[:timeline_item_id] -> TimelineItem |> where(id: ^indifferent_comment[:timeline_item_id])
     end
   end
 end

@@ -1,7 +1,7 @@
 defmodule ApiWeb.ModerationReportView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{CommentView, PostView, FlagView, UserView, VerdictView}
+  alias ApiWeb.{CommentView, TimelineItemView, FlagView, UserView, VerdictView}
 
   attributes [:inserted_at, :was_violation, :resolved]
 
@@ -12,7 +12,7 @@ defmodule ApiWeb.ModerationReportView do
   def relationships(flag, _conn) do
     Enum.reduce([
       %{key: :comment, view: CommentView},
-      %{key: :post, view: PostView},
+      %{key: :timeline_item, view: TimelineItemView},
       %{key: :indicted, view: UserView},
       %{key: :verdicts, view: VerdictView},
       %{key: :flags, view: FlagView}

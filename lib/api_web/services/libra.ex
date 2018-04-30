@@ -123,7 +123,7 @@ defmodule ApiWeb.Services.Libra do
     FlagManager.insert(Map.merge(%{
       "text" => "Auto-moderated for: #{Enum.join(Enum.uniq(infractions.quotes), ", ")}",
       "user_id" => Api.Repo.get_by!(Api.Accounts.User, username: "libra").id,
-      "post_id" => (if flaggable.__struct__ == Api.Timeline.Post, do: flaggable.id, else: nil),
+      "timeline_item_id" => (if flaggable.__struct__ == Api.Timeline.TimelineItem, do: flaggable.id, else: nil),
       "comment_id" => (if flaggable.__struct__ == Api.Timeline.Comment, do: flaggable.id, else: nil)
     }, gather_infractions(infractions)))
   end
@@ -135,10 +135,6 @@ defmodule ApiWeb.Services.Libra do
   end
 
   defp get_flaggable_user(flaggable) do
-    if (flaggable.__struct__ == Api.Timeline.Post) do
-      Api.Repo.preload(flaggable, timeline_item: [:user]).timeline_item.user
-    else
-      Api.Repo.preload(flaggable, :user).user
-    end
+    Api.Repo.preload(flaggable, :user).user
   end
 end

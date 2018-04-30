@@ -5,7 +5,7 @@ defmodule Api.Moderation.Flag do
   import Ecto.Changeset
   alias Api.Accounts.User
   alias Api.Moderation.{Flag, ModerationReport}
-  alias Api.Timeline.{Comment, Post}
+  alias Api.Timeline.{Comment, TimelineItem}
 
 
   schema "flags" do
@@ -17,7 +17,7 @@ defmodule Api.Moderation.Flag do
     field :unmarked_NSFW, :boolean, default: false
 
     belongs_to :comment, Comment
-    belongs_to :post, Post
+    belongs_to :timeline_item, TimelineItem
     belongs_to :user, User
     belongs_to :moderation_report, ModerationReport
 
@@ -27,10 +27,10 @@ defmodule Api.Moderation.Flag do
   @doc false
   def changeset(%Flag{} = user, attrs) do
     user
-    |> cast(attrs, [:text, :bot, :illicit_activity, :trolling, :unconsenting_image, :unmarked_NSFW, :comment_id, :post_id, :user_id, :moderation_report_id])
+    |> cast(attrs, [:text, :bot, :illicit_activity, :trolling, :unconsenting_image, :unmarked_NSFW, :comment_id, :timeline_item_id, :user_id, :moderation_report_id])
     |> validate_required([:bot, :illicit_activity, :trolling, :unconsenting_image, :unmarked_NSFW])
     |> assoc_constraint(:comment)
-    |> assoc_constraint(:post)
+    |> assoc_constraint(:timeline_item)
     |> assoc_constraint(:user)
     |> assoc_constraint(:moderation_report)
   end

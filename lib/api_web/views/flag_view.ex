@@ -1,7 +1,7 @@
 defmodule ApiWeb.FlagView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{CommentView, PostView, ModerationReportView, UserView}
+  alias ApiWeb.{CommentView, TimelineItemView, ModerationReportView, UserView}
 
   attributes [:inserted_at, :text, :bot, :illicit_activity, :trolling, :unconsenting_image, :unmarked_NSFW]
 
@@ -12,7 +12,7 @@ defmodule ApiWeb.FlagView do
   def relationships(flag, _conn) do
     Enum.reduce([
       %{key: :comment, view: CommentView},
-      %{key: :post, view: PostView},
+      %{key: :timeline_item, view: TimelineItemView},
       %{key: :user, view: UserView},
       %{key: :moderation_report, view: ModerationReportView}
     ], %{}, fn(relationship, relationships) ->

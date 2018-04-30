@@ -2,7 +2,7 @@ import Ecto.Query
 
 defmodule ApiWeb.Services.FlagManager do
   alias Api.Moderation.{Flag, ModerationReport}
-  alias Api.Timeline.{Comment, Post}
+  alias Api.Timeline.{Comment, TimelineItem}
   alias Ecto.Multi
 
   def insert(attributes) do
@@ -20,7 +20,7 @@ defmodule ApiWeb.Services.FlagManager do
         if Enum.any?(accumulator, fn (unique_flag) -> unique_flag.user_id == flag.user_id end), do: accumulator, else: [flag | accumulator]
       end)
       flaggable = cond do
-        moderation_report.post_id !== nil -> Api.Repo.preload(moderation_report, :post).post
+        moderation_report.timeline_item_id !== nil -> Api.Repo.preload(moderation_report, :timeline_item).timeline_item
         moderation_report.comment_id !== nil -> Api.Repo.preload(moderation_report, :comment).comment
       end
 
@@ -40,7 +40,7 @@ defmodule ApiWeb.Services.FlagManager do
 
   def find_moderation_report(attributes) do
     cond do
-      attributes["post_id"] !== nil -> Api.Repo.one(ModerationReport |> where(post_id: ^attributes["post_id"], resolved: ^false))
+      attributes["timeline_item_id"] !== nil -> Api.Repo.one(ModerationReport |> where(timeline_item_id: ^attributes["timeline_item_id"], resolved: ^false))
       attributes["comment_id"] !== nil -> Api.Repo.one(ModerationReport |> where(comment_id: ^attributes["comment_id"], resolved: ^false))
       true -> nil
     end
@@ -48,7 +48,7 @@ defmodule ApiWeb.Services.FlagManager do
 
   def create_moderation_report(attributes) do
     changeset = ModerationReport.changeset(%ModerationReport{}, %{
-      post_id: attributes["post_id"],
+      timeline_item_id: attributes["timeline_item_id"],
       comment_id: attributes["comment_id"],
       indicted_id: find_user_id(attributes)
     })
@@ -57,7 +57,7 @@ defmodule ApiWeb.Services.FlagManager do
 
   def find_user_id(attributes) do
     cond do
-      attributes["post_id"] !== nil -> Api.Repo.one(Post |> where(id: ^attributes["post_id"]) |> preload(:timeline_item)).timeline_item.user_id
+      attributes["timeline_item_id"] !== nil -> Api.Repo.one(TimelineItem |> where(id: ^attributes["timeline_item_id"])).user_id
       attributes["comment_id"] !== nil -> Api.Repo.one(Comment |> where(id: ^attributes["comment_id"])).user_id
     end
   end
@@ -67,14 +67,6 @@ defmodule ApiWeb.Services.FlagManager do
     Api.Repo.transaction(
       Multi.new
       |> Multi.update(:flaggable, flaggable_changeset)
-      |> Multi.run(:maybe_timeline_item, fn %{} ->
-        if (flaggable.__struct__ == Api.Timeline.Post) do
-          timeline_item_changeset = Api.Timeline.TimelineItem.private_changeset(Api.Repo.preload(flaggable, :timeline_item).timeline_item, %{under_moderation: true})
-          Api.Repo.update(timeline_item_changeset)
-        else
-          {:ok, flaggable}
-        end
-      end)
     )
   end
 end

@@ -5,7 +5,7 @@ defmodule Api.Moderation.ModerationReport do
   import Ecto.Changeset
   alias Api.Accounts.User
   alias Api.Moderation.{Flag, ModerationReport, Verdict}
-  alias Api.Timeline.{Comment, Post}
+  alias Api.Timeline.{Comment, TimelineItem}
 
 
   schema "moderation_reports" do
@@ -15,7 +15,7 @@ defmodule Api.Moderation.ModerationReport do
     field :should_ignore, :boolean, default: false
 
     belongs_to :comment, Comment
-    belongs_to :post, Post
+    belongs_to :timeline_item, TimelineItem
     belongs_to :indicted, User, foreign_key: :indicted_id
     has_many :flags, Flag
     has_many :verdicts, Verdict
@@ -26,10 +26,10 @@ defmodule Api.Moderation.ModerationReport do
   @doc false
   def changeset(%ModerationReport{} = user, attrs) do
     user
-    |> cast(attrs, [:moderator_comment, :resolved, :was_violation, :comment_id, :post_id, :indicted_id])
+    |> cast(attrs, [:moderator_comment, :resolved, :was_violation, :comment_id, :timeline_item_id, :indicted_id])
     |> validate_required([:resolved, :was_violation])
     |> assoc_constraint(:comment)
-    |> assoc_constraint(:post)
+    |> assoc_constraint(:timeline_item)
     |> assoc_constraint(:indicted)
   end
 end

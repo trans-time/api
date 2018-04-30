@@ -33,17 +33,16 @@ defmodule ApiWeb.CommentController do
     end
   end
 
-  def filter(conn, query, "post_id", post_id) do
+  def filter(conn, query, "timeline_item_id", timeline_item_id) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
 
-    post = Api.Repo.get(Api.Timeline.Post, post_id)
-    |> Api.Repo.preload(:timeline_item)
+    timeline_item = Api.Repo.get(Api.Timeline.TimelineItem, timeline_item_id)
 
-    if post.timeline_item.user_id !== current_user_id do
+    if timeline_item.user_id !== current_user_id do
       query = filter_blocked(conn, query, current_user_id)
     end
 
-    where(query, post_id: ^post_id)
+    where(query, timeline_item_id: ^timeline_item_id)
   end
 
   def filter(_conn, query, "deleted", deleted) do

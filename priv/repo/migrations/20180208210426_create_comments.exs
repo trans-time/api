@@ -15,7 +15,7 @@ defmodule Api.Repo.Migrations.CreateComments do
       add :star_count, :integer, default: 0, null: false
       add :sun_count, :integer, default: 0, null: false
 
-      add :post_id, references(:posts, on_delete: :nothing)
+      add :timeline_item_id, references(:posts, on_delete: :nothing)
       add :user_id, references(:users, on_delete: :nothing), null: false
       add :parent_id, references(:comments, on_delete: :nothing)
 
@@ -23,13 +23,13 @@ defmodule Api.Repo.Migrations.CreateComments do
     end
 
     create index(:comments, [:inserted_at])
-    create index(:comments, [:post_id], using: :hash)
+    create index(:comments, [:timeline_item_id], using: :hash)
     create index(:comments, [:parent_id], using: :hash)
     create index(:comments, [:deleted], type: :hash)
     create index(:comments, [:deleted_with_parent], type: :hash)
     create index(:comments, [:deleted_by_user], type: :hash)
     create index(:comments, [:deleted_by_moderator], type: :hash)
     create index(:comments, [:under_moderation], type: :hash)
-    create constraint(:comments, :only_one_commentable, check: "count_not_nulls(post_id) = 1")
+    create constraint(:comments, :only_one_commentable, check: "count_not_nulls(timeline_item_id) = 1")
   end
 end

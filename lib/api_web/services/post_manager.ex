@@ -8,31 +8,12 @@ defmodule ApiWeb.Services.PostManager do
   alias ApiWeb.Services.Libra
   alias Ecto.Multi
 
-  def delete(record, timeline_item, attributes) do
-    post_changeset = Post.private_changeset(record, Map.merge(%{deleted: true}, attributes))
-    timeline_item_changeset = TimelineItem.private_changeset(timeline_item, %{deleted: true})
-
-    Multi.new
-    |> Multi.update_all(:user_profile, UserProfile |> where(user_id: ^timeline_item.user_id), inc: [post_count: -1])
-    |> Multi.update(:timeline_item, timeline_item_changeset)
-    |> Multi.update(:post, post_changeset)
-  end
-
-  def undelete(record, timeline_item, attributes) do
-    post_changeset = Post.private_changeset(record, attributes)
-    timeline_item_changeset = TimelineItem.private_changeset(timeline_item, attributes)
-
-    Multi.new
-    |> Multi.update_all(:user_profile, UserProfile |> where(user_id: ^timeline_item.user_id), inc: [post_count: 1])
-    |> Multi.update(:timeline_item, timeline_item_changeset)
-    |> Multi.update(:post, post_changeset)
-  end
-
   def insert(attributes, user) do
     post_changeset = Post.changeset(%Post{}, attributes)
     timeline_item_changeset = TimelineItem.changeset(%TimelineItem{}, %{
       date: attributes["date"],
       private: attributes["private"] || false,
+      nsfw: attributes["nsfw"] || false,
       user_id: attributes["user_id"]
     })
     tags = gather_tags(post_changeset.changes.text, "#")
@@ -146,14 +127,20 @@ defmodule ApiWeb.Services.PostManager do
     |> Multi.run(:user_tag_summary, fn %{timeline_item: timeline_item} ->
       if (timeline_item.private), do: Api.Repo.update(UserTagSummary.changeset(user_tag_summary_record, %{private_timeline_item_ids: [timeline_item.id | user_tag_summary_record.private_timeline_item_ids]})), else: {:ok, user_tag_summary_record}
     end)
-    |> Multi.run(:libra, fn %{post: post} ->
-      Libra.review(post, post.text)
+    |> Multi.run(:libra, fn %{post: post, timeline_item: timeline_item} ->
+      Libra.review(timeline_item, post.text)
     end)
   end
 
   def update(record, attributes) do
+    timeline_item = Api.Repo.preload(record, :timeline_item).timeline_item
     post_changeset = Post.changeset(record, attributes)
-    post_private_changeset = Post.private_changeset(record, %{ignore_flags: false})
+    timeline_item_changeset = TimelineItem.changeset(timeline_item, %{
+      date: attributes["date"],
+      private: attributes["private"] || false,
+      nsfw: attributes["nsfw"] || false,
+    })
+    timeline_item_private_changeset = TimelineItem.private_changeset(timeline_item, %{ignore_flags: false})
     text_version_changeset = TextVersion.changeset(%TextVersion{}, %{
       text: record.text,
       attribute: "text",
@@ -161,7 +148,8 @@ defmodule ApiWeb.Services.PostManager do
     })
 
     Multi.new
-    |> Multi.update(:post, Ecto.Changeset.merge(post_changeset, post_private_changeset))
+    |> Multi.update(:post, post_changeset)
+    |> Multi.update(:timeline_item, Ecto.Changeset.merge(timeline_item_changeset, timeline_item_private_changeset))
     |> Multi.run(:text_version, fn %{} ->
       if (Map.has_key?(post_changeset.changes, :text)), do: Api.Repo.insert(text_version_changeset), else: {:ok, record}
     end)

@@ -3,7 +3,7 @@ defmodule ApiWeb.PostView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{ImageView, ReactionView, TextVersionView, TimelineItemView}
 
-  attributes [:nsfw, :text, :comments_are_locked, :comment_count, :moon_count, :star_count, :sun_count]
+  attributes [:text]
 
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)
@@ -12,7 +12,6 @@ defmodule ApiWeb.PostView do
   def relationships(user, _conn) do
     Enum.reduce([
       %{key: :images, view: ImageView},
-      %{key: :reactions, view: ReactionView},
       %{key: :text_versions, view: TextVersionView},
       %{key: :timeline_item, view: TimelineItemView}
     ], %{}, fn(relationship, relationships) ->

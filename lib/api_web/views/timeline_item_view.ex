@@ -1,30 +1,33 @@
 defmodule ApiWeb.TimelineItemView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{PostView, TagView, UserView}
+  alias ApiWeb.{PostView, ReactionView, TagView, UserView}
 
-  attributes [:date, :deleted, :private]
-
-  has_one :user,
-    serializer: UserView,
-    include: false
-
-  has_many :tags,
-    serializer: TagView
-
-  has_many :users,
-    serializer: UserView
-
-  has_one :post,
-    serializer: PostView
+  attributes [:date, :deleted, :private, :nsfw, :text, :comments_are_locked, :comment_count, :moon_count, :star_count, :sun_count]
 
   def current_user_reaction(_params, _conn), do: nil
 
-  def post(%{post: %Ecto.Association.NotLoaded{}, post_id: nil}, _conn), do: nil
-  def post(%{post: %Ecto.Association.NotLoaded{}, post_id: id}, _conn), do: %{id: id}
-  def post(%{post: post}, _conn), do: post
-
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)
+  end
+
+  def relationships(user, _conn) do
+    Enum.reduce([
+      %{key: :user, view: UserView},
+      %{key: :reactions, view: ReactionView},
+      %{key: :tags, view: TagView},
+      %{key: :users, view: UserView},
+      %{key: :post, view: PostView}
+    ], %{}, fn(relationship, relationships) ->
+      if Ecto.assoc_loaded?(Map.get(user, relationship.key)) do
+        Map.put(relationships, relationship.key, %HasMany{
+          serializer: relationship.view,
+          include: true,
+          data: Map.get(user, relationship.key)
+        })
+      else
+        relationships
+      end
+    end)
   end
 end

@@ -1,25 +1,25 @@
 defmodule ApiWeb.Services.ModerationManager do
   alias Api.Accounts.User
-  alias Api.Timeline.Post
+  alias Api.Timeline.TimelineItem
 
-  def consider_unlocking_comments(post) do
-    if (post.comments_are_locked) do
+  def consider_unlocking_comments(timeline_item) do
+    if (timeline_item.comments_are_locked) do
       now = DateTime.utc_now()
 
-      if (!Enum.any?(post.timeline_item.user.indictions, fn (indiction) ->
+      if (!Enum.any?(timeline_item.user.indictions, fn (indiction) ->
         latest_verdict = Enum.at(indiction.verdicts, -1)
         until = latest_verdict.lock_comments_until
 
         latest_verdict.action_lock_comments && (until == nil || (until != nil && DateTime.compare(until, now) == :gt))
       end)) do
-        changeset = Post.private_changeset(post, %{comments_are_locked: false})
+        changeset = TimelineItem.private_changeset(timeline_item, %{comments_are_locked: false})
 
         Api.Repo.update(changeset)
       else
-        {:ok, post}
+        {:ok, timeline_item}
       end
     else
-      {:ok, post}
+      {:ok, timeline_item}
     end
   end
 

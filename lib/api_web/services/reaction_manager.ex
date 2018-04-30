@@ -1,7 +1,7 @@
 import Ecto.Query
 
 defmodule ApiWeb.Services.ReactionManager do
-  alias Api.Timeline.{Comment, Post, Reaction}
+  alias Api.Timeline.{Comment, TimelineItem, Reaction}
   alias Ecto.Multi
 
   def delete(record) do
@@ -30,7 +30,7 @@ defmodule ApiWeb.Services.ReactionManager do
     indifferent_reaction = Indifferent.access(reaction)
 
     cond do
-      indifferent_reaction[:post_id] -> Post |> where(id: ^indifferent_reaction[:post_id])
+      indifferent_reaction[:timeline_item_id] -> TimelineItem |> where(id: ^indifferent_reaction[:timeline_item_id])
       indifferent_reaction[:comment_id] -> Comment |> where(id: ^indifferent_reaction[:comment_id])
     end
   end

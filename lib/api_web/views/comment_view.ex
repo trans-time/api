@@ -1,7 +1,7 @@
 defmodule ApiWeb.CommentView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{CommentView, PostView, ReactionView, TextVersionView, UserView}
+  alias ApiWeb.{CommentView, TimelineItemView, ReactionView, TextVersionView, UserView}
 
   attributes [:inserted_at, :deleted, :text, :comment_count, :moon_count, :star_count, :sun_count]
 
@@ -13,7 +13,7 @@ defmodule ApiWeb.CommentView do
     Enum.reduce([
       %{key: :children, view: CommentView},
       %{key: :parent, view: CommentView},
-      %{key: :post, view: PostView},
+      %{key: :timeline_item, view: TimelineItemView},
       %{key: :reactions, view: ReactionView},
       %{key: :text_versions, view: TextVersionView},
       %{key: :user, view: UserView}

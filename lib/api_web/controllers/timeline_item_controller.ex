@@ -93,7 +93,7 @@ defmodule ApiWeb.TimelineItemController do
   end
 
   def filter(conn, query, "user_id", user_id) do
-    if (conn.query_params["filter"]["user_usernames"] == nil || Kernel.length(conn.query_params["filter"]["user_usernames"]) == 0) do
+    if (conn.query_params["filter"]["user_usernames"] == nil || Kernel.length(conn.query_params["filter"]["user_usernames"]) == 1) do
       where(query, user_id: ^user_id)
     else
       # TODO: Which is faster?
@@ -128,10 +128,10 @@ defmodule ApiWeb.TimelineItemController do
   end
 
   def preload_current_user_reaction(_conn, query, current_user_id) do
-    join(query, :left, [ti], p in assoc(ti, :post))
-    |> join(:left, [..., p], r in assoc(p, :reactions), r.user_id == ^current_user_id)
-    |> group_by([ti, ..., p, r], [ti.id, p.id, r.id])
-    |> preload([..., p, r], [post: {p, reactions: r}])
+    query
+    |> join(:left, [ti], r in assoc(ti, :reactions), r.user_id == ^current_user_id)
+    |> group_by([ti, ..., r], [ti.id, r.id])
+    |> preload([..., r], [reactions: r])
   end
 
   def get_limit_and_offset(qp, query) do

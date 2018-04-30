@@ -3,7 +3,7 @@ defmodule Api.Timeline.Comment do
   import Ecto.Changeset
   alias Api.Accounts.User
   alias Api.Moderation.{ModerationReport, TextVersion}
-  alias Api.Timeline.{Comment, Post, Reaction, TimelineItem}
+  alias Api.Timeline.{Comment, Reaction, TimelineItem}
 
 
   schema "comments" do
@@ -20,7 +20,7 @@ defmodule Api.Timeline.Comment do
     field :sun_count, :integer, default: 0
 
     belongs_to :user, User
-    belongs_to :post, Post
+    belongs_to :timeline_item, TimelineItem
     belongs_to :parent, Comment
     has_many :children, Comment, foreign_key: :parent_id
     has_many :moderation_reports, ModerationReport
@@ -33,13 +33,13 @@ defmodule Api.Timeline.Comment do
   @doc false
   def changeset(%Comment{} = comment, attrs) do
     comment
-    |> cast(attrs, [:parent_id, :post_id, :text, :user_id])
+    |> cast(attrs, [:parent_id, :timeline_item_id, :text, :user_id])
     |> validate_required([:text])
     |> validate_length(:text, max: 8000, message: "remote.errors.detail.length.length")
     |> assoc_constraint(:parent)
-    |> assoc_constraint(:post)
+    |> assoc_constraint(:timeline_item)
     |> assoc_constraint(:user)
-    |> validate_that_comments_are_unlocked(:post_id)
+    |> validate_that_comments_are_unlocked(:timeline_item_id)
   end
 
   @doc false
@@ -50,7 +50,7 @@ defmodule Api.Timeline.Comment do
 
   def validate_that_comments_are_unlocked(changeset, field, options \\ []) do
     validate_change(changeset, field, fn _, assoc_id ->
-      case Api.Repo.get(Post, assoc_id).comments_are_locked do
+      case Api.Repo.get(TimelineItem, assoc_id).comments_are_locked do
         true -> [{field, options[:message] || "remote.errors.detail.forbidden.commentsAreLocked"}]
         false -> []
       end
