@@ -73,10 +73,18 @@ defmodule ApiWeb.TimelineItemController do
   end
 
   def filter(_conn, query, "tag_names", tag_names) do
-    join(query, :inner, [], t in "tags", t.name in ^tag_names)
-    |> join(:inner, [ti, ..., t], tit in "timeline_items_tags", tit.timeline_item_id == ti.id)
-    |> group_by([ti], ti.id)
-    |> having([..., t, tit], fragment("array_agg(?) <@ array_agg(?)", t.id, tit.tag_id))
+    # TODO: Which is faster?
+    # join(query, :inner, [], t in "tags", t.name in ^tag_names)
+    # |> join(:inner, [ti, ..., t], tit in "timeline_items_tags", tit.timeline_item_id == ti.id)
+    # |> group_by([ti], ti.id)
+    # |> having([..., t, tit], fragment("array_agg(?) <@ array_agg(?)", t.id, tit.tag_id))
+
+    Enum.reduce(tag_names, query, fn(name, query) ->
+      join(query, :inner, [ti], tit in "timeline_items_tags", tit.timeline_item_id == ti.id)
+      |> join(:inner, [..., tit], t in "tags", tit.tag_id == t.id)
+      |> group_by([ti, ..., t], [ti.id, t.name])
+      |> having([..., t], t.name == ^name)
+    end)
   end
 
   def filter(conn, query, "under_moderation", under_moderation) do
@@ -88,10 +96,18 @@ defmodule ApiWeb.TimelineItemController do
     if (conn.query_params["filter"]["user_usernames"] == nil || Kernel.length(conn.query_params["filter"]["user_usernames"]) == 0) do
       where(query, user_id: ^user_id)
     else
-      join(query, :inner, [], u in "users", u.username in ^conn.query_params["filter"]["user_usernames"])
-      |> join(:inner, [ti], tiu in "timeline_items_users", tiu.timeline_item_id == ti.id)
-      |> group_by([ti], ti.id)
-      |> having([..., u, tiu], fragment("array_agg(?) <@ array_agg(?)", u.id, tiu.user_id))
+      # TODO: Which is faster?
+      # join(query, :inner, [], u in "users", u.username in ^conn.query_params["filter"]["user_usernames"])
+      # |> join(:inner, [ti], tiu in "timeline_items_users", tiu.timeline_item_id == ti.id)
+      # |> group_by([ti], ti.id)
+      # |> having([..., u, tiu], fragment("array_agg(?) <@ array_agg(?)", u.id, tiu.user_id))
+
+      Enum.reduce(conn.query_params["filter"]["user_usernames"], query, fn(username, query) ->
+        join(query, :inner, [ti], tiu in "timeline_items_users", tiu.timeline_item_id == ti.id)
+        |> join(:inner, [..., tiu], u in "users", tiu.user_id == u.id)
+        |> group_by([ti, ..., u], [ti.id, u.username])
+        |> having([..., u], u.username == ^username)
+      end)
     end
   end
 
