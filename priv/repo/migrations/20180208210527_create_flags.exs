@@ -10,7 +10,7 @@ defmodule Api.Repo.Migrations.CreateFlags do
       add :unconsenting_image, :boolean, default: false, null: false
       add :unmarked_NSFW, :boolean, default: false, null: false
       add :comment_id, references(:comments, on_delete: :nothing)
-      add :timeline_item_id, references(:posts, on_delete: :nothing)
+      add :timeline_item_id, references(:timeline_items, on_delete: :nothing)
       add :user_id, references(:users, on_delete: :nothing), null: false
       add :moderation_report_id, references(:moderation_reports, on_delete: :nothing), null: false
 

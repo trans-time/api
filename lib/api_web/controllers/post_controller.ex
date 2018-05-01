@@ -26,7 +26,7 @@ defmodule ApiWeb.PostController do
     case user_id do
       ^current_user_id ->
         transaction = Api.Repo.transaction(multi)
-        if Kernel.elem(transaction, 0) === :ok, do: Kernel.elem(transaction, 1).post, else: transaction
+        if Kernel.elem(transaction, 0) === :ok, do: Kernel.elem(transaction, 1).timelineable, else: transaction
       _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
     end
   end

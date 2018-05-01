@@ -8,7 +8,7 @@ defmodule Api.Repo.Migrations.CreateModerationReports do
       add :should_ignore, :boolean, default: false, null: false
       add :was_violation, :boolean, default: false, null: false
       add :comment_id, references(:comments, on_delete: :nothing)
-      add :timeline_item_id, references(:posts, on_delete: :nothing)
+      add :timeline_item_id, references(:timeline_items, on_delete: :nothing)
       add :indicted_id, references(:users, on_delete: :nothing), null: false
       add :moderator_id, references(:users, on_delete: :nothing)
 
