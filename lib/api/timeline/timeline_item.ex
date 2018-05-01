@@ -21,8 +21,8 @@ defmodule Api.Timeline.TimelineItem do
     field :private, :boolean, default: false
     field :under_moderation, :boolean, default: false
 
-    many_to_many :tags, Tag, join_through: "timeline_items_tags"
-    many_to_many :users, User, join_through: "timeline_items_users"
+    many_to_many :tags, Tag, join_through: "timeline_items_tags", on_replace: :delete
+    many_to_many :users, User, join_through: "timeline_items_users", on_replace: :delete
     has_many :comments, Comment
     has_many :moderation_reports, ModerationReport
     has_many :reactions, Reaction

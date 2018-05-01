@@ -17,7 +17,7 @@ defmodule ApiWeb.PostController do
   end
 
   def handle_update(conn, record, attributes) do
-    handle_request(conn, Api.Repo.get_by!(TimelineItem, post_id: record.id).user_id, PostManager.update(record, attributes))
+    handle_request(conn, Api.Repo.get_by!(TimelineItem, post_id: record.id).user_id, PostManager.update(record, attributes, Api.Accounts.Guardian.Plug.current_resource(conn)))
   end
 
   defp handle_request(conn, user_id, multi) do
