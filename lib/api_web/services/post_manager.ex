@@ -49,29 +49,40 @@ defmodule ApiWeb.Services.PostManager do
     timeline_item = record.timeline_item
     post_changeset = Post.changeset(record, attributes)
 
-    text_version_changeset = TextVersion.changeset(%TextVersion{}, %{
-      text: record.text,
-      attribute: "text",
-      post_id: record.id
-    })
+    if Map.has_key?(post_changeset.changes, :text) do
+      text_version_changeset = TextVersion.changeset(%TextVersion{}, %{
+        text: record.text,
+        attribute: "text",
+        post_id: record.id
+      })
 
-    old_tags = gather_tags(record.text, "#")
-    current_tags = gather_tags(post_changeset.changes.text, "#")
-    old_users = gather_tags(record.text, "@")
-    current_users = gather_tags(post_changeset.changes.text, "@")
+      old_tags = gather_tags(record.text, "#")
+      current_tags = gather_tags(post_changeset.changes.text, "#")
+      old_users = gather_tags(record.text, "@")
+      current_users = gather_tags(post_changeset.changes.text, "@")
 
-    post_multi = Multi.new
-    |> Multi.update(:timelineable, post_changeset)
-    |> Multi.run(:text_version, fn %{} ->
-      if (Map.has_key?(post_changeset.changes, :text)), do: Api.Repo.insert(text_version_changeset), else: {:ok, record}
-    end)
-    timeline_item_multi = TimelineItemManager.update(timeline_item, attributes, old_tags, current_tags, old_users, current_users, user)
-    libra_multi = Multi.new
-    |> Multi.run(:libra, fn %{timelineable: timelineable, timeline_item: timeline_item} ->
-      Libra.review(timeline_item, timelineable.text)
-    end)
+      post_multi = Multi.new
+      |> Multi.update(:timelineable, post_changeset)
+      |> Multi.run(:text_version, fn %{} ->
+        Api.Repo.insert(text_version_changeset)
+      end)
+      timeline_item_multi = TimelineItemManager.update(timeline_item, attributes, old_tags, current_tags, old_users, current_users, user)
+      libra_multi = Multi.new
+      |> Multi.run(:libra, fn %{timelineable: timelineable, timeline_item: timeline_item} ->
+        Libra.review(timeline_item, timelineable.text)
+      end)
 
-    Multi.append(post_multi, Multi.append(timeline_item_multi, libra_multi))
+      Multi.append(post_multi, Multi.append(timeline_item_multi, libra_multi))
+    else
+      old_tags = gather_tags(record.text, "#")
+      old_users = gather_tags(record.text, "@")
+
+      post_multi = Multi.new
+      |> Multi.update(:timelineable, post_changeset)
+      timeline_item_multi = TimelineItemManager.update(timeline_item, attributes, old_tags, old_tags, old_users, old_users, user)
+
+      Multi.append(post_multi, timeline_item_multi)
+    end
   end
 
   def gather_tags(text, leading_char) do

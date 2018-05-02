@@ -40,7 +40,7 @@ defmodule Api.Timeline.TimelineItem do
   @doc false
   def changeset(%TimelineItem{} = timeline_item, attrs) do
     timeline_item
-    |> cast(attrs, [:date, :nsfw, :private, :user_id])
+    |> cast(attrs, [:date, :nsfw, :nsfw_butt, :nsfw_genitals, :nsfw_nipples, :nsfw_underwear, :private, :user_id])
     |> validate_required([:date, :nsfw, :private])
     |> validate_that_date_is_not_in_the_future(:date)
     |> assoc_constraint(:user)
