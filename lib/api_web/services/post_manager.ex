@@ -74,7 +74,7 @@ defmodule ApiWeb.Services.PostManager do
     Multi.append(post_multi, Multi.append(timeline_item_multi, libra_multi))
   end
 
-  defp gather_tags(text, leading_char) do
+  def gather_tags(text, leading_char) do
     Enum.filter(Enum.uniq(List.flatten(Regex.scan(Regex.compile!("#{leading_char}([a-zA-Z0-9_]+)"), text))), fn (item) -> String.at(item, 0) != leading_char end)
   end
 end

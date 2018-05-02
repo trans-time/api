@@ -30,13 +30,13 @@ defmodule ApiWeb.Services.VerdictManager do
     |> Multi.update(:verdict_timeline_item, timeline_item_changeset)
     |> Multi.insert(:verdict, verdict_changeset)
     |> Multi.run(:verdict_ban_user, fn %{verdict: verdict} ->
+      user = Api.Repo.get(User, moderation_report.indicted_id)
       cond do
-        verdict.action_banned_user && (previous_verdict == nil || previous_verdict.action_banned_user == false) ->
-          user = Api.Repo.get(User, moderation_report.indicted_id)
+        verdict.action_banned_user && user.is_banned == false ->
           user_changeset = User.private_changeset(user, %{is_banned: true})
 
           Api.Repo.update(user_changeset)
-        previous_verdict != nil && previous_verdict.action_banned_user == true && !verdict.action_banned_user ->
+        !verdict.action_banned_user && user.is_banned == true ->
           query = from u in User,
             where: u.id == ^moderation_report.indicted_id,
             join: i in assoc(u, :indictions),
@@ -51,11 +51,11 @@ defmodule ApiWeb.Services.VerdictManager do
     end)
     |> Multi.run(:verdict_lock_comments, fn %{verdict: verdict} ->
       cond do
-        verdict.action_lock_comments && (previous_verdict == nil || previous_verdict.action_lock_comments == false) ->
+        verdict.action_lock_comments && timeline_item.comments_are_locked == false ->
           changeset = TimelineItem.private_changeset(timeline_item, %{comments_are_locked: true})
 
           Api.Repo.update(changeset)
-        previous_verdict != nil && previous_verdict.action_lock_comments == true && !verdict.action_lock_comments ->
+        !verdict.action_lock_comments && timeline_item.comments_are_locked == true ->
           timeline_item = Api.Repo.preload(timeline_item, [user: [indictions: [:verdicts]]])
 
           ModerationManager.consider_unlocking_comments(timeline_item)
@@ -71,13 +71,13 @@ defmodule ApiWeb.Services.VerdictManager do
 
   defp delete_flaggable_multi(action_deleted_flaggable, flaggable, timeline_item, flaggable_is_timeline_item, previous_verdict) do
     cond do
-      action_deleted_flaggable && (previous_verdict == nil || previous_verdict.action_deleted_flaggable == false) ->
+      action_deleted_flaggable && flaggable.deleted_by_moderator == false ->
         if flaggable_is_timeline_item do
           TimelineItemManager.delete(flaggable, %{deleted_by_moderator: true})
         else
           CommentManager.delete(flaggable, %{deleted_by_moderator: true})
         end
-      !action_deleted_flaggable && previous_verdict != nil && previous_verdict.action_deleted_flaggable == true ->
+      !action_deleted_flaggable && flaggable.deleted_by_moderator == true ->
         if flaggable_is_timeline_item do
           TimelineItemManager.undelete(flaggable, %{
             deleted: flaggable.deleted_by_user,
@@ -96,11 +96,11 @@ defmodule ApiWeb.Services.VerdictManager do
 
   defp ignore_flags_multi(action_ignore_flags, flaggable, flaggable_is_timeline_item, previous_verdict) do
     cond do
-      action_ignore_flags && (previous_verdict == nil || previous_verdict.action_ignore_flags == false) ->
+      action_ignore_flags && flaggable.ignore_flags == false ->
          flaggable_changeset = if flaggable_is_timeline_item, do: TimelineItem.private_changeset(flaggable, %{ignore_flags: true}), else: Comment.private_changeset(flaggable, %{ignore_flags: true})
          Multi.new
          |> Multi.update(:flaggable, flaggable_changeset)
-     !action_ignore_flags && previous_verdict != nil && previous_verdict.action_ignore_flags == true ->
+     !action_ignore_flags && flaggable.ignore_flags == true ->
         flaggable_changeset = if flaggable_is_timeline_item, do: TimelineItem.private_changeset(flaggable, %{ignore_flags: false}), else: Comment.private_changeset(flaggable, %{ignore_flags: false})
         query = if flaggable_is_timeline_item, do: from(mr in ModerationReport, where: mr.timeline_item_id == ^flaggable.id), else: from(mr in ModerationReport, where: mr.comment_id == ^flaggable.id)
 

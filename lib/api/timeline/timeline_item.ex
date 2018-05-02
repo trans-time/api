@@ -18,6 +18,10 @@ defmodule Api.Timeline.TimelineItem do
     field :deleted_by_user, :boolean, default: false
     field :ignore_flags, :boolean, default: false
     field :nsfw, :boolean, default: false
+    field :nsfw_butt, :boolean, default: false
+    field :nsfw_genitals, :boolean, default: false
+    field :nsfw_nipples, :boolean, default: false
+    field :nsfw_underwear, :boolean, default: false
     field :private, :boolean, default: false
     field :under_moderation, :boolean, default: false
 

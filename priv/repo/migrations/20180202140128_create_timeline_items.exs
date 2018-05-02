@@ -14,6 +14,10 @@ defmodule Api.Repo.Migrations.CreateTimelineItems do
       add :deleted_by_moderator, :boolean, default: false, null: false
       add :ignore_flags, :boolean, default: false, null: false
       add :nsfw, :boolean, default: false, null: false
+      add :nsfw_butt, :boolean, default: false, null: false
+      add :nsfw_genitals, :boolean, default: false, null: false
+      add :nsfw_nipples, :boolean, default: false, null: false
+      add :nsfw_underwear, :boolean, default: false, null: false
       add :private, :boolean, default: false, null: false
       add :under_moderation, :boolean, default: false, null: false
       add :user_id, references(:users), null: false

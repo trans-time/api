@@ -5,27 +5,111 @@ defmodule ApiWeb.Services.TimelineItemManager do
   alias Api.Accounts.User
   alias Api.Profile.{UserProfile, UserTagSummary, UserTagSummaryTag, UserTagSummaryUser}
   alias Api.Timeline.{Post, Tag, TimelineItem}
-  alias ApiWeb.Services.Libra
+  alias ApiWeb.Services.{Libra, PostManager}
   alias Ecto.Multi
 
   def delete(timeline_item, attributes) do
     timeline_item_changeset = TimelineItem.private_changeset(timeline_item, Map.merge(%{deleted: true}, attributes))
 
-    Multi.new
+    {tags, users} = gather_tags_and_users(timeline_item)
+    tag_records = Api.Repo.all(from t in Tag, where: t.name in ^tags)
+    tag_record_ids = Enum.map(tag_records, fn (tag) -> tag.id end)
+
+    user_records = Api.Repo.all(from u in User, where: u.username in ^users)
+    user_record_ids = Enum.map(user_records, fn (user) -> user.id end)
+
+    user = Api.Repo.preload(timeline_item, :user).user
+    user_tag_summary_records = Api.Repo.all(from uts in UserTagSummary, where: (uts.author_id == ^user.id and uts.subject_id in ^[user.id | user_record_ids]) or (uts.subject_id == ^user.id and uts.author_id in ^user_record_ids))
+    user_tag_summary_record = Enum.find(user_tag_summary_records, fn (user_tag_summary_record) -> user_tag_summary_record.subject_id == user.id end)
+    user_tag_summary_ids = Enum.map(user_tag_summary_records, fn (user_tag_summary_record) -> user_tag_summary_record.id end)
+
+    user_tag_summary_tag_records = Api.Repo.all(from utst in UserTagSummaryTag, where: utst.user_tag_summary_id in ^user_tag_summary_ids and utst.tag_id in ^tag_record_ids)
+    user_tag_summary_user_records = Api.Repo.all(from utst in UserTagSummaryUser, where: utst.user_tag_summary_id in ^user_tag_summary_ids and utst.user_id in ^[user.id | user_record_ids])
+
+    multi = Multi.new
     |> Multi.update_all(:user_profile, UserProfile |> where(user_id: ^timeline_item.user_id), inc: [post_count: -1])
     |> Multi.update(:timeline_item, timeline_item_changeset)
+    |> Multi.run(:user_tag_summary, fn %{timeline_item: timeline_item} ->
+      remove_from_private_timeline_item_ids(user_tag_summary_record, timeline_item)
+    end)
+    |> Multi.run(:aggregated_tag_records, fn _ ->
+      {:ok, tag_records}
+    end)
+    |> Multi.run(:user_tag_summary_tag_records, fn _ ->
+      {:ok, user_tag_summary_tag_records}
+    end)
+    |> Multi.run(:user_tag_summary_user_records, fn _ ->
+      {:ok, user_tag_summary_user_records}
+    end)
+    |> Multi.run(:put_tag_associations, fn %{timeline_item: timeline_item} ->
+      Api.Repo.preload(timeline_item, [:tags, :users])
+      |> Ecto.Changeset.change
+      |> Ecto.Changeset.put_assoc(:tags, [])
+      |> Ecto.Changeset.put_assoc(:users, [])
+      |> Api.Repo.update
+    end)
+    multi = Enum.reduce(tags, multi, fn (tag, multi) ->
+      multi
+      |> multi_remove_tag_summary_tag("remove_user_tag_summary_tag_#{tag}", tag, :user_tag_summary)
+    end)
+    multi = Enum.reduce(users, multi, fn (username, multi) ->
+      user_record = Enum.find(user_records, fn (user_record) -> user_record.username == username end)
+
+      multi = multi
+      |> multi_remove_tag_summary_user("remove_user_tag_summary_user_#{user_record.username}", user_record, :user_tag_summary)
+      |> Multi.run("find_user_tag_summary_for_subject_#{user_record.username}", fn %{} ->
+        user_tag_summary_record = Enum.find(user_tag_summary_records, fn (user_tag_summary_record) -> user_tag_summary_record.subject_id == user_record.id end)
+
+        remove_from_private_timeline_item_ids(user_tag_summary_record, timeline_item)
+      end)
+
+      multi = Enum.reduce(tags, multi, fn (tag, multi) ->
+        multi
+        |> multi_remove_tag_summary_tag("remove_user_tag_summary_for_subject_#{user_record.username}_with_tag_#{tag}", tag, "find_user_tag_summary_for_subject_#{user_record.username}")
+      end)
+
+      Enum.reduce(users, multi, fn (subuser_username, multi) ->
+        subuser_record = Enum.find(user_records, fn (user_record) -> user_record.username == subuser_username end)
+        if (user_record == subuser_record) do
+          multi
+        else
+          multi
+          |> multi_remove_tag_summary_user("remove_user_tag_summary_for_subject_#{user_record.username}_with_user_#{subuser_record.username}", subuser_record, "find_or_create_user_tag_summary_for_subject_#{user_record.username}")
+        end
+      end)
+    end)
   end
 
   def undelete(timeline_item, attributes) do
-    timeline_item_changeset = TimelineItem.private_changeset(timeline_item, attributes)
+    timeline_item_multi = Multi.new
+    |> Multi.update(:timeline_item, TimelineItem.private_changeset(timeline_item, attributes))
 
-    Multi.new
-    |> Multi.update_all(:user_profile, UserProfile |> where(user_id: ^timeline_item.user_id), inc: [post_count: 1])
-    |> Multi.update(:timeline_item, timeline_item_changeset)
+    {tags, users} = gather_tags_and_users(timeline_item)
+    user = Api.Repo.preload(timeline_item, :user).user
+
+    Multi.append(timeline_item_multi, insert_metadata(tags, users, user))
   end
 
   def insert(attributes, tags, users, user) do
-    timeline_item_changeset = TimelineItem.changeset(%TimelineItem{}, attributes)
+    timeline_item_multi = Multi.new
+    |> Multi.run(:timeline_item, fn %{timelineable: timelineable} ->
+      timeline_item = case timelineable.__struct__ do
+        Post -> %TimelineItem{post_id: timelineable.id}
+      end
+      Api.Repo.insert(TimelineItem.changeset(timeline_item, attributes))
+    end)
+
+    Multi.append(timeline_item_multi, insert_metadata(tags, users, user))
+  end
+
+  defp gather_tags_and_users(timeline_item) do
+    if (timeline_item.post_id != nil) do
+      text = Api.Repo.preload(timeline_item, :post).post.text
+      {PostManager.gather_tags(text, "#"), PostManager.gather_tags(text, "@")}
+    end
+  end
+
+  defp insert_metadata(tags, users, user) do
     tag_records = Api.Repo.all(from t in Tag, where: t.name in ^tags)
     tag_record_ids = Enum.map(tag_records, fn (tag) -> tag.id end)
     user_records = Api.Repo.all(from u in User, where: u.username in ^users)
@@ -38,13 +122,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
     user_tag_summary_user_records = Api.Repo.all(from utst in UserTagSummaryUser, where: utst.user_tag_summary_id in ^user_tag_summary_ids and utst.user_id in ^[user.id | user_record_ids])
 
     multi = Multi.new
-    |> Multi.update_all(:user_profile, Ecto.assoc(Api.Accounts.get_user!(attributes["user_id"]), :user_profile), inc: [post_count: 1])
-    |> Multi.run(:timeline_item, fn %{timelineable: timelineable} ->
-      timeline_item = case timelineable.__struct__ do
-        Post -> %TimelineItem{post_id: timelineable.id}
-      end
-      Api.Repo.insert(TimelineItem.changeset(timeline_item, attributes))
-    end)
+    |> Multi.update_all(:user_profile, Ecto.assoc(user, :user_profile), inc: [post_count: 1])
     |> Multi.run(:user_tag_summary, fn %{timeline_item: timeline_item} ->
       add_or_remove_from_private_timeline_item_ids(user_tag_summary_record, timeline_item)
     end)
@@ -118,7 +196,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
 
     added_users = current_users -- old_users
     removed_users = old_users -- current_users
-    all_users = Enum.uniq(old_users ++ current_users)
+    all_users = Enum.uniq(old_users ++ current_users ++ [user.username])
     user_records = Api.Repo.all(from u in User, where: u.username in ^all_users)
     user_record_ids = Enum.map(user_records, fn (user) -> user.id end)
 
@@ -155,10 +233,10 @@ defmodule ApiWeb.Services.TimelineItemManager do
       timeline_item = Api.Repo.preload(timeline_item, [:tags, :users])
       added_tag_records = Enum.map(added_tags, fn (tag) -> Enum.find(aggregated_tag_records, fn (tag_record) -> tag_record.name == tag end) end)
       removed_tag_records = Enum.map(removed_tags, fn (tag) -> Enum.find(aggregated_tag_records, fn (tag_record) -> tag_record.name == tag end) end)
-      added_user_records = Enum.map(added_users, fn (username) -> Enum.find(timeline_item.users, fn (user_record) -> user_record.username == username end)end)
-      removed_user_records = Enum.map(removed_users, fn (username) -> Enum.find(timeline_item.users, fn (user_record) -> user_record.username == username end)end)
+      added_user_records = Enum.map(added_users, fn (username) -> Enum.find(user_records, fn (user_record) -> user_record.username == username end)end)
+      removed_user_records = Enum.map(removed_users, fn (username) -> Enum.find(user_records, fn (user_record) -> user_record.username == username end)end)
       timeline_item
-
+      
       |> Ecto.Changeset.change
       |> Ecto.Changeset.put_assoc(:tags, (timeline_item.tags ++ added_tag_records) -- removed_tag_records)
       |> Ecto.Changeset.put_assoc(:users, (timeline_item.users ++ added_user_records) -- removed_user_records)
@@ -175,72 +253,117 @@ defmodule ApiWeb.Services.TimelineItemManager do
     multi = Enum.reduce(removed_users, multi, fn (username, multi) ->
       user_record = Enum.find(user_records, fn (user_record) -> user_record.username == username end)
 
-      multi = multi
-      |> multi_remove_tag_summary_user("remove_user_tag_summary_user_#{user_record.username}", user_record, :user_tag_summary)
-      |> Multi.run("find_user_tag_summary_for_subject_#{user_record.username}", fn %{} ->
-        user_tag_summary_record = Enum.find(user_tag_summary_records, fn (user_tag_summary_record) -> user_tag_summary_record.subject_id == user_record.id end)
-
-        remove_from_private_timeline_item_ids(user_tag_summary_record, timeline_item)
-      end)
-
-      multi = Enum.reduce(all_tags, multi, fn (tag, multi) ->
+      if (user_record == nil) do
         multi
-        |> multi_remove_tag_summary_tag("remove_user_tag_summary_for_subject_#{user_record.username}_with_tag_#{tag}", tag, "find_user_tag_summary_for_subject_#{user_record.username}")
-      end)
+      else
+        multi = multi
+        |> multi_remove_tag_summary_user("remove_user_tag_summary_user_#{user_record.username}", user_record, :user_tag_summary)
+        |> Multi.run("find_user_tag_summary_for_subject_#{user_record.username}", fn %{} ->
+          user_tag_summary_record = Enum.find(user_tag_summary_records, fn (user_tag_summary_record) -> user_tag_summary_record.subject_id == user_record.id end)
 
-      Enum.reduce(all_users, multi, fn (subuser_username, multi) ->
-        subuser_record = Enum.find(user_records, fn (user_record) -> user_record.username == subuser_username end)
-        if (user_record == subuser_record) do
+          remove_from_private_timeline_item_ids(user_tag_summary_record, timeline_item)
+        end)
+
+        multi = Enum.reduce(all_tags, multi, fn (tag, multi) ->
           multi
-        else
-          multi
-          |> multi_remove_tag_summary_user("remove_user_tag_summary_for_subject_#{user_record.username}_with_user_#{subuser_record.username}", subuser_record, "find_or_create_user_tag_summary_for_subject_#{user_record.username}")
-        end
-      end)
+          |> multi_remove_tag_summary_tag("remove_user_tag_summary_for_subject_#{user_record.username}_with_tag_#{tag}", tag, "find_user_tag_summary_for_subject_#{user_record.username}")
+        end)
+
+        Enum.reduce(all_users, multi, fn (subuser_username, multi) ->
+          subuser_record = Enum.find(user_records, fn (user_record) -> user_record.username == subuser_username end)
+          if (user_record == subuser_record || subuser_record == nil) do
+            multi
+          else
+            multi
+            |> multi_remove_tag_summary_user("remove_user_tag_summary_for_subject_#{user_record.username}_with_user_#{subuser_record.username}", subuser_record, "find_user_tag_summary_for_subject_#{user_record.username}")
+          end
+        end)
+      end
     end)
-    Enum.reduce(current_users, multi, fn (username, multi) ->
+    multi = Enum.reduce(current_users -- added_users, multi, fn (username, multi) ->
       user_record = Enum.find(user_records, fn (user_record) -> user_record.username == username end)
-      multi = multi
-      |> multi_find_or_create_tag_summary_user("find_or_create_user_tag_summary_user_#{user_record.username}", user_record, :user_tag_summary)
-      |> Multi.run("find_or_create_user_tag_summary_for_subject_#{user_record.username}", fn %{} ->
-        user_tag_summary_record = Enum.find(user_tag_summary_records, fn (user_tag_summary_record) -> user_tag_summary_record.subject_id == user_record.id end)
 
-        if (user_tag_summary_record != nil) do
-          add_or_remove_from_private_timeline_item_ids(user_tag_summary_record, timeline_item)
-        else
-          private_timeline_item_ids = if (timeline_item.private), do: [timeline_item.id], else: []
-          Api.Repo.insert(UserTagSummary.changeset(%UserTagSummary{}, %{author_id: user.id, subject_id: user_record.id, private_timeline_item_ids: private_timeline_item_ids }))
-        end
-      end)
-
-      multi = Enum.reduce(added_tags, multi, fn (tag, multi) ->
+      if (user_record == nil) do
         multi
-        |> multi_find_or_create_tag_summary_tag("find_or_create_user_tag_summary_for_subject_#{user_record.username}_with_tag_#{tag}", tag, "find_or_create_user_tag_summary_for_subject_#{user_record.username}")
-      end)
-      multi = Enum.reduce(removed_tags, multi, fn (tag, multi) ->
+      else
+
+        multi = multi
+        |> multi_find_or_create_tag_summary_user("find_or_create_user_tag_summary_user_#{user_record.username}", user_record, :user_tag_summary)
+        |> Multi.run("find_or_create_user_tag_summary_for_subject_#{user_record.username}", fn %{} ->
+          user_tag_summary_record = Enum.find(user_tag_summary_records, fn (user_tag_summary_record) -> user_tag_summary_record.subject_id == user_record.id end)
+
+          if (user_tag_summary_record != nil) do
+            add_or_remove_from_private_timeline_item_ids(user_tag_summary_record, timeline_item)
+          else
+            private_timeline_item_ids = if (timeline_item.private), do: [timeline_item.id], else: []
+            Api.Repo.insert(UserTagSummary.changeset(%UserTagSummary{}, %{author_id: user.id, subject_id: user_record.id, private_timeline_item_ids: private_timeline_item_ids }))
+          end
+        end)
+
+        multi = Enum.reduce(added_tags, multi, fn (tag, multi) ->
+          multi
+          |> multi_find_or_create_tag_summary_tag("find_or_create_user_tag_summary_for_subject_#{user_record.username}_with_tag_#{tag}", tag, "find_or_create_user_tag_summary_for_subject_#{user_record.username}")
+        end)
+        multi = Enum.reduce(removed_tags, multi, fn (tag, multi) ->
+          multi
+          |> multi_remove_tag_summary_tag("remove_user_tag_summary_for_subject_#{user_record.username}_with_tag_#{tag}", tag, "find_or_create_user_tag_summary_for_subject_#{user_record.username}")
+        end)
+
+        Enum.reduce(added_users, multi, fn (subuser_username, multi) ->
+          subuser_record = Enum.find(user_records, fn (user_record) -> user_record.username == subuser_username end)
+          if (user_record == subuser_record || subuser_record == nil) do
+            multi
+          else
+            multi
+            |> multi_find_or_create_tag_summary_user("find_or_create_user_tag_summary_for_subject_#{user_record.username}_with_user_#{subuser_record.username}", user_record, "find_or_create_user_tag_summary_for_subject_#{user_record.username}")
+          end
+        end)
+
+        Enum.reduce(removed_users, multi, fn (subuser_username, multi) ->
+          subuser_record = Enum.find(user_records, fn (user_record) -> user_record.username == subuser_username end)
+          if (user_record == subuser_record || subuser_record == nil) do
+            multi
+          else
+            multi
+            |> multi_remove_tag_summary_user("remove_user_tag_summary_for_subject_#{user_record.username}_with_user_#{subuser_record.username}", subuser_record, "find_or_create_user_tag_summary_for_subject_#{user_record.username}")
+          end
+        end)
+      end
+    end)
+    Enum.reduce(added_users, multi, fn (username, multi) ->
+      user_record = Enum.find(user_records, fn (user_record) -> user_record.username == username end)
+
+      if (user_record == nil) do
         multi
-        |> multi_remove_tag_summary_tag("remove_user_tag_summary_for_subject_#{user_record.username}_with_tag_#{tag}", tag, "find_or_create_user_tag_summary_for_subject_#{user_record.username}")
-      end)
+      else
+        multi = multi
+        |> multi_find_or_create_tag_summary_user("find_or_create_user_tag_summary_user_#{user_record.username}", user_record, :user_tag_summary)
+        |> Multi.run("find_or_create_user_tag_summary_for_subject_#{user_record.username}", fn %{} ->
+          user_tag_summary_record = Enum.find(user_tag_summary_records, fn (user_tag_summary_record) -> user_tag_summary_record.subject_id == user_record.id end)
 
-      Enum.reduce(added_users, multi, fn (subuser_username, multi) ->
-        subuser_record = Enum.find(user_records, fn (user_record) -> user_record.username == subuser_username end)
-        if (user_record == subuser_record) do
-          multi
-        else
-          multi
-          |> multi_find_or_create_tag_summary_user("find_or_create_user_tag_summary_for_subject_#{user_record.username}_with_user_#{subuser_record.username}", user_record, "find_or_create_user_tag_summary_for_subject_#{user_record.username}")
-        end
-      end)
+          if (user_tag_summary_record != nil) do
+            add_or_remove_from_private_timeline_item_ids(user_tag_summary_record, timeline_item)
+          else
+            private_timeline_item_ids = if (timeline_item.private), do: [timeline_item.id], else: []
+            Api.Repo.insert(UserTagSummary.changeset(%UserTagSummary{}, %{author_id: user.id, subject_id: user_record.id, private_timeline_item_ids: private_timeline_item_ids }))
+          end
+        end)
 
-      Enum.reduce(removed_users, multi, fn (subuser_username, multi) ->
-        subuser_record = Enum.find(user_records, fn (user_record) -> user_record.username == subuser_username end)
-        if (user_record == subuser_record) do
+        multi = Enum.reduce(current_tags, multi, fn (tag, multi) ->
           multi
-        else
-          multi
-          |> multi_remove_tag_summary_user("remove_user_tag_summary_for_subject_#{user_record.username}_with_user_#{subuser_record.username}", subuser_record, "find_or_create_user_tag_summary_for_subject_#{user_record.username}")
-        end
-      end)
+          |> multi_find_or_create_tag_summary_tag("find_or_create_user_tag_summary_for_subject_#{user_record.username}_with_tag_#{tag}", tag, "find_or_create_user_tag_summary_for_subject_#{user_record.username}")
+        end)
+
+        Enum.reduce([user.username | current_users], multi, fn (subuser_username, multi) ->
+          subuser_record = Enum.find(user_records, fn (user_record) -> user_record.username == subuser_username end)
+          if (user_record == subuser_record || subuser_record == nil) do
+            multi
+          else
+            multi
+            |> multi_find_or_create_tag_summary_user("find_or_create_user_tag_summary_for_subject_#{user_record.username}_with_user_#{subuser_record.username}", subuser_record, "find_or_create_user_tag_summary_for_subject_#{user_record.username}")
+          end
+        end)
+      end
     end)
   end
 
@@ -327,6 +450,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
       timeline_item = multi_args.timeline_item
       user_tag_summary_user_records = multi_args.user_tag_summary_user_records
       user_tag_summary_record = multi_args[user_tag_summary_record_multi_name]
+
       user_tag_summary_user_record = Enum.find(user_tag_summary_user_records, fn (user_tag_summary_user_record) ->
         user_tag_summary_user_record.user_tag_summary_id == user_tag_summary_record.id && user_tag_summary_user_record.user_id == user_record.id
       end)
