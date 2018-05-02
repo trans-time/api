@@ -1,4 +1,4 @@
-import Ecto.Query, only: [where: 2]
+import Ecto.Query
 
 defmodule ApiWeb.UserController do
   use ApiWeb, :controller
@@ -22,5 +22,16 @@ defmodule ApiWeb.UserController do
 
   def filter(_conn, query, "username", username) do
     where(query, username: ^username)
+  end
+
+  def filter(_conn, query, "like_username", username) do
+    safe_query = "%#{String.replace(username, "%", "\\%")}%"
+    query
+    |> where([u], ilike(u.username, ^safe_query) or ilike(u.display_name, ^safe_query))
+  end
+
+  def filter(_conn, query, "limit", limit) do
+    query
+    |> limit(^limit)
   end
 end

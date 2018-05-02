@@ -56,6 +56,7 @@ defmodule ApiWeb.Router do
     resources "/posts", PostController, only: [:create, :delete, :show, :update]
     resources "/reactions", ReactionController, only: [:create, :delete, :index, :update]
     resources "/search-queries", SearchQueryController, only: [:index]
+    resources "/tags", TagController, only: [:index]
     resources "/timeline-items", TimelineItemController, only: [:index]
     resources "/users", UserController, only: [:create, :index]
     resources "/user-identities", UserIdentityController, only: [:create, :delete, :update]
