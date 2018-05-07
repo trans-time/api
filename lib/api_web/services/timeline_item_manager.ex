@@ -52,9 +52,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
       multi
       |> multi_remove_tag_summary_tag("remove_user_tag_summary_tag_#{tag}", tag, :user_tag_summary)
     end)
-    multi = Enum.reduce(users, multi, fn (username, multi) ->
-      user_record = Enum.find(user_records, fn (user_record) -> user_record.username == username end)
-
+    multi = Enum.reduce(user_records, multi, fn (user_record, multi) ->
       multi = multi
       |> multi_remove_tag_summary_user("remove_user_tag_summary_user_#{user_record.username}", user_record, :user_tag_summary)
       |> Multi.run("find_user_tag_summary_for_subject_#{user_record.username}", fn %{} ->
@@ -68,8 +66,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
         |> multi_remove_tag_summary_tag("remove_user_tag_summary_for_subject_#{user_record.username}_with_tag_#{tag}", tag, "find_user_tag_summary_for_subject_#{user_record.username}")
       end)
 
-      Enum.reduce(users, multi, fn (subuser_username, multi) ->
-        subuser_record = Enum.find(user_records, fn (user_record) -> user_record.username == subuser_username end)
+      Enum.reduce(user_records, multi, fn (subuser_record, multi) ->
         if (user_record == subuser_record) do
           multi
         else
@@ -105,7 +102,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
   defp gather_tags_and_users(timeline_item) do
     if (timeline_item.post_id != nil) do
       text = Api.Repo.preload(timeline_item, :post).post.text
-      {PostManager.gather_tags(text, "#"), PostManager.gather_tags(text, "@")}
+      {PostManager.gather_tags("#", text), PostManager.gather_tags("@", text)}
     end
   end
 
@@ -236,7 +233,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
       added_user_records = Enum.map(added_users, fn (username) -> Enum.find(user_records, fn (user_record) -> user_record.username == username end)end)
       removed_user_records = Enum.map(removed_users, fn (username) -> Enum.find(user_records, fn (user_record) -> user_record.username == username end)end)
       timeline_item
-      
+
       |> Ecto.Changeset.change
       |> Ecto.Changeset.put_assoc(:tags, (timeline_item.tags ++ added_tag_records) -- removed_tag_records)
       |> Ecto.Changeset.put_assoc(:users, (timeline_item.users ++ added_user_records) -- removed_user_records)

@@ -17,11 +17,7 @@ defmodule Api.Timeline.TimelineItem do
     field :deleted_by_moderator, :boolean, default: false
     field :deleted_by_user, :boolean, default: false
     field :ignore_flags, :boolean, default: false
-    field :nsfw, :boolean, default: false
-    field :nsfw_butt, :boolean, default: false
-    field :nsfw_genitals, :boolean, default: false
-    field :nsfw_nipples, :boolean, default: false
-    field :nsfw_underwear, :boolean, default: false
+    field :maturity_rating, :integer, default: 0
     field :private, :boolean, default: false
     field :under_moderation, :boolean, default: false
 
@@ -40,8 +36,8 @@ defmodule Api.Timeline.TimelineItem do
   @doc false
   def changeset(%TimelineItem{} = timeline_item, attrs) do
     timeline_item
-    |> cast(attrs, [:date, :nsfw, :nsfw_butt, :nsfw_genitals, :nsfw_nipples, :nsfw_underwear, :private, :user_id])
-    |> validate_required([:date, :nsfw, :private])
+    |> cast(attrs, [:date, :maturity_rating, :private, :user_id])
+    |> validate_required([:date, :private])
     |> validate_that_date_is_not_in_the_future(:date)
     |> assoc_constraint(:user)
   end

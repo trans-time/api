@@ -28,7 +28,7 @@ defmodule ApiWeb.Services.Libra do
       lesbo: ~r/l+[e3]+[s$]+b+[o0]+/,
       sodomite: ~r/[s$]+[o0]+d+[o0]+m+/,
       # misogynistic
-      bitch: ~r/b+[i1]+t+c+h+/,
+      bitch: ~r/b+[i1\*]+t+c+h+/,
       cunt: ~r/c+u+n+t/,
       ho: ~r/(\b|^)h+[o0]+(\b|$)/,
       slut: ~r/[s$]+[l1]+u+t+/,
@@ -79,6 +79,7 @@ defmodule ApiWeb.Services.Libra do
   }
 
   def review(flaggable, text) do
+    text = text || ""
     infractions = Enum.reduce(Map.keys(@infractions), %{categories: [], quotes: []}, fn (category, infractions) ->
       quotes = Enum.reduce(Map.keys(@infractions[category]), [], fn (term, accumulator) ->
         matches = Regex.scan(@infractions[category][term], text)

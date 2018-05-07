@@ -17,6 +17,8 @@ defmodule ApiWeb.Services.VerdictManager do
     previous_verdict = Api.Repo.one(from v in Verdict, where: v.moderation_report_id == ^moderation_report.id, order_by: [desc: v.id], limit: 1)
     flaggable_changeset =  if flaggable_is_timeline_item, do: TimelineItem.private_changeset(flaggable, %{under_moderation: false}), else: Comment.private_changeset(flaggable, %{under_moderation: false})
     timeline_item_changeset = TimelineItem.private_changeset(timeline_item, %{under_moderation: false})
+    attributes = Map.put(attributes, "previous_maturity_rating", (if (attributes["action_change_maturity_rating"] && previous_verdict), do: previous_verdict.previous_maturity_rating, else: timeline_item.maturity_rating))
+    IO.inspect(attributes)
     verdict_changeset = Verdict.changeset(%Verdict{}, attributes)
     moderation_report_changeset = ModerationReport.changeset(moderation_report, %{
       resolved: true,
@@ -61,7 +63,17 @@ defmodule ApiWeb.Services.VerdictManager do
           ModerationManager.consider_unlocking_comments(timeline_item)
         true ->
           {:ok, verdict}
-        end
+      end
+    end)
+    |> Multi.run(:verdict_change_maturity_rating, fn %{verdict: verdict} ->
+      cond do
+        verdict.action_change_maturity_rating && timeline_item.maturity_rating != verdict.action_change_maturity_rating ->
+          Api.Repo.update(TimelineItem.changeset(timeline_item, %{ maturity_rating: verdict.action_change_maturity_rating }))
+        !verdict.action_change_maturity_rating && previous_verdict && previous_verdict.action_change_maturity_rating ->
+          Api.Repo.update(TimelineItem.changeset(timeline_item, %{ maturity_rating: previous_verdict.previous_maturity_rating }))
+        true ->
+          {:ok, verdict}
+      end
     end)
     df_multi = delete_flaggable_multi(attributes["action_deleted_flaggable"], flaggable, timeline_item, flaggable_is_timeline_item, previous_verdict)
     if_multi = ignore_flags_multi(attributes["action_ignore_flags"], flaggable, flaggable_is_timeline_item, previous_verdict)

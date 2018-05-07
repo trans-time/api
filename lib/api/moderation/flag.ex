@@ -14,7 +14,7 @@ defmodule Api.Moderation.Flag do
     field :bot, :boolean, default: false
     field :illicit_activity, :boolean, default: false
     field :unconsenting_image, :boolean, default: false
-    field :unmarked_NSFW, :boolean, default: false
+    field :incorrect_maturity_rating, :boolean, default: false
 
     belongs_to :comment, Comment
     belongs_to :timeline_item, TimelineItem
@@ -27,8 +27,8 @@ defmodule Api.Moderation.Flag do
   @doc false
   def changeset(%Flag{} = user, attrs) do
     user
-    |> cast(attrs, [:text, :bot, :illicit_activity, :trolling, :unconsenting_image, :unmarked_NSFW, :comment_id, :timeline_item_id, :user_id, :moderation_report_id])
-    |> validate_required([:bot, :illicit_activity, :trolling, :unconsenting_image, :unmarked_NSFW])
+    |> cast(attrs, [:text, :bot, :illicit_activity, :trolling, :unconsenting_image, :incorrect_maturity_rating, :comment_id, :timeline_item_id, :user_id, :moderation_report_id])
+    |> validate_required([:bot, :illicit_activity, :trolling, :unconsenting_image, :incorrect_maturity_rating])
     |> assoc_constraint(:comment)
     |> assoc_constraint(:timeline_item)
     |> assoc_constraint(:user)

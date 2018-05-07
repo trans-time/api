@@ -30,8 +30,8 @@ defmodule ApiWeb.Services.PostManager do
 
   def insert(attributes, user) do
     post_changeset = Post.changeset(%Post{}, attributes)
-    tags = gather_tags(post_changeset.changes.text, "#")
-    users = gather_tags(post_changeset.changes.text, "@")
+    tags = gather_tags("#", Map.get(post_changeset.changes, :text))
+    users = gather_tags("@", Map.get(post_changeset.changes, :text))
 
     post_multi = Multi.new
     |> Multi.insert(:timelineable, post_changeset)
@@ -56,10 +56,10 @@ defmodule ApiWeb.Services.PostManager do
         post_id: record.id
       })
 
-      old_tags = gather_tags(record.text, "#")
-      current_tags = gather_tags(post_changeset.changes.text, "#")
-      old_users = gather_tags(record.text, "@")
-      current_users = gather_tags(post_changeset.changes.text, "@")
+      old_tags = gather_tags("#", Map.get(record, :text))
+      current_tags = gather_tags("#", Map.get(post_changeset.changes, :text))
+      old_users = gather_tags("@", Map.get(record, :text))
+      current_users = gather_tags("@", Map.get(post_changeset.changes, :text))
 
       post_multi = Multi.new
       |> Multi.update(:timelineable, post_changeset)
@@ -74,8 +74,8 @@ defmodule ApiWeb.Services.PostManager do
 
       Multi.append(post_multi, Multi.append(timeline_item_multi, libra_multi))
     else
-      old_tags = gather_tags(record.text, "#")
-      old_users = gather_tags(record.text, "@")
+      old_tags = gather_tags("#", Map.get(record, :text))
+      old_users = gather_tags("@", Map.get(record, :text))
 
       post_multi = Multi.new
       |> Multi.update(:timelineable, post_changeset)
@@ -85,7 +85,8 @@ defmodule ApiWeb.Services.PostManager do
     end
   end
 
-  def gather_tags(text, leading_char) do
+  def gather_tags(leading_char, text \\ "") do
+    text = text || ""
     Enum.filter(Enum.uniq(List.flatten(Regex.scan(Regex.compile!("#{leading_char}([a-zA-Z0-9_]+)"), text))), fn (item) -> String.at(item, 0) != leading_char end)
   end
 end

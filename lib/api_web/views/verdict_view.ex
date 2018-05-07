@@ -3,7 +3,13 @@ defmodule ApiWeb.VerdictView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{ModerationReportView, UserView}
 
-  attributes [:inserted_at, :moderator_comment, :was_violation, :action_banned_user, :action_deleted_flaggable, :action_ignore_flags, :action_lock_comments, :ban_user_until, :lock_comments_until]
+  attributes [
+    :inserted_at, :moderator_comment, :was_violation,
+    :action_banned_user, :action_deleted_flaggable, :action_ignore_flags, :action_lock_comments,
+    :action_change_maturity_rating,
+    :action_delete_media, :delete_media_indexes,
+    :ban_user_until, :lock_comments_until
+  ]
 
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)
