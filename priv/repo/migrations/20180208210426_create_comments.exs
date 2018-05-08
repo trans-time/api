@@ -9,6 +9,7 @@ defmodule Api.Repo.Migrations.CreateComments do
       add :deleted_by_moderator, :boolean, default: false, null: false
       add :deleted_by_user, :boolean, default: false, null: false
       add :deleted_with_parent, :boolean, default: false, null: false
+      add :deleted_at, :utc_datetime
       add :under_moderation, :boolean, default: false, null: false
       add :comment_count, :integer, default: 0, null: false
       add :moon_count, :integer, default: 0, null: false
@@ -26,6 +27,7 @@ defmodule Api.Repo.Migrations.CreateComments do
     create index(:comments, [:timeline_item_id], using: :hash)
     create index(:comments, [:parent_id], using: :hash)
     create index(:comments, [:deleted], type: :hash)
+    create index(:comments, [:deleted_at], type: :hash)
     create index(:comments, [:deleted_with_parent], type: :hash)
     create index(:comments, [:deleted_by_user], type: :hash)
     create index(:comments, [:deleted_by_moderator], type: :hash)

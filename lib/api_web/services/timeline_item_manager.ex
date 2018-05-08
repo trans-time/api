@@ -9,7 +9,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
   alias Ecto.Multi
 
   def delete(timeline_item, attributes) do
-    timeline_item_changeset = TimelineItem.private_changeset(timeline_item, Map.merge(%{deleted: true}, attributes))
+    timeline_item_changeset = TimelineItem.private_changeset(timeline_item, Map.merge(%{deleted: true, deleted_at: DateTime.utc_now()}, attributes))
 
     {tags, users} = gather_tags_and_users(timeline_item)
     tag_records = Api.Repo.all(from t in Tag, where: t.name in ^tags)

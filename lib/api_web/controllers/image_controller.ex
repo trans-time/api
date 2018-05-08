@@ -16,7 +16,7 @@ defmodule ApiWeb.ImageController do
 
   def handle_delete(conn, record) do
     post = Api.Repo.one!(Post |> where(id: ^record.post_id) |> preload(:timeline_item))
-    handle_request(conn, post.timeline_item.user_id, ImageManager.delete(record))
+    handle_request(conn, post.timeline_item.user_id, ImageManager.delete(record, %{deleted_by_user: true}))
   end
 
   def handle_update(conn, record, attributes) do

@@ -11,6 +11,7 @@ defmodule Api.Timeline.Comment do
     field :deleted_by_moderator, :boolean, default: false
     field :deleted_by_user, :boolean, default: false
     field :deleted_with_parent, :boolean, default: false
+    field :deleted_at, :utc_datetime
     field :ignore_flags, :boolean, default: false
     field :text, :string
     field :under_moderation, :boolean, default: false
@@ -45,7 +46,7 @@ defmodule Api.Timeline.Comment do
   @doc false
   def private_changeset(%Comment{} = comment, attrs) do
     comment
-    |> cast(attrs, [:comment_count, :deleted, :deleted_by_moderator, :deleted_by_user, :deleted_with_parent, :ignore_flags, :under_moderation])
+    |> cast(attrs, [:comment_count, :deleted, :deleted_by_moderator, :deleted_by_user, :deleted_with_parent, :deleted_at, :ignore_flags, :under_moderation])
   end
 
   def validate_that_comments_are_unlocked(changeset, field, options \\ []) do

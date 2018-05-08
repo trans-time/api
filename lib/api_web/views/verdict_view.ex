@@ -7,7 +7,7 @@ defmodule ApiWeb.VerdictView do
     :inserted_at, :moderator_comment, :was_violation,
     :action_banned_user, :action_deleted_flaggable, :action_ignore_flags, :action_lock_comments,
     :action_change_maturity_rating,
-    :action_delete_media, :delete_media_indexes,
+    :action_delete_media, :delete_image_ids,
     :ban_user_until, :lock_comments_until
   ]
 

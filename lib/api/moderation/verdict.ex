@@ -16,7 +16,7 @@ defmodule Api.Moderation.Verdict do
     field :action_lock_comments, :boolean, default: false
     field :action_change_maturity_rating, :integer
     field :action_delete_media, :boolean, default: false
-    field :delete_media_indexes, {:array, :integer}, default: []
+    field :delete_image_ids, {:array, :integer}, default: []
     field :ban_user_until, :utc_datetime
     field :lock_comments_until, :utc_datetime
     field :previous_maturity_rating, :integer
@@ -34,7 +34,7 @@ defmodule Api.Moderation.Verdict do
       :moderator_comment, :was_violation,
       :action_banned_user, :action_deleted_flaggable, :action_ignore_flags, :action_lock_comments,
       :action_change_maturity_rating, :previous_maturity_rating,
-      :action_delete_media, :delete_media_indexes,
+      :action_delete_media, :delete_image_ids,
       :ban_user_until, :lock_comments_until,
       :moderation_report_id, :moderator_id
     ])

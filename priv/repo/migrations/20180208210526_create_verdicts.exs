@@ -11,7 +11,7 @@ defmodule Api.Repo.Migrations.CreateVerdicts do
       add :action_lock_comments, :boolean, default: false, null: false
       add :action_change_maturity_rating, :integer
       add :action_delete_media, :boolean, default: false, null: false
-      add :delete_media_indexes, {:array, :integer}, null: false
+      add :delete_image_ids, {:array, :integer}, null: false
       add :ban_user_until, :utc_datetime
       add :lock_comments_until, :utc_datetime
       add :previous_maturity_rating, :integer

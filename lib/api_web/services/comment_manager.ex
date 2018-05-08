@@ -7,7 +7,7 @@ defmodule ApiWeb.Services.CommentManager do
   alias Ecto.Multi
 
   def delete(record, attributes) do
-    changeset = Comment.private_changeset(record, Map.merge(%{deleted: true, comment_count: 0}, attributes))
+    changeset = Comment.private_changeset(record, Map.merge(%{deleted: true, deleted_at: DateTime.utc_now(), comment_count: 0}, attributes))
 
     comment_count_change = 1 + record.comment_count
 

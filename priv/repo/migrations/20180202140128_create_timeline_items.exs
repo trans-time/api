@@ -12,6 +12,7 @@ defmodule Api.Repo.Migrations.CreateTimelineItems do
       add :deleted, :boolean, default: false, null: false
       add :deleted_by_user, :boolean, default: false, null: false
       add :deleted_by_moderator, :boolean, default: false, null: false
+      add :deleted_at, :utc_datetime
       add :ignore_flags, :boolean, default: false, null: false
       add :maturity_rating, :integer, default: 0, null: false
       add :private, :boolean, default: false, null: false
@@ -25,6 +26,7 @@ defmodule Api.Repo.Migrations.CreateTimelineItems do
     create index(:timeline_items, [:comments_are_locked], using: :hash)
     create index(:timeline_items, ["date DESC"])
     create index(:timeline_items, [:deleted], type: :hash)
+    create index(:timeline_items, [:deleted_at], type: :hash)
     create index(:timeline_items, [:private], type: :hash)
     create index(:timeline_items, [:under_moderation], type: :hash)
     create index(:timeline_items, [:user_id], type: :hash)

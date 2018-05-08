@@ -5,7 +5,7 @@ defmodule ApiWeb.Services.VerdictManager do
   alias Api.Accounts.User
   alias Api.Moderation.{ModerationReport, Verdict}
   alias Api.Timeline.{Comment, TimelineItem}
-  alias ApiWeb.Services.{CommentManager, ModerationManager, TimelineItemManager}
+  alias ApiWeb.Services.{CommentManager, ImageManager, ModerationManager, TimelineItemManager}
 
   def insert(attributes) do
     moderation_report = Api.Repo.get(ModerationReport, attributes["moderation_report_id"])
@@ -77,8 +77,44 @@ defmodule ApiWeb.Services.VerdictManager do
     end)
     df_multi = delete_flaggable_multi(attributes["action_deleted_flaggable"], flaggable, timeline_item, flaggable_is_timeline_item, previous_verdict)
     if_multi = ignore_flags_multi(attributes["action_ignore_flags"], flaggable, flaggable_is_timeline_item, previous_verdict)
+    multi_sequence = delete_media_multi(multi_sequence, attributes["action_delete_media"], attributes["delete_image_ids"], previous_verdict, timeline_item)
     multi_sequence = Multi.append(multi_sequence, df_multi)
     Multi.append(multi_sequence, if_multi)
+  end
+
+  defp delete_media_multi(multi, action_delete_media, delete_image_ids, previous_verdict, timeline_item) do
+    cond do
+      action_delete_media ->
+        images = Api.Repo.preload(timeline_item, [post: [:images]]).post.images
+        Enum.reduce(images, multi, fn (image, multi) ->
+        IO.inspect(image.id)
+          cond do
+            Enum.member?(delete_image_ids, image.id) && !image.deleted_by_moderator ->
+              Multi.append(multi, ImageManager.delete(image, %{deleted_by_moderator: true}, "image_#{image.id}"))
+            !Enum.member?(delete_image_ids, image.id) && image.deleted_by_moderator ->
+              Multi.append(multi, ImageManager.undelete(image, %{
+                deleted: image.deleted_by_user,
+                deleted_by_moderator: false
+              }, "image_#{image.id}"))
+            true ->
+              multi
+          end
+        end)
+      !action_delete_media && previous_verdict.action_delete_media ->
+        images = Api.Repo.preload(timeline_item, [post: [:images]]).post.images
+        Enum.reduce(images, multi, fn (image, multi) ->
+          cond do
+            image.deleted_by_moderator ->
+              Multi.append(multi, ImageManager.undelete(image, %{
+                deleted: image.deleted_by_user,
+                deleted_by_moderator: false
+              }, "image_#{image.id}"))
+            true ->
+              multi
+          end
+        end)
+      true -> multi
+    end
   end
 
   defp delete_flaggable_multi(action_deleted_flaggable, flaggable, timeline_item, flaggable_is_timeline_item, previous_verdict) do

@@ -16,6 +16,7 @@ defmodule Api.Timeline.TimelineItem do
     field :deleted, :boolean, default: false
     field :deleted_by_moderator, :boolean, default: false
     field :deleted_by_user, :boolean, default: false
+    field :deleted_at, :utc_datetime
     field :ignore_flags, :boolean, default: false
     field :maturity_rating, :integer, default: 0
     field :private, :boolean, default: false
@@ -45,7 +46,7 @@ defmodule Api.Timeline.TimelineItem do
   @doc false
   def private_changeset(%TimelineItem{} = post, attrs) do
     post
-    |> cast(attrs, [:comments_are_locked, :deleted, :deleted_by_moderator, :deleted_by_user, :ignore_flags, :under_moderation])
+    |> cast(attrs, [:comments_are_locked, :deleted, :deleted_by_moderator, :deleted_by_user, :deleted_at, :ignore_flags, :under_moderation])
   end
 
   def validate_that_date_is_not_in_the_future(changeset, field, options \\ []) do
