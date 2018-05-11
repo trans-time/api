@@ -5,8 +5,8 @@ defmodule Api.Repo.Migrations.CreateFollows do
     create table(:follows) do
       add :can_view_private, :boolean, default: false, null: false
       add :requested_private, :boolean, default: false, null: false
-      add :follower_id, references(:users), null: false
-      add :followed_id, references(:users), null: false
+      add :follower_id, references(:users, on_delete: :delete_all), null: false
+      add :followed_id, references(:users, on_delete: :delete_all), null: false
 
       timestamps()
     end

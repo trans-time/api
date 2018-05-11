@@ -5,8 +5,8 @@ defmodule Api.Repo.Migrations.CreateUserIdentities do
     create table(:user_identities) do
       add :start_date, :utc_datetime
       add :end_date, :utc_datetime
-      add :identity_id, references(:identities, on_delete: :nothing), null: false
-      add :user_id, references(:users, on_delete: :nothing), null: false
+      add :identity_id, references(:identities, on_delete: :delete_all), null: false
+      add :user_id, references(:users, on_delete: :delete_all), null: false
 
       timestamps()
     end

@@ -6,7 +6,7 @@ defmodule Api.Repo.Migrations.CreateUserProfiles do
       add :description, :text
       add :post_count, :integer, default: 0, null: false
       add :website, :text
-      add :user_id, references(:users), null: false
+      add :user_id, references(:users, on_delete: :delete_all), null: false
 
       timestamps()
     end

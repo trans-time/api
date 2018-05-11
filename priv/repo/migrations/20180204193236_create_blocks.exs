@@ -3,8 +3,8 @@ defmodule Api.Repo.Migrations.CreateBlocks do
 
   def change do
     create table(:blocks) do
-      add :blocked_id, references(:users), null: false
-      add :blocker_id, references(:users), null: false
+      add :blocked_id, references(:users, on_delete: :delete_all), null: false
+      add :blocker_id, references(:users, on_delete: :delete_all), null: false
 
       timestamps()
     end

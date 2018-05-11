@@ -5,8 +5,8 @@ defmodule Api.Repo.Migrations.CreateTextVersions do
     create table(:text_versions) do
       add :text, :text
       add :attribute, :text
-      add :comment_id, references(:comments, on_delete: :nothing)
-      add :post_id, references(:posts, on_delete: :nothing)
+      add :comment_id, references(:comments, on_delete: :delete_all)
+      add :post_id, references(:posts, on_delete: :delete_all)
 
       timestamps()
     end

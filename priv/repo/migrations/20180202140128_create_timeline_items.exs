@@ -17,7 +17,7 @@ defmodule Api.Repo.Migrations.CreateTimelineItems do
       add :maturity_rating, :integer, default: 0, null: false
       add :private, :boolean, default: false, null: false
       add :under_moderation, :boolean, default: false, null: false
-      add :user_id, references(:users), null: false
+      add :user_id, references(:users, on_delete: :delete_all), null: false
 
       timestamps()
     end

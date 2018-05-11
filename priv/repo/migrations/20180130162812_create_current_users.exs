@@ -5,7 +5,7 @@ defmodule Api.Repo.Migrations.CreateCurrentUsers do
     create table(:current_users) do
       add :language, :text, default: "en-us", null: false
       add :unread_notification_count, :integer, default: 0, null: false
-      add :user_id, references(:users), null: false
+      add :user_id, references(:users, on_delete: :delete_all), null: false
 
       timestamps()
     end

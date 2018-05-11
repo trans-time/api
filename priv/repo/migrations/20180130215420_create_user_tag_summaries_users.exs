@@ -4,8 +4,8 @@ defmodule Api.Repo.Migrations.CreateUserTagSummariesUsers do
   def change do
     create table(:user_tag_summary_users) do
       add :timeline_item_ids, {:array, :integer}, null: false
-      add :user_id, references(:users, on_delete: :nothing), null: false
-      add :user_tag_summary_id, references(:user_tag_summaries, on_delete: :nothing), null: false
+      add :user_id, references(:users, on_delete: :delete_all), null: false
+      add :user_tag_summary_id, references(:user_tag_summaries, on_delete: :delete_all), null: false
 
       timestamps()
     end
