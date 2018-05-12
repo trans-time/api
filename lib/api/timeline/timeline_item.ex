@@ -29,7 +29,7 @@ defmodule Api.Timeline.TimelineItem do
     has_many :reactions, Reaction
     belongs_to :user, User
 
-    belongs_to :post, Post
+    has_one :post, Post
 
     timestamps()
   end

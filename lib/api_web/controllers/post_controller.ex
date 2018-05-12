@@ -12,12 +12,12 @@ defmodule ApiWeb.PostController do
   end
 
   def handle_delete(conn, record) do
-    timeline_item = Api.Repo.get_by!(TimelineItem, post_id: record.id)
+    timeline_item = Api.Repo.get!(TimelineItem, record.timeline_item_id)
     handle_request(conn, timeline_item.user_id, PostManager.delete(record, timeline_item, %{deleted_by_user: true}))
   end
 
   def handle_update(conn, record, attributes) do
-    handle_request(conn, Api.Repo.get_by!(TimelineItem, post_id: record.id).user_id, PostManager.update(record, attributes, Api.Accounts.Guardian.Plug.current_resource(conn)))
+    handle_request(conn, Api.Repo.get!(TimelineItem, record.timeline_item_id).user_id, PostManager.update(record, attributes, Api.Accounts.Guardian.Plug.current_resource(conn)))
   end
 
   defp handle_request(conn, user_id, multi) do

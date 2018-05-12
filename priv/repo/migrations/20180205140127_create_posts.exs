@@ -4,14 +4,11 @@ defmodule Api.Repo.Migrations.CreatePosts do
   def change do
     create table(:posts) do
       add :text, :text
+      add :timeline_item_id, references(:timeline_items, on_delete: :delete_all)
 
       timestamps()
     end
 
-    alter table("timeline_items") do
-      add :post_id, references(:posts, on_delete: :delete_all)
-    end
-    create constraint(:timeline_items, :only_one_timelineable, check: "count_not_nulls(post_id) = 1")
-    create index(:timeline_items, [:post_id], using: :hash)
+    create index(:posts, [:timeline_item_id], using: :hash)
   end
 end

@@ -33,15 +33,16 @@ defmodule ApiWeb.Services.PostManager do
     tags = gather_tags("#", Map.get(post_changeset.changes, :text))
     users = gather_tags("@", Map.get(post_changeset.changes, :text))
 
-    post_multi = Multi.new
-    |> Multi.insert(:timelineable, post_changeset)
     timeline_item_multi = TimelineItemManager.insert(attributes, tags, users, user)
-    libra_multi = Multi.new
+    post_multi = Multi.new
+    |> Multi.run(:timelineable, fn %{timeline_item: timeline_item} ->
+      Api.Repo.insert(Ecto.Changeset.merge(post_changeset, Post.private_changeset(%Post{}, %{"timeline_item_id" => timeline_item.id})))
+    end)
     |> Multi.run(:libra, fn %{timelineable: timelineable, timeline_item: timeline_item} ->
       Libra.review(timeline_item, timelineable.text)
     end)
 
-    Multi.append(post_multi, Multi.append(timeline_item_multi, libra_multi))
+    Multi.append(timeline_item_multi, post_multi)
   end
 
   def update(record, attributes, user) do

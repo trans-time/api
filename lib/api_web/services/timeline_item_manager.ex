@@ -89,21 +89,14 @@ defmodule ApiWeb.Services.TimelineItemManager do
 
   def insert(attributes, tags, users, user) do
     timeline_item_multi = Multi.new
-    |> Multi.run(:timeline_item, fn %{timelineable: timelineable} ->
-      timeline_item = case timelineable.__struct__ do
-        Post -> %TimelineItem{post_id: timelineable.id}
-      end
-      Api.Repo.insert(TimelineItem.changeset(timeline_item, attributes))
-    end)
+    |> Multi.insert(:timeline_item, TimelineItem.changeset(%TimelineItem{}, attributes))
 
     Multi.append(timeline_item_multi, insert_metadata(tags, users, user))
   end
 
   defp gather_tags_and_users(timeline_item) do
-    if (timeline_item.post_id != nil) do
-      text = Api.Repo.preload(timeline_item, :post).post.text
-      {PostManager.gather_tags("#", text), PostManager.gather_tags("@", text)}
-    end
+    text = Api.Repo.preload(timeline_item, :post).post.text
+    {PostManager.gather_tags("#", text), PostManager.gather_tags("@", text)}
   end
 
   defp insert_metadata(tags, users, user) do

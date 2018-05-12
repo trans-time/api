@@ -9,7 +9,7 @@ defmodule Api.Timeline.Post do
     field :text, :string
 
     has_many :images, Image
-    has_one :timeline_item, TimelineItem
+    belongs_to :timeline_item, TimelineItem
     has_many :text_versions, TextVersion
 
     timestamps()
@@ -19,5 +19,12 @@ defmodule Api.Timeline.Post do
   def changeset(%Post{} = post, attrs) do
     post
     |> cast(attrs, [:text])
+  end
+
+  @doc false
+  def private_changeset(%Post{} = post, attrs) do
+    post
+    |> cast(attrs, [:timeline_item_id])
+    |> assoc_constraint(:timeline_item)
   end
 end
