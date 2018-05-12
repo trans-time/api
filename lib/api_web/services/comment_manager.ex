@@ -31,7 +31,7 @@ defmodule ApiWeb.Services.CommentManager do
   end
 
   def insert(attributes) do
-    changeset = Comment.changeset(%Comment{}, attributes)
+    changeset = Comment.public_insert_changeset(%Comment{}, attributes)
 
     Multi.new
     |> Multi.update_all(:commentable, get_commentable(attributes), inc: [comment_count: 1])
@@ -43,7 +43,7 @@ defmodule ApiWeb.Services.CommentManager do
   end
 
   def update(record, attributes) do
-    comment_changeset = Comment.changeset(record, attributes)
+    comment_changeset = Comment.public_update_changeset(record, attributes)
     comment_private_changeset = Comment.private_changeset(record, %{ignore_flags: false})
     text_version_changeset = TextVersion.changeset(%TextVersion{}, %{
       text: record.text,

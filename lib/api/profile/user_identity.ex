@@ -15,11 +15,18 @@ defmodule Api.Profile.UserIdentity do
   end
 
   @doc false
-  def changeset(%UserIdentity{} = user_identity, attrs) do
+  def public_insert_changeset(%UserIdentity{} = user_identity, attrs) do
     user_identity
-    |> cast(attrs, [:end_date, :identity_id, :start_date, :user_id])
-    |> assoc_constraint(:identity)
+    |> cast(attrs, [:user_id])
     |> assoc_constraint(:user)
+    |> public_update_changeset(attrs)
+  end
+
+  @doc false
+  def public_update_changeset(user_identity, attrs) do
+    user_identity
+    |> cast(attrs, [:end_date, :identity_id, :start_date])
+    |> assoc_constraint(:identity)
     |> validate_date_sequence
   end
 

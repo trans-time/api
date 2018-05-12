@@ -32,14 +32,21 @@ defmodule Api.Timeline.Comment do
   end
 
   @doc false
-  def changeset(%Comment{} = comment, attrs) do
+  def public_insert_changeset(%Comment{} = comment, attrs) do
     comment
-    |> cast(attrs, [:parent_id, :timeline_item_id, :text, :user_id])
-    |> validate_required([:text])
-    |> validate_length(:text, max: 8000, message: "remote.errors.detail.length.length")
+    |> cast(attrs, [:parent_id, :timeline_item_id, :user_id])
     |> assoc_constraint(:parent)
     |> assoc_constraint(:timeline_item)
     |> assoc_constraint(:user)
+    |> public_update_changeset(attrs)
+  end
+
+  @doc false
+  def public_update_changeset(comment, attrs) do
+    comment
+    |> cast(attrs, [:text])
+    |> validate_required([:text])
+    |> validate_length(:text, max: 8000, message: "remote.errors.detail.length.length")
     |> validate_that_comments_are_unlocked(:timeline_item_id)
   end
 

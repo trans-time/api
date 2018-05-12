@@ -11,7 +11,7 @@ defmodule ApiWeb.Services.ReactionManager do
   end
 
   def insert(attributes) do
-    changeset = Reaction.changeset(%Reaction{}, attributes)
+    changeset = Reaction.public_insert_changeset(%Reaction{}, attributes)
 
     Multi.new
     |> Multi.update_all(:reactable, get_reactable(attributes), inc: inc(attributes, 1))
@@ -19,7 +19,7 @@ defmodule ApiWeb.Services.ReactionManager do
   end
 
   def update(record, attributes) do
-    changeset = Reaction.changeset(record, attributes)
+    changeset = Reaction.public_update_changeset(record, attributes)
 
     Multi.new
     |> Multi.update_all(:reactable, get_reactable(attributes), inc: inc(attributes, 1) ++ inc(record, -1))

@@ -13,7 +13,7 @@ defmodule ApiWeb.Services.UserIdentityManager do
     identity_name = attributes["name"]
     identity = Api.Repo.get_by(Identity, %{name: identity_name})
 
-    handle_insert_and_update(UserIdentity.changeset(%UserIdentity{}, attributes), identity, identity_name)
+    handle_insert_and_update(UserIdentity.public_insert_changeset(%UserIdentity{}, attributes), identity, identity_name)
   end
 
   def update(record, attributes) do
@@ -22,7 +22,7 @@ defmodule ApiWeb.Services.UserIdentityManager do
 
     if (identity.name !== identity_name), do: identity = Api.Repo.get_by(Identity, %{name: identity_name})
 
-    handle_insert_and_update(UserIdentity.changeset(record, attributes), identity, identity_name)
+    handle_insert_and_update(UserIdentity.public_update_changeset(record, attributes), identity, identity_name)
   end
 
   defp handle_insert_and_update(changeset, identity, identity_name) do

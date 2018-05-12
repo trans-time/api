@@ -10,7 +10,7 @@ defmodule ApiWeb.FollowController do
   def model, do: Follow
 
   def handle_create(conn, attributes) do
-    handle_request(conn,  String.to_integer(attributes["follower_id"]), fn() -> Api.Repo.insert(Follow.follower_changeset(%Follow{}, attributes)) end)
+    handle_request(conn,  String.to_integer(attributes["follower_id"]), fn() -> Api.Repo.insert(Follow.public_insert_follower_changeset(%Follow{}, attributes)) end)
   end
 
   def handle_delete(conn, record) do
@@ -19,11 +19,11 @@ defmodule ApiWeb.FollowController do
 
   def handle_update(conn, record, attributes) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
-    
+
     if (current_user_id == record.follower_id) do
-      handle_request(conn, record.follower_id, fn() -> Api.Repo.update(Follow.follower_changeset(record, attributes)) end)
+      handle_request(conn, record.follower_id, fn() -> Api.Repo.update(Follow.public_update_follower_changeset(record, attributes)) end)
     else
-      handle_request(conn, record.followed_id, fn() -> Api.Repo.update(Follow.followed_changeset(record, attributes)) end)
+      handle_request(conn, record.followed_id, fn() -> Api.Repo.update(Follow.public_update_followed_changeset(record, attributes)) end)
     end
   end
 

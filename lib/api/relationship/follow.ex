@@ -16,9 +16,9 @@ defmodule Api.Relationship.Follow do
   end
 
   @doc false
-  def follower_changeset(%Follow{} = follow, attrs) do
+  def public_insert_follower_changeset(%Follow{} = follow, attrs) do
     follow
-    |> cast(attrs, [:requested_private, :follower_id, :followed_id])
+    |> cast(attrs, [:follower_id, :followed_id])
     |> validate_required([:can_view_private, :requested_private])
     |> unique_constraint(:followed_id, name: :follows_followed_id_follower_id_index, message: "remote.errors.detail.unique.follow")
     |> assoc_constraint(:followed)
@@ -26,8 +26,16 @@ defmodule Api.Relationship.Follow do
   end
 
   @doc false
-  def followed_changeset(%Follow{} = follow, attrs) do
+  def public_update_follower_changeset(%Follow{} = follow, attrs) do
+    follow
+    |> cast(attrs, [:requested_private])
+    |> validate_required([:requested_private])
+  end
+
+  @doc false
+  def public_update_followed_changeset(%Follow{} = follow, attrs) do
     follow
     |> cast(attrs, [:can_view_private])
+    |> validate_required([:can_view_private])
   end
 end
