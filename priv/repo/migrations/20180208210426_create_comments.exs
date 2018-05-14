@@ -16,7 +16,7 @@ defmodule Api.Repo.Migrations.CreateComments do
       add :star_count, :integer, default: 0, null: false
       add :sun_count, :integer, default: 0, null: false
 
-      add :timeline_item_id, references(:timeline_items, on_delete: :delete_all)
+      add :timeline_item_id, references(:timeline_items, on_delete: :delete_all), null: false
       add :user_id, references(:users, on_delete: :delete_all), null: false
       add :parent_id, references(:comments, on_delete: :delete_all)
 

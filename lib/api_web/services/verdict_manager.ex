@@ -6,6 +6,7 @@ defmodule ApiWeb.Services.VerdictManager do
   alias Api.Moderation.{ModerationReport, Verdict}
   alias Api.Timeline.{Comment, TimelineItem}
   alias ApiWeb.Services.{CommentManager, ImageManager, ModerationManager, TimelineItemManager}
+  alias ApiWeb.Services.Notifications.NotificationManager
 
   def insert(attributes) do
     moderation_report = Api.Repo.get(ModerationReport, attributes["moderation_report_id"])
@@ -87,7 +88,6 @@ defmodule ApiWeb.Services.VerdictManager do
       action_delete_media ->
         images = Api.Repo.preload(timeline_item, [post: [:images]]).post.images
         Enum.reduce(images, multi, fn (image, multi) ->
-        IO.inspect(image.id)
           cond do
             Enum.member?(delete_image_ids, image.id) && !image.deleted_by_moderator ->
               Multi.append(multi, ImageManager.delete(image, %{deleted_by_moderator: true}, "image_#{image.id}"))
@@ -100,7 +100,7 @@ defmodule ApiWeb.Services.VerdictManager do
               multi
           end
         end)
-      !action_delete_media && previous_verdict.action_delete_media ->
+      !action_delete_media && previous_verdict && previous_verdict.action_delete_media ->
         images = Api.Repo.preload(timeline_item, [post: [:images]]).post.images
         Enum.reduce(images, multi, fn (image, multi) ->
           cond do
@@ -127,18 +127,18 @@ defmodule ApiWeb.Services.VerdictManager do
         end
       !action_deleted_flaggable && flaggable.deleted_by_moderator == true ->
         if flaggable_is_timeline_item do
-          TimelineItemManager.undelete(flaggable, %{
+          Multi.append(TimelineItemManager.undelete(flaggable, %{
             deleted: flaggable.deleted_by_user,
             deleted_by_moderator: false
-          })
+          }), NotificationManager.remove_from_moderation(flaggable))
         else
-          CommentManager.undelete(flaggable, %{
+          Multi.append(CommentManager.undelete(flaggable, %{
             deleted: flaggable.deleted_by_user,
             deleted_by_moderator: false
-          })
+          }), NotificationManager.remove_from_moderation(flaggable))
         end
       true ->
-        Multi.new
+        NotificationManager.remove_from_moderation(flaggable)
     end
   end
 

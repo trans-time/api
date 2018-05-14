@@ -54,6 +54,7 @@ defmodule ApiWeb.Router do
     resources "/follows", FollowController, only: [:create, :delete, :index, :update]
     resources "/images", ImageController, only: [:create, :delete, :update]
     resources "/posts", PostController, only: [:create, :delete, :show, :update]
+    resources "/notifications", NotificationController, only: [:index, :update]
     resources "/reactions", ReactionController, only: [:create, :delete, :index, :update]
     resources "/search-queries", SearchQueryController, only: [:index]
     resources "/tags", TagController, only: [:index]

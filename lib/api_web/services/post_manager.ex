@@ -9,23 +9,19 @@ defmodule ApiWeb.Services.PostManager do
   alias Ecto.Multi
 
   def delete(record, timeline_item, attributes) do
-    timeline_item_multi = TimelineItemManager.delete(timeline_item, attributes)
-    post_multi = Multi.new
+    Multi.new
     |> Multi.run(:timelineable, fn _ ->
       {:ok, record}
     end)
-
-    Multi.append(post_multi, timeline_item_multi)
+    |> Multi.append(TimelineItemManager.delete(timeline_item, attributes))
   end
 
   def undelete(record, timeline_item, attributes) do
-    timeline_item_multi = TimelineItemManager.undelete(timeline_item, attributes)
-    post_multi = Multi.new
+    Multi.new
     |> Multi.run(:timelineable, fn _ ->
       {:ok, record}
     end)
-
-    Multi.append(post_multi, timeline_item_multi)
+    |> Multi.append(TimelineItemManager.undelete(timeline_item, attributes))
   end
 
   def insert(attributes, user) do
@@ -33,16 +29,11 @@ defmodule ApiWeb.Services.PostManager do
     tags = gather_tags("#", Map.get(post_changeset.changes, :text))
     users = gather_tags("@", Map.get(post_changeset.changes, :text))
 
-    timeline_item_multi = TimelineItemManager.insert(attributes, tags, users, user)
-    post_multi = Multi.new
+    TimelineItemManager.insert(attributes, tags, users, user)
     |> Multi.run(:timelineable, fn %{timeline_item: timeline_item} ->
       Api.Repo.insert(Ecto.Changeset.merge(post_changeset, Post.private_changeset(%Post{}, %{"timeline_item_id" => timeline_item.id})))
     end)
-    |> Multi.run(:libra, fn %{timelineable: timelineable, timeline_item: timeline_item} ->
-      Libra.review(timeline_item, timelineable.text)
-    end)
-
-    Multi.append(timeline_item_multi, post_multi)
+    |> Multi.append(Libra.review(attributes["text"]))
   end
 
   def update(record, attributes, user) do
@@ -62,27 +53,20 @@ defmodule ApiWeb.Services.PostManager do
       old_users = gather_tags("@", Map.get(record, :text))
       current_users = gather_tags("@", Map.get(post_changeset.changes, :text))
 
-      post_multi = Multi.new
+      Multi.new
       |> Multi.update(:timelineable, post_changeset)
       |> Multi.run(:text_version, fn %{} ->
         Api.Repo.insert(text_version_changeset)
       end)
-      timeline_item_multi = TimelineItemManager.update(timeline_item, attributes, old_tags, current_tags, old_users, current_users, user)
-      libra_multi = Multi.new
-      |> Multi.run(:libra, fn %{timelineable: timelineable, timeline_item: timeline_item} ->
-        Libra.review(timeline_item, timelineable.text)
-      end)
-
-      Multi.append(post_multi, Multi.append(timeline_item_multi, libra_multi))
+      |> Multi.append(TimelineItemManager.update(timeline_item, attributes, old_tags, current_tags, old_users, current_users, user))
+      |> Multi.append(Libra.review(attributes["text"]))
     else
       old_tags = gather_tags("#", Map.get(record, :text))
       old_users = gather_tags("@", Map.get(record, :text))
 
-      post_multi = Multi.new
+      Multi.new
       |> Multi.update(:timelineable, post_changeset)
-      timeline_item_multi = TimelineItemManager.update(timeline_item, attributes, old_tags, old_tags, old_users, old_users, user)
-
-      Multi.append(post_multi, timeline_item_multi)
+      |> Multi.append(TimelineItemManager.update(timeline_item, attributes, old_tags, old_tags, old_users, old_users, user))
     end
   end
 

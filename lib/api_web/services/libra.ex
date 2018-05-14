@@ -78,7 +78,23 @@ defmodule ApiWeb.Services.Libra do
     }
   }
 
-  def review(flaggable, text) do
+  def review(text) do
+    Multi.new
+    |> Multi.run(:libra_flaggable, fn (multis) ->
+      {:ok, Map.get(multis, :comment) || Map.get(multis, :timeline_item)}
+    end)
+    |> Multi.run(:libra_infractions, fn %{libra_flaggable: libra_flaggable} -> gather_infractions(text, libra_flaggable) end)
+    |> Multi.run(:libra_has_infractions, fn %{libra_infractions: libra_infractions} -> {:ok, !Enum.empty?(libra_infractions.quotes)} end)
+    |> Multi.merge(fn %{libra_has_infractions: libra_has_infractions, libra_flaggable: libra_flaggable, libra_infractions: libra_infractions} ->
+      if (libra_has_infractions) do
+        Multi.append(insert_flag(libra_infractions, libra_flaggable), mark_flaggable_as_under_moderation(libra_flaggable))
+      else
+        Multi.new
+      end
+    end)
+  end
+
+  defp gather_infractions(text, flaggable) do
     text = text || ""
     infractions = Enum.reduce(Map.keys(@infractions), %{categories: [], quotes: []}, fn (category, infractions) ->
       quotes = Enum.reduce(Map.keys(@infractions[category]), [], fn (term, accumulator) ->
@@ -100,24 +116,14 @@ defmodule ApiWeb.Services.Libra do
       }
     end
 
-    if (Enum.empty?(infractions.quotes)) do
-      {:ok, flaggable}
-    else
-      Api.Repo.transaction(Multi.append(
-        insert_flag(infractions, flaggable),
-        mark_flaggable_as_under_moderation(flaggable)
-      ))
-    end
+    {:ok, infractions}
   end
 
   defp mark_flaggable_as_under_moderation(flaggable) do
     Multi.new
-    |> Multi.update(:flaggable, flaggable.__struct__.private_changeset(flaggable, %{
+    |> Multi.update(:libra_flaggable_update, flaggable.__struct__.private_changeset(flaggable, %{
       under_moderation: true
     }))
-    |> Multi.run(:maybe_timeline_item, fn %{} ->
-      FlagManager.put_under_moderation(flaggable)
-    end)
   end
 
   defp insert_flag(infractions, flaggable) do
@@ -126,10 +132,10 @@ defmodule ApiWeb.Services.Libra do
       "user_id" => Api.Repo.get_by!(Api.Accounts.User, username: "libra").id,
       "timeline_item_id" => (if flaggable.__struct__ == Api.Timeline.TimelineItem, do: flaggable.id, else: nil),
       "comment_id" => (if flaggable.__struct__ == Api.Timeline.Comment, do: flaggable.id, else: nil)
-    }, gather_infractions(infractions)))
+    }, flatten_infractions(infractions)))
   end
 
-  defp gather_infractions(infractions) do
+  defp flatten_infractions(infractions) do
     Enum.reduce(infractions.categories, %{}, fn (category, accumulator) ->
       Map.put(accumulator, category, true)
     end)

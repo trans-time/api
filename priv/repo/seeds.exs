@@ -17,10 +17,10 @@ Api.Repo.transaction(ApiWeb.Services.UserManager.insert_user(params_for(:user, %
 other_users = Enum.map(1..5, fn(_i) ->
   Kernel.elem(Api.Repo.transaction(ApiWeb.Services.UserManager.insert_user(params_for(:user))), 1).user
 end)
-timeline_items = []
-
-timeline_items = for _ <- 1..30, do: insert(:timeline_item, %{user: celeste, tags: Enum.take_random(tags, 3), users: Enum.take_random(other_users, 2), post: insert(:post), private: Enum.random([true, false])})
-for _ <- 1..30, do: insert(:timeline_item, %{user: Enum.random(other_users), tags: Enum.take_random(tags, 3), users: Enum.take_random(other_users, 2), post: insert(:post), private: Enum.random([true, false])})
+# timeline_items = []
+#
+# timeline_items = for _ <- 1..30, do: insert(:timeline_item, %{user: celeste, tags: Enum.take_random(tags, 3), users: Enum.take_random(other_users, 2), post: insert(:post), private: Enum.random([true, false])})
+# for _ <- 1..30, do: insert(:timeline_item, %{user: Enum.random(other_users), tags: Enum.take_random(tags, 3), users: Enum.take_random(other_users, 2), post: insert(:post), private: Enum.random([true, false])})
 
 # summary = Enum.reduce(timeline_items, Map.put(%{}, celeste.id, %{tags: %{}, users: %{}, private: []}), fn(item, summary) ->
 #   Map.put(%{}, celeste.id, %{tags: Enum.reduce(item.tags, summary[celeste.id].tags, fn(tag, tags) ->

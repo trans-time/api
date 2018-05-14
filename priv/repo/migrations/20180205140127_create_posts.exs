@@ -4,7 +4,7 @@ defmodule Api.Repo.Migrations.CreatePosts do
   def change do
     create table(:posts) do
       add :text, :text
-      add :timeline_item_id, references(:timeline_items, on_delete: :delete_all)
+      add :timeline_item_id, references(:timeline_items, on_delete: :delete_all), null: false
 
       timestamps()
     end

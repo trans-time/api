@@ -15,8 +15,8 @@ defmodule Api.Repo.Migrations.CreateVerdicts do
       add :ban_user_until, :utc_datetime
       add :lock_comments_until, :utc_datetime
       add :previous_maturity_rating, :integer
-      add :moderator_id, references(:users, on_delete: :nothing)
-      add :moderation_report_id, references(:moderation_reports, on_delete: :nothing)
+      add :moderator_id, references(:users, on_delete: :nothing), null: false
+      add :moderation_report_id, references(:moderation_reports, on_delete: :nothing), null: false
 
       timestamps()
     end

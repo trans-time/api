@@ -3,14 +3,12 @@ defmodule Api.Repo.Migrations.CreateModerationReports do
 
   def change do
     create table(:moderation_reports) do
-      add :moderator_comment, :text
       add :resolved, :boolean, default: false, null: false
       add :should_ignore, :boolean, default: false, null: false
       add :was_violation, :boolean, default: false, null: false
       add :comment_id, references(:comments, on_delete: :nothing)
       add :timeline_item_id, references(:timeline_items, on_delete: :nothing)
       add :indicted_id, references(:users, on_delete: :nothing), null: false
-      add :moderator_id, references(:users, on_delete: :nothing)
 
       timestamps()
     end

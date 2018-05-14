@@ -4,6 +4,7 @@ defmodule Api.Timeline.Comment do
   alias Api.Accounts.User
   alias Api.Moderation.{ModerationReport, TextVersion}
   alias Api.Timeline.{Comment, Reaction, TimelineItem}
+  alias Api.Notifications.{NotificationCommentAt}
 
 
   schema "comments" do
@@ -27,6 +28,8 @@ defmodule Api.Timeline.Comment do
     has_many :moderation_reports, ModerationReport
     has_many :reactions, Reaction
     has_many :text_versions, TextVersion
+
+    has_many :notification_comment_ats, NotificationCommentAt
 
     timestamps()
   end

@@ -62,7 +62,7 @@ defmodule ApiWeb.Services.FlagManager do
     end
   end
 
-  def put_under_moderation(flaggable) do
+  defp put_under_moderation(flaggable) do
     flaggable_changeset = flaggable.__struct__.private_changeset(flaggable, %{under_moderation: true})
     Api.Repo.transaction(
       Multi.new
