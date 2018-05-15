@@ -12,5 +12,6 @@ defmodule Api.Repo.Migrations.CreateNotifications do
     end
 
     create index(:notifications, [:user_id], using: :hash)
+    create index(:notifications, [:seen, :under_moderation])
   end
 end

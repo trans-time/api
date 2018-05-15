@@ -4,6 +4,7 @@ defmodule Api.Timeline.TimelineItem do
   alias Api.Moderation.{ModerationReport}
   alias Api.Timeline.{Comment, Image, Post, Reaction, Tag, TimelineItem}
   alias Api.Accounts.User
+  alias Api.Notifications.{NotificationTimelineItemAt}
 
 
   schema "timeline_items" do
@@ -30,6 +31,8 @@ defmodule Api.Timeline.TimelineItem do
     belongs_to :user, User
 
     has_one :post, Post
+
+    has_many :notification_timeline_item_ats, NotificationTimelineItemAt
 
     timestamps()
   end

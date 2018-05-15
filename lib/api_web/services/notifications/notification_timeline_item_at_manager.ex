@@ -1,0 +1,73 @@
+import Ecto.Query
+
+defmodule ApiWeb.Services.Notifications.NotificationTimelineItemAtManager do
+  alias Api.Accounts.User
+  alias Api.Notifications.{Notification, NotificationTimelineItemAt}
+  alias Ecto.Multi
+
+  def delete_all(text) do
+    users = Api.Repo.all(from u in User, where: u.username in ^Utils.TextScanner.gather_tags('@', text))
+
+    delete_all_from_users(users)
+  end
+
+  def insert_all(text) do
+    users = Api.Repo.all(from u in User, where: u.username in ^Utils.TextScanner.gather_tags('@', text))
+
+    insert_all_from_users(users)
+  end
+
+  def insert_added_delete_removed(previous_text, current_text) do
+    previous_usernames = Utils.TextScanner.gather_tags('@', previous_text)
+    current_usernames = Utils.TextScanner.gather_tags('@', current_text)
+    added_usernames = current_usernames -- previous_usernames
+    removed_usernames = previous_usernames -- current_usernames
+    added_users = Api.Repo.all(from u in User, where: u.username in ^added_usernames)
+    removed_users = Api.Repo.all(from u in User, where: u.username in ^removed_usernames)
+
+    Multi.append(insert_all_from_users(added_users), delete_all_from_users(removed_users))
+  end
+
+  defp delete_all_from_users(users) do
+    Multi.new
+    |> Multi.run(:remove_notification_timeline_item_at_notifications, fn %{timeline_item: timeline_item} ->
+      {amount, notifications} = Api.Repo.delete_all(Notification
+        |> where([n], n.user_id in ^Enum.map(users, fn (user) -> user.id end))
+        |> join(:inner, [n], ntia in assoc(n, :notification_timeline_item_at))
+        |> where([n, ntia], ntia.timeline_item_id == ^timeline_item.id),
+      returning: true)
+
+      if (amount == Kernel.length(users)), do: {:ok, notifications}, else: {:error, notifications}
+    end)
+  end
+
+  defp insert_all_from_users(users) do
+    Multi.new
+    |> Multi.run(:notification_timeline_item_at_notifications, fn
+      %{libra_has_infractions: _} ->
+        insert_all_notifications(users, %{under_moderation: true})
+      _ ->
+        insert_all_notifications(users)
+    end)
+    |> Multi.run(:notification_timeline_item_ats, fn %{notification_timeline_item_at_notifications: notifications, timeline_item: timeline_item} ->
+      now = DateTime.utc_now()
+
+      {amount, _} = Api.Repo.insert_all(NotificationTimelineItemAt, Enum.map(notifications, fn (notification) ->
+        %{timeline_item_id: timeline_item.id, notification_id: notification.id, inserted_at: now, updated_at: now}
+      end))
+
+      if (amount == Kernel.length(notifications)), do: {:ok, amount}, else: {:error, amount}
+    end)
+  end
+
+  defp insert_all_notifications(users, attrs \\ %{}) do
+    now = DateTime.utc_now()
+
+    {amount, notifications} = Api.Repo.insert_all(Notification, Enum.map(users, fn (user) ->
+      IO.inspect(user)
+      Map.merge(%{user_id: user.id, inserted_at: now, updated_at: now}, attrs)
+    end), returning: true)
+
+    if (amount == Kernel.length(users)), do: {:ok, notifications}, else: {:error, notifications}
+  end
+end

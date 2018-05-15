@@ -1,7 +1,7 @@
 defmodule ApiWeb.NotificationView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{NotificationCommentAtView,UserView}
+  alias ApiWeb.{NotificationCommentAtView,NotificationTimelineItemAtView,UserView}
 
   attributes [:read, :seen]
 
@@ -12,6 +12,7 @@ defmodule ApiWeb.NotificationView do
   def relationships(user, _conn) do
     Enum.reduce([
       %{key: :notification_comment_at, view: NotificationCommentAtView},
+      %{key: :notification_timeline_item_at, view: NotificationTimelineItemAtView},
       %{key: :user, view: UserView},
     ], %{}, fn(relationship, relationships) ->
       if Ecto.assoc_loaded?(Map.get(user, relationship.key)) do

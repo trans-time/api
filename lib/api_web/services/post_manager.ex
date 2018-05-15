@@ -6,6 +6,7 @@ defmodule ApiWeb.Services.PostManager do
   alias Api.Profile.{UserProfile, UserTagSummary, UserTagSummaryTag, UserTagSummaryUser}
   alias Api.Timeline.{Post, Tag, TimelineItem}
   alias ApiWeb.Services.{Libra, TimelineItemManager}
+  alias ApiWeb.Services.Notifications.NotificationTimelineItemAtManager
   alias Ecto.Multi
 
   def delete(record, timeline_item, attributes) do
@@ -14,6 +15,7 @@ defmodule ApiWeb.Services.PostManager do
       {:ok, record}
     end)
     |> Multi.append(TimelineItemManager.delete(timeline_item, attributes))
+    |> Multi.append(NotificationTimelineItemAtManager.delete_all(record.text))
   end
 
   def undelete(record, timeline_item, attributes) do
@@ -22,6 +24,7 @@ defmodule ApiWeb.Services.PostManager do
       {:ok, record}
     end)
     |> Multi.append(TimelineItemManager.undelete(timeline_item, attributes))
+    |> Multi.append(NotificationTimelineItemAtManager.insert_all(record.text))
   end
 
   def insert(attributes, user) do
@@ -34,6 +37,7 @@ defmodule ApiWeb.Services.PostManager do
       Api.Repo.insert(Ecto.Changeset.merge(post_changeset, Post.private_changeset(%Post{}, %{"timeline_item_id" => timeline_item.id})))
     end)
     |> Multi.append(Libra.review(attributes["text"]))
+    |> Multi.append(NotificationTimelineItemAtManager.insert_all(attributes["text"]))
   end
 
   def update(record, attributes, user) do
@@ -60,6 +64,7 @@ defmodule ApiWeb.Services.PostManager do
       end)
       |> Multi.append(TimelineItemManager.update(timeline_item, attributes, old_tags, current_tags, old_users, current_users, user))
       |> Multi.append(Libra.review(attributes["text"]))
+      |> Multi.append(NotificationTimelineItemAtManager.insert_added_delete_removed(Map.get(record, :text), Map.get(post_changeset.changes, :text)))
     else
       old_tags = gather_tags("#", Map.get(record, :text))
       old_users = gather_tags("@", Map.get(record, :text))

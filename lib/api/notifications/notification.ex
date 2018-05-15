@@ -2,7 +2,7 @@ defmodule Api.Notifications.Notification do
   use Api.Schema
   import Ecto.Changeset
   alias Api.Accounts.User
-  alias Api.Notifications.{Notification,NotificationCommentAt}
+  alias Api.Notifications.{Notification, NotificationCommentAt, NotificationTimelineItemAt}
 
 
   schema "notifications" do
@@ -12,6 +12,7 @@ defmodule Api.Notifications.Notification do
 
     belongs_to :user, User
     has_one :notification_comment_at, NotificationCommentAt
+    has_one :notification_timeline_item_at, NotificationTimelineItemAt
 
     timestamps()
   end

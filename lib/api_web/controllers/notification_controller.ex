@@ -1,4 +1,4 @@
-import Ecto.Query, only: [where: 2]
+import Ecto.Query, only: [where: 2, order_by: 2]
 
 defmodule ApiWeb.NotificationController do
   use ApiWeb, :controller
@@ -23,6 +23,10 @@ defmodule ApiWeb.NotificationController do
 
   def filter(_conn, query, "under_moderation", under_moderation) do
     where(query, under_moderation: ^under_moderation)
+  end
+
+  def sort(_conn, query, "inserted_at", inserted_at) do
+    order_by(query, [{^inserted_at, :inserted_at}])
   end
 
   def handle_index_query(%{query_params: qp} = conn, query) do
