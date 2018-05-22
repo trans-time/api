@@ -11,7 +11,7 @@ defmodule ApiWeb.CommentController do
   def model, do: Comment
 
   def handle_create(conn, attributes) do
-    handle_request(conn, String.to_integer(attributes["user_id"]), CommentManager.insert(attributes))
+    handle_request(conn, String.to_integer(attributes["user_id"]), CommentManager.insert(attributes, Api.Accounts.Guardian.Plug.current_resource(conn)))
   end
 
   def handle_delete(conn, record) do

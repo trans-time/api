@@ -5,19 +5,19 @@ defmodule ApiWeb.Services.Notifications.NotificationCommentAtManager do
   alias Api.Notifications.{Notification, NotificationCommentAt}
   alias Ecto.Multi
 
-  def delete_all(text) do
-    users = Api.Repo.all(from u in User, where: u.username in ^Utils.TextScanner.gather_tags('@', text))
+  def delete_all(comment) do
+    users = Api.Repo.all(from u in User, where: u.username in ^Utils.TextScanner.gather_tags('@', comment.text))
 
-    delete_all_from_users(users)
+    delete_all_from_users(comment, users)
   end
 
-  def insert_all(text) do
-    users = Api.Repo.all(from u in User, where: u.username in ^Utils.TextScanner.gather_tags('@', text))
+  def insert_all(comment) do
+    users = Api.Repo.all(from u in User, where: u.username in ^Utils.TextScanner.gather_tags('@', comment.text))
 
-    insert_all_from_users(users)
+    insert_all_from_users(comment, users)
   end
 
-  def insert_added_delete_removed(previous_text, current_text) do
+  def insert_added_delete_removed(comment, previous_text, current_text) do
     previous_usernames = Utils.TextScanner.gather_tags('@', previous_text)
     current_usernames = Utils.TextScanner.gather_tags('@', current_text)
     added_usernames = current_usernames -- previous_usernames
@@ -25,12 +25,12 @@ defmodule ApiWeb.Services.Notifications.NotificationCommentAtManager do
     added_users = Api.Repo.all(from u in User, where: u.username in ^added_usernames)
     removed_users = Api.Repo.all(from u in User, where: u.username in ^removed_usernames)
 
-    Multi.append(insert_all_from_users(added_users), delete_all_from_users(removed_users))
+    Multi.append(insert_all_from_users(comment, added_users), delete_all_from_users(comment, removed_users))
   end
 
-  defp delete_all_from_users(users) do
+  defp delete_all_from_users(comment, users) do
     Multi.new
-    |> Multi.run(:remove_notification_comment_at_notifications, fn %{comment: comment} ->
+    |> Multi.run(:remove_notification_comment_at_notifications, fn _ ->
       {amount, notifications} = Api.Repo.delete_all(Notification
         |> where([n], n.user_id in ^Enum.map(users, fn (user) -> user.id end))
         |> join(:inner, [n], nca in assoc(n, :notification_comment_at))
@@ -41,15 +41,18 @@ defmodule ApiWeb.Services.Notifications.NotificationCommentAtManager do
     end)
   end
 
-  defp insert_all_from_users(users) do
+  defp insert_all_from_users(comment, users) do
     Multi.new
-    |> Multi.run(:notification_comment_at_notifications, fn
-      %{libra_has_infractions: _} ->
-        insert_all_notifications(users, %{under_moderation: true})
-      _ ->
-        insert_all_notifications(users)
+    |> Multi.run(:notification_comment_at_notifications, fn _ ->
+      now = DateTime.utc_now()
+
+      {amount, notifications} = Api.Repo.insert_all(Notification, Enum.map(users, fn (user) ->
+        %{user_id: user.id, inserted_at: now, updated_at: now}
+      end), returning: true)
+
+      if (amount == Kernel.length(users)), do: {:ok, notifications}, else: {:error, notifications}
     end)
-    |> Multi.run(:notification_comment_ats, fn %{notification_comment_at_notifications: notifications, comment: comment} ->
+    |> Multi.run(:notification_comment_ats, fn %{notification_comment_at_notifications: notifications} ->
       now = DateTime.utc_now()
 
       {amount, _} = Api.Repo.insert_all(NotificationCommentAt, Enum.map(notifications, fn (notification) ->
@@ -58,15 +61,5 @@ defmodule ApiWeb.Services.Notifications.NotificationCommentAtManager do
 
       if (amount == Kernel.length(notifications)), do: {:ok, amount}, else: {:error, amount}
     end)
-  end
-
-  defp insert_all_notifications(users, attrs \\ %{}) do
-    now = DateTime.utc_now()
-
-    {amount, notifications} = Api.Repo.insert_all(Notification, Enum.map(users, fn (user) ->
-      Map.merge(%{user_id: user.id, inserted_at: now, updated_at: now}, attrs)
-    end), returning: true)
-
-    if (amount == Kernel.length(users)), do: {:ok, notifications}, else: {:error, notifications}
   end
 end

@@ -3,8 +3,8 @@ import Ecto.Query
 defmodule ApiWeb.Services.CommentManager do
   alias Api.Moderation.TextVersion
   alias Api.Timeline.{Comment, TimelineItem}
-  alias ApiWeb.Services.Libra
-  alias ApiWeb.Services.Notifications.NotificationCommentAtManager
+  alias ApiWeb.Services.{Libra, TimelineItemWatchManager}
+  alias ApiWeb.Services.Notifications.{NotificationCommentAtManager, NotificationCommentManager}
   alias Ecto.Multi
 
   def delete(record, attributes) do
@@ -17,7 +17,7 @@ defmodule ApiWeb.Services.CommentManager do
     |> Multi.update_all(:parent, Ecto.assoc(record, :parent), inc: [comment_count: -1])
     |> Multi.update_all(:children, Ecto.assoc(record, :children) |> where(deleted: false), set: [deleted: true, deleted_with_parent: true])
     |> Multi.update(:comment, changeset)
-    |> Multi.append(NotificationCommentAtManager.delete_all(record.text))
+    |> Multi.append(delete_notifications(record))
   end
 
   def undelete(record, attributes) do
@@ -30,18 +30,25 @@ defmodule ApiWeb.Services.CommentManager do
     |> Multi.update_all(:parent, Ecto.assoc(record, :parent), inc: [comment_count: 1])
     |> Multi.update_all(:children, Ecto.assoc(record, :children) |> where(deleted_with_parent: true, deleted_by_moderator: false, deleted_by_user: false), set: [deleted: false, deleted_with_parent: false])
     |> Multi.update(:comment, changeset)
-    |> Multi.append(NotificationCommentAtManager.insert_all(record.text))
+    |> Multi.append(insert_notifications(record))
   end
 
-  def insert(attributes) do
+  def insert(attributes, user) do
     changeset = Comment.public_insert_changeset(%Comment{}, attributes)
+    commentable_query = get_commentable(attributes)
+    commentable = Api.Repo.one(commentable_query)
 
     Multi.new
-    |> Multi.update_all(:commentable, get_commentable(attributes), inc: [comment_count: 1])
+    |> Multi.update_all(:commentable, commentable_query, inc: [comment_count: 1])
     |> Multi.update_all(:parent, Comment |> where(id: ^attributes["parent_id"]), inc: [comment_count: 1])
     |> Multi.insert(:comment, changeset)
+    |> Multi.append(TimelineItemWatchManager.insert(commentable, user))
     |> Multi.append(Libra.review(attributes["text"]))
-    |> Multi.append(NotificationCommentAtManager.insert_all(attributes["text"]))
+    |> Multi.merge(fn
+      %{:libra_has_infractions => true} -> Multi.new
+      %{comment: comment} -> insert_notifications(comment)
+    end)
+    # |> Multi.append(NotificationCommentManager.insert(commentable, user))
   end
 
   def update(record, attributes) do
@@ -59,7 +66,26 @@ defmodule ApiWeb.Services.CommentManager do
       if (Map.has_key?(comment_changeset.changes, :text)), do: Api.Repo.insert(text_version_changeset), else: {:ok, record}
     end)
     |> Multi.append(Libra.review(attributes["text"]))
-    |> Multi.append(NotificationCommentAtManager.insert_added_delete_removed(Map.get(record, :text), Map.get(comment_changeset.changes, :text)))
+    |> Multi.merge(fn
+      %{:libra_has_infractions => true} -> delete_notifications(record)
+      _ -> NotificationCommentAtManager.insert_added_delete_removed(record, Map.get(record, :text), Map.get(comment_changeset.changes, :text))
+    end)
+  end
+
+  def insert_notifications(comment) do
+    Api.Repo.preload(comment, [timeline_item: [:watchers]])
+
+    Multi.new
+    |> Multi.append(NotificationCommentAtManager.insert_all(comment))
+    |> Multi.append(NotificationCommentManager.insert(comment))
+  end
+
+  def delete_notifications(comment) do
+    Api.Repo.preload(comment, [:timeline_item])
+
+    Multi.new
+    |> Multi.append(NotificationCommentAtManager.delete_all(comment))
+    |> Multi.append(NotificationCommentManager.delete(comment))
   end
 
   defp get_commentable(comment) do

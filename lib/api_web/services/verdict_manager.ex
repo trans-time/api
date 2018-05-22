@@ -19,7 +19,7 @@ defmodule ApiWeb.Services.VerdictManager do
     flaggable_changeset =  if flaggable_is_timeline_item, do: TimelineItem.private_changeset(flaggable, %{under_moderation: false}), else: Comment.private_changeset(flaggable, %{under_moderation: false})
     timeline_item_changeset = TimelineItem.private_changeset(timeline_item, %{under_moderation: false})
     attributes = Map.put(attributes, "previous_maturity_rating", (if (attributes["action_change_maturity_rating"] && previous_verdict), do: previous_verdict.previous_maturity_rating, else: timeline_item.maturity_rating))
-    IO.inspect(attributes)
+
     verdict_changeset = Verdict.changeset(%Verdict{}, attributes)
     moderation_report_changeset = ModerationReport.changeset(moderation_report, %{
       resolved: true,

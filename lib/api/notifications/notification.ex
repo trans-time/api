@@ -2,16 +2,16 @@ defmodule Api.Notifications.Notification do
   use Api.Schema
   import Ecto.Changeset
   alias Api.Accounts.User
-  alias Api.Notifications.{Notification, NotificationCommentAt, NotificationTimelineItemAt}
+  alias Api.Notifications.{Notification, NotificationCommentAt, NotificationComment, NotificationTimelineItemAt}
 
 
   schema "notifications" do
     field :read, :boolean, default: false
     field :seen, :boolean, default: false
-    field :under_moderation, :boolean, default: false
 
     belongs_to :user, User
     has_one :notification_comment_at, NotificationCommentAt
+    has_one :notification_comment, NotificationComment
     has_one :notification_timeline_item_at, NotificationTimelineItemAt
 
     timestamps()
@@ -27,8 +27,8 @@ defmodule Api.Notifications.Notification do
   @doc false
   def private_changeset(%Notification{} = notification, attrs) do
     notification
-    |> cast(attrs, [:user_id, :under_moderation])
-    |> validate_required([:user_id, :under_moderation])
+    |> cast(attrs, [:user_id])
+    |> validate_required([:user_id])
     |> assoc_constraint(:user)
   end
 end
