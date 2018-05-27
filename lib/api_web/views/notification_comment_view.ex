@@ -3,7 +3,7 @@ defmodule ApiWeb.NotificationCommentView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{NotificationView,TimelineItemView}
 
-  attributes [:comment_count]
+  attributes [:commenter_count]
 
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)

@@ -17,7 +17,6 @@ defmodule ApiWeb.Services.VerdictManager do
     timeline_item = if flaggable_is_timeline_item, do: flaggable, else: flaggable.timeline_item
     previous_verdict = Api.Repo.one(from v in Verdict, where: v.moderation_report_id == ^moderation_report.id, order_by: [desc: v.id], limit: 1)
     flaggable_changeset =  if flaggable_is_timeline_item, do: TimelineItem.private_changeset(flaggable, %{under_moderation: false}), else: Comment.private_changeset(flaggable, %{under_moderation: false})
-    timeline_item_changeset = TimelineItem.private_changeset(timeline_item, %{under_moderation: false})
     attributes = Map.put(attributes, "previous_maturity_rating", (if (attributes["action_change_maturity_rating"] && previous_verdict), do: previous_verdict.previous_maturity_rating, else: timeline_item.maturity_rating))
 
     verdict_changeset = Verdict.changeset(%Verdict{}, attributes)
@@ -27,10 +26,9 @@ defmodule ApiWeb.Services.VerdictManager do
       should_ignore: flaggable.ignore_flags
     })
 
-    multi_sequence = Multi.new
+    Multi.new
     |> Multi.update(:verdict_moderation_report, moderation_report_changeset)
     |> Multi.update(:verdict_flaggable, flaggable_changeset)
-    |> Multi.update(:verdict_timeline_item, timeline_item_changeset)
     |> Multi.insert(:verdict, verdict_changeset)
     |> Multi.run(:verdict_ban_user, fn %{verdict: verdict} ->
       user = Api.Repo.get(User, moderation_report.indicted_id)
@@ -76,18 +74,21 @@ defmodule ApiWeb.Services.VerdictManager do
           {:ok, verdict}
       end
     end)
-    df_multi = delete_flaggable_multi(attributes["action_deleted_flaggable"], flaggable, timeline_item, flaggable_is_timeline_item, previous_verdict)
-    if_multi = ignore_flags_multi(attributes["action_ignore_flags"], flaggable, flaggable_is_timeline_item, previous_verdict)
-    multi_sequence = delete_media_multi(multi_sequence, attributes["action_delete_media"], attributes["delete_image_ids"], previous_verdict, timeline_item)
-    multi_sequence = Multi.append(multi_sequence, df_multi)
-    Multi.append(multi_sequence, if_multi)
+    |> Multi.append(delete_media_multi(attributes["action_delete_media"], attributes["delete_image_ids"], previous_verdict, timeline_item))
+    |> Multi.append(delete_flaggable_multi(attributes["action_deleted_flaggable"], flaggable, timeline_item, flaggable_is_timeline_item, previous_verdict))
+    |> Multi.append(ignore_flags_multi(attributes["action_ignore_flags"], flaggable, flaggable_is_timeline_item, previous_verdict))
+    # df_multi = delete_flaggable_multi(attributes["action_deleted_flaggable"], flaggable, timeline_item, flaggable_is_timeline_item, previous_verdict)
+    # if_multi = ignore_flags_multi(attributes["action_ignore_flags"], flaggable, flaggable_is_timeline_item, previous_verdict)
+    # multi_sequence = delete_media_multi(multi_sequence, attributes["action_delete_media"], attributes["delete_image_ids"], previous_verdict, timeline_item)
+    # multi_sequence = Multi.append(multi_sequence, df_multi)
+    # Multi.append(multi_sequence, if_multi)
   end
 
-  defp delete_media_multi(multi, action_delete_media, delete_image_ids, previous_verdict, timeline_item) do
+  defp delete_media_multi(action_delete_media, delete_image_ids, previous_verdict, timeline_item) do
     cond do
       action_delete_media ->
         images = Api.Repo.preload(timeline_item, [post: [:images]]).post.images
-        Enum.reduce(images, multi, fn (image, multi) ->
+        Enum.reduce(images, Multi.new, fn (image, multi) ->
           cond do
             Enum.member?(delete_image_ids, image.id) && !image.deleted_by_moderator ->
               Multi.append(multi, ImageManager.delete(image, %{deleted_by_moderator: true}, "image_#{image.id}"))
@@ -102,7 +103,7 @@ defmodule ApiWeb.Services.VerdictManager do
         end)
       !action_delete_media && previous_verdict && previous_verdict.action_delete_media ->
         images = Api.Repo.preload(timeline_item, [post: [:images]]).post.images
-        Enum.reduce(images, multi, fn (image, multi) ->
+        Enum.reduce(images, Multi.new, fn (image, multi) ->
           cond do
             image.deleted_by_moderator ->
               Multi.append(multi, ImageManager.undelete(image, %{
@@ -113,7 +114,7 @@ defmodule ApiWeb.Services.VerdictManager do
               multi
           end
         end)
-      true -> multi
+      true -> Multi.new
     end
   end
 

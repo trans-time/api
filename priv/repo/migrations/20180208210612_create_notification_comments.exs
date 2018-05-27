@@ -3,7 +3,7 @@ defmodule Api.Repo.Migrations.CreateNotificationComments do
 
   def change do
     create table(:notification_comments) do
-      add :comment_count, :integer, default: 0, null: false
+      add :commenter_count, :integer, default: 0, null: false
       add :notification_id, references(:notifications, on_delete: :delete_all), null: false
       add :timeline_item_id, references(:timeline_items, on_delete: :delete_all), null: false
 

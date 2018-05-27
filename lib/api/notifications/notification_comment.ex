@@ -6,7 +6,7 @@ defmodule Api.Notifications.NotificationComment do
 
 
   schema "notification_comments" do
-    field :comment_count, :integer, default: 0
+    field :commenter_count, :integer, default: 0
 
     belongs_to :timeline_item, TimelineItem
     belongs_to :notification, Notification
@@ -17,8 +17,8 @@ defmodule Api.Notifications.NotificationComment do
   @doc false
   def private_changeset(%NotificationComment{} = notification_comment, attrs) do
     notification_comment
-    |> cast(attrs, [:comment_count, :timeline_item_id, :notification_id])
-    |> validate_required([:comment_count, :timeline_item_id, :notification_id])
+    |> cast(attrs, [:commenter_count, :timeline_item_id, :notification_id])
+    |> validate_required([:commenter_count, :timeline_item_id, :notification_id])
     |> assoc_constraint(:timeline_item)
     |> assoc_constraint(:notification)
   end

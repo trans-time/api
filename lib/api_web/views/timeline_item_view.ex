@@ -1,7 +1,7 @@
 defmodule ApiWeb.TimelineItemView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{PostView, ReactionView, TagView, UserView}
+  alias ApiWeb.{CommentView, PostView, ReactionView, TagView, UserView}
 
   attributes [:date, :deleted, :private, :maturity_rating, :text, :comments_are_locked, :comment_count, :moon_count, :star_count, :sun_count, :under_moderation]
 
@@ -14,6 +14,7 @@ defmodule ApiWeb.TimelineItemView do
   def relationships(user, _conn) do
     Enum.reduce([
       %{key: :user, view: UserView},
+      %{key: :comments, view: CommentView},
       %{key: :reactions, view: ReactionView},
       %{key: :tags, view: TagView},
       %{key: :users, view: UserView},

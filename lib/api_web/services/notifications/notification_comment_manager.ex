@@ -2,6 +2,7 @@ import Ecto.Query
 
 defmodule ApiWeb.Services.Notifications.NotificationCommentManager do
   alias Api.Accounts.User
+  alias Api.Timeline.Comment
   alias Api.Notifications.{Notification, NotificationComment}
   alias Ecto.Multi
 
@@ -15,8 +16,9 @@ defmodule ApiWeb.Services.Notifications.NotificationCommentManager do
       |> join(:inner, [nc], n in assoc(nc, :notification))
       |> preload([nc, n], [notification: n])
     )
+    [commenter_count | _] = Api.Repo.all(from c in Comment, where: c.timeline_item_id == ^timeline_item.id and c.deleted == ^false, group_by: c.user_id, distinct: c.user_id, select: count(c.id))
 
-    if (!Enum.empty?(notification_comments) && notification_comments[0].comment_count <= 1) do
+    if (!Enum.empty?(notification_comments) && notification_comments[0].commenter_count <= 1) do
       Multi.new
       |> Multi.run(:remove_notification_comment_notifications, fn _ ->
         {amount, notifications} = Api.Repo.delete_all(Notification
@@ -33,7 +35,7 @@ defmodule ApiWeb.Services.Notifications.NotificationCommentManager do
       {amount, _} = Api.Repo.update_all(
         NotificationComment
         |> where([nc], nc.id in ^Enum.map(notification_comments, fn (nc) -> nc.id end)),
-        inc: [comment_count: -1],
+        set: [commenter_count: commenter_count],
         returning: true
       )
 
@@ -49,6 +51,8 @@ defmodule ApiWeb.Services.Notifications.NotificationCommentManager do
   end
 
   defp insert_all_from_users(users, timeline_item) do
+    [commenter_count | _] = Api.Repo.all(from c in Comment, where: c.timeline_item_id == ^timeline_item.id and c.deleted == ^false, group_by: c.user_id, distinct: c.user_id, select: count(c.id))
+
     all_user_ids = Enum.map(users, fn (user) -> user.id end)
     preexisting_notification_comments = Api.Repo.all(NotificationComment
       |> where([nc], nc.timeline_item_id == ^timeline_item.id)
@@ -72,7 +76,7 @@ defmodule ApiWeb.Services.Notifications.NotificationCommentManager do
       now = DateTime.utc_now()
 
       {amount, _} = Api.Repo.insert_all(NotificationComment, Enum.map(notifications, fn (notification) ->
-        %{timeline_item_id: timeline_item.id, notification_id: notification.id, inserted_at: now, updated_at: now, comment_count: 1}
+        %{timeline_item_id: timeline_item.id, notification_id: notification.id, inserted_at: now, updated_at: now, commenter_count: commenter_count}
       end))
 
       if (amount == Kernel.length(notifications)), do: {:ok, amount}, else: {:error, amount}
@@ -93,7 +97,7 @@ defmodule ApiWeb.Services.Notifications.NotificationCommentManager do
       {amount, _} = Api.Repo.update_all(
         NotificationComment
         |> where([nc], nc.notification_id in ^Enum.map(notifications, fn (n) -> n.id end)),
-        [inc: [comment_count: 1]],
+        [set: [commenter_count: commenter_count]],
         returning: true
       )
 
