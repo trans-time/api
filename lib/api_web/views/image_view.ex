@@ -5,6 +5,6 @@ defmodule ApiWeb.ImageView do
   attributes [:order, :src, :deleted]
 
   def src(image) do
-    Api.Timeline.ImageFile.url({image.src, image}, :full)
+    Api.Timeline.ImageFile.url({image.src, image}, :full_750)
   end
 end

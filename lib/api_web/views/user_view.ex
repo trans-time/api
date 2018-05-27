@@ -8,7 +8,7 @@ defmodule ApiWeb.UserView do
   def is_moderator(_a, _b), do: true
 
   def avatar(user) do
-    Api.Profile.Avatar.url({user.avatar, user}, :thumb)
+    Api.Profile.Avatar.url({user.avatar, user}, :full)
   end
 
   def preload(record_or_records, _conn, include_opts) do

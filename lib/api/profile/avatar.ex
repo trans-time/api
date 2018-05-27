@@ -2,7 +2,7 @@ defmodule Api.Profile.Avatar do
   use Arc.Definition
   use Arc.Ecto.Definition
   @acl :public_read
-  @versions [:full, :profile, :big_thumb, :thumb]
+  @versions [:full, :thumb_40, :thumb_80, :thumb_160, :thumb_320, :thumb_640]
   @extension_whitelist ~w(.jpg .jpeg .gif .png)
 
   def get_versions() do
@@ -10,19 +10,31 @@ defmodule Api.Profile.Avatar do
   end
 
   def transform(:full, _) do
-    {:convert, "-strip -thumbnail 1080x1080^ -gravity center -extent 1080x1080 -limit area 10MB -limit disk 100MB"}
+    {:convert, "-colorspace RGB -strip -gravity center -extent 1440x1440 -quality 80 -interlace Plane -colorspace sRGB -limit area 10MB -limit disk 100MB"}
   end
 
-  def transform(:profile, _) do
-    {:convert, "-strip -thumbnail 145x145^ -gravity center -extent 145x145 -limit area 10MB -limit disk 100MB"}
+  def transform(:thumb_40, _) do
+    {:convert, "-colorspace RGB -strip -gravity center -thumbnail 40x40^ -quality 80 -interlace Plane -colorspace sRGB -limit area 10MB -limit disk 100MB"}
   end
 
-  def transform(:big_thumb, _) do
-    {:convert, "-strip -thumbnail 60x60^ -gravity center -extent 60x60 -limit area 10MB -limit disk 100MB"}
+  def transform(:thumb_80, _) do
+    {:convert, "-colorspace RGB -strip -gravity center -thumbnail 80x80^ -quality 80 -interlace Plane -colorspace sRGB -limit area 10MB -limit disk 100MB"}
+  end
+
+  def transform(:thumb_160, _) do
+    {:convert, "-colorspace RGB -strip -gravity center -thumbnail 160x160^ -quality 80 -interlace Plane -colorspace sRGB -limit area 10MB -limit disk 100MB"}
+  end
+
+  def transform(:thumb_320, _) do
+    {:convert, "-colorspace RGB -strip -gravity center -thumbnail 320x320^ -quality 80 -interlace Plane -colorspace sRGB -limit area 10MB -limit disk 100MB"}
+  end
+
+  def transform(:thumb_640, _) do
+    {:convert, "-colorspace RGB -strip -gravity center -thumbnail 640x640^ -quality 80 -interlace Plane -colorspace sRGB -limit area 10MB -limit disk 100MB"}
   end
 
   def transform(:thumb, _) do
-    {:convert, "-strip -thumbnail 35x35^ -gravity center -extent 35x35 -limit area 10MB -limit disk 100MB"}
+    {:convert, "-strip -gravity center -thumbnail 35x35^ -gravity center -extent 35x35 -limit area 10MB -limit disk 100MB"}
   end
 
   def validate({file, _}) do
