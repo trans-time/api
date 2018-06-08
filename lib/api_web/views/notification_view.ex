@@ -12,6 +12,7 @@ defmodule ApiWeb.NotificationView do
     NotificationFollowView,
     NotificationModerationRequestView,
     NotificationModerationResolutionView,
+    NotificationModerationViolationView,
     NotificationPrivateGrantView,
     NotificationPrivateRequestView,
     NotificationTimelineItemAtView,
@@ -54,6 +55,9 @@ defmodule ApiWeb.NotificationView do
       notification_moderation_resolution: [
         :flag
       ],
+      notification_moderation_violation: [
+        :moderation_report
+      ],
       notification_private_grant: [
         follow: [:followed]
       ],
@@ -88,6 +92,7 @@ defmodule ApiWeb.NotificationView do
       %{key: :notification_follow, view: NotificationFollowView},
       %{key: :notification_moderation_request, view: NotificationModerationRequestView},
       %{key: :notification_moderation_resolution, view: NotificationModerationResolutionView},
+      %{key: :notification_moderation_violation, view: NotificationModerationViolationView},
       %{key: :notification_private_grant, view: NotificationPrivateGrantView},
       %{key: :notification_private_request, view: NotificationPrivateRequestView},
       %{key: :notification_timeline_item_at, view: NotificationTimelineItemAtView},

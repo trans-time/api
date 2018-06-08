@@ -6,7 +6,7 @@ defmodule ApiWeb.Services.VerdictManager do
   alias Api.Moderation.{ModerationReport, Verdict}
   alias Api.Timeline.{Comment, TimelineItem}
   alias ApiWeb.Services.{CommentManager, ImageManager, ModerationManager, TimelineItemManager}
-  alias ApiWeb.Services.Notifications.{NotificationManager, NotificationModerationResolutionManager}
+  alias ApiWeb.Services.Notifications.{NotificationManager, NotificationModerationResolutionManager, NotificationModerationViolationManager}
 
   def insert(attributes) do
     moderation_report = Api.Repo.get(ModerationReport, attributes["moderation_report_id"])
@@ -79,6 +79,13 @@ defmodule ApiWeb.Services.VerdictManager do
     |> Multi.append(is_ignoring_flags_multi(attributes["action_ignore_flags"], flaggable, flaggable_is_timeline_item, previous_verdict))
     |> Multi.merge(fn %{verdict: verdict} ->
       NotificationModerationResolutionManager.insert_all(verdict)
+    end)
+    |> Multi.merge(fn %{verdict: verdict} ->
+      if (verdict.was_violation) do
+        NotificationModerationViolationManager.insert(moderation_report, flaggable.user_id)
+      else
+        Multi.new
+      end
     end)
   end
 

@@ -10,6 +10,7 @@ defmodule Api.Notifications.Notification do
     NotificationFollow,
     NotificationModerationRequest,
     NotificationModerationResolution,
+    NotificationModerationViolation,
     NotificationPrivateGrant,
     NotificationPrivateRequest,
     NotificationTimelineItemComment,
@@ -30,6 +31,7 @@ defmodule Api.Notifications.Notification do
     has_one :notification_follow, NotificationFollow
     has_one :notification_moderation_request, NotificationModerationRequest
     has_one :notification_moderation_resolution, NotificationModerationResolution
+    has_one :notification_moderation_violation, NotificationModerationViolation
     has_one :notification_private_grant, NotificationPrivateGrant
     has_one :notification_private_request, NotificationPrivateRequest
     has_one :notification_timeline_item_at, NotificationTimelineItemAt
