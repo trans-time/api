@@ -4,7 +4,7 @@ defmodule Api.Repo.Migrations.CreateNotificationModerationResolutions do
   def change do
     create table(:notification_moderation_resolutions) do
       add :notification_id, references(:notifications, on_delete: :delete_all), null: false
-      add :flag_id, references(:flags, on_delete: :delete_all)
+      add :flag_id, references(:flags)
     end
 
     create index(:notification_moderation_resolutions, [:notification_id], using: :hash)

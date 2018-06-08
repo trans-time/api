@@ -25,15 +25,16 @@ defmodule Api.Repo.Migrations.CreateTimelineItems do
 
 
     create index(:timeline_items, [:comments_are_locked], using: :hash)
-    create index(:timeline_items, ["date DESC"])
     create index(:timeline_items, [:deleted], type: :hash)
     create index(:timeline_items, [:deleted_at], type: :hash)
     create index(:timeline_items, [:private], type: :hash)
     create index(:timeline_items, [:under_moderation], type: :hash)
     create index(:timeline_items, [:user_id], type: :hash)
-    create index(:timeline_items, [:moon_count], type: :hash)
-    create index(:timeline_items, [:star_count], type: :hash)
-    create index(:timeline_items, [:sun_count], type: :hash)
-    create index(:timeline_items, [:reaction_count], type: :hash)
+    create index(:timeline_items, ["date DESC"])
+    create index(:timeline_items, ["comment_count DESC"])
+    create index(:timeline_items, ["moon_count DESC"])
+    create index(:timeline_items, ["star_count DESC"])
+    create index(:timeline_items, ["sun_count DESC"])
+    create index(:timeline_items, ["reaction_count DESC"])
   end
 end

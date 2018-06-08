@@ -63,6 +63,7 @@ defmodule ApiWeb.Router do
     resources "/users", UserController, only: [:create, :index]
     resources "/user-identities", UserIdentityController, only: [:create, :delete, :update]
     resources "/user-profiles", UserProfileController, only: [:index, :update]
+    resources "/user-passwords", UserPasswordController, only: [:create]
     resources "/user-tag-summaries", UserTagSummaryController, only: [:index]
   end
 

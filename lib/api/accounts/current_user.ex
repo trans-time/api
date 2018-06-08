@@ -8,7 +8,6 @@ defmodule Api.Accounts.CurrentUser do
 
   schema "current_users" do
     field :language, :string, default: "en-us"
-    field :unread_notification_count, :integer, default: 0
 
     belongs_to :user, User
 
@@ -16,10 +15,10 @@ defmodule Api.Accounts.CurrentUser do
   end
 
   @doc false
-  def changeset(%User{} = user, attrs) do
+  def changeset(%CurrentUser{} = user, attrs) do
     user
-    |> cast(attrs, [:language, :unread_notification_count])
-    |> validate_required([:language, :unread_notification_count])
+    |> cast(attrs, [:language])
+    |> validate_required([:language])
     |> unique_constraint(:user_id)
     |> assoc_constraint(:user)
   end

@@ -1,4 +1,4 @@
-defmodule ApiWeb.EmailChangeView do
+defmodule ApiWeb.UserPasswordView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
 

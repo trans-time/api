@@ -5,6 +5,7 @@ defmodule Api.Repo.Migrations.CreateUsers do
     create table(:users) do
       add :avatar, :text
       add :email, :citext, null: false
+      add :follower_count, :integer, default: 0, null: false
       add :display_name, :text
       add :is_moderator, :boolean, default: false, null: false
       add :is_banned, :boolean, null: false, default: false
@@ -21,5 +22,6 @@ defmodule Api.Repo.Migrations.CreateUsers do
     create index(:users, [:is_moderator], using: :hash)
     create index(:users, ["username gin_trgm_ops"], using: :gin)
     create index(:users, ["lower(display_name) gin_trgm_ops"], using: :gin)
+    create index(:users, ["follower_count DESC"])
   end
 end

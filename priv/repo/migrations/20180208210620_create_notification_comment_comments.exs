@@ -4,7 +4,7 @@ defmodule Api.Repo.Migrations.CreateNotificationCommentComments do
   def change do
     create table(:notification_comment_comments) do
       add :notification_id, references(:notifications, on_delete: :delete_all), null: false
-      add :comment_id, references(:comments, on_delete: :delete_all), null: false
+      add :comment_id, references(:comments), null: false
     end
 
     create index(:notification_comment_comments, [:notification_id], using: :hash)

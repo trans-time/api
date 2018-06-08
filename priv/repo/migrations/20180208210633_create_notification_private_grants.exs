@@ -3,7 +3,7 @@ defmodule Api.Repo.Migrations.CreateNotificationPrivateGrants do
 
   def change do
     create table(:notification_private_grants) do
-      add :follow_id, references(:follows, on_delete: :delete_all), null: false
+      add :follow_id, references(:follows), null: false
       add :notification_id, references(:notifications, on_delete: :delete_all), null: false
     end
 

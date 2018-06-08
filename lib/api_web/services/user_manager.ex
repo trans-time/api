@@ -1,24 +1,28 @@
 import Ecto.Query
 
 defmodule ApiWeb.Services.UserManager do
-  alias Api.Accounts.{CurrentUser, User}
+  alias Api.Accounts.{CurrentUser, User, UserPassword}
   alias Api.Profile.{UserProfile, UserTagSummary}
   alias Ecto.Multi
 
   def insert_user(attributes) do
-    changeset = User.public_update_changeset(%User{
+    changeset = User.public_insert_changeset(%User{
       current_user: %CurrentUser{},
       user_profile: %UserProfile{}
     }, attributes)
 
     Multi.new
     |> Multi.insert(:user, changeset)
+    |> Multi.run(:user_password, fn %{user: user} ->
+      Api.Repo.insert(UserPassword.public_insert_changeset(%UserPassword{
+        user: user
+      }, attributes))
+    end)
     |> Multi.run(:user_tag_summary, fn %{user: user} ->
-      %UserTagSummary{
-        author: user,
-        subject: user
-      }
-      |> Api.Repo.insert
+      Api.Repo.insert(UserTagSummary.changeset(%UserTagSummary{}, %{
+        author_id: user.id,
+        subject_id: user.id
+      }))
     end)
   end
 end

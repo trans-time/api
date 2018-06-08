@@ -4,7 +4,7 @@ defmodule Api.Accounts.User do
   use Api.Schema
   use Arc.Ecto.Schema
   import Ecto.Changeset
-  alias Api.Accounts.{CurrentUser, User}
+  alias Api.Accounts.{CurrentUser, User, UserPassword}
   alias Api.Moderation.{Flag, ModerationReport}
   alias Api.Profile.{UserIdentity, UserProfile, UserTagSummary}
   alias Api.Relationship.{Block, Follow}
@@ -17,13 +17,13 @@ defmodule Api.Accounts.User do
     field :display_name, :string
     field :is_banned, :boolean, default: false
     field :is_moderator, :boolean, default: false
-    field :password, :string
     field :pronouns, :string
     field :username, :string
 
     has_many :blockeds, Block, foreign_key: :blocker_id
     has_many :blockers, Block, foreign_key: :blocked_id
     has_one :current_user, CurrentUser
+    has_one :user_password, UserPassword
     has_many :indictions, ModerationReport, foreign_key: :indicted_id
     has_many :flags, Flag
     has_many :followeds, Follow, foreign_key: :follower_id
@@ -48,7 +48,8 @@ defmodule Api.Accounts.User do
   end
 
   def validate_password(user, password) do
-    Comeonin.Argon2.checkpw(password, user.password)
+    user = Api.Repo.preload(user, :user_password)
+    Comeonin.Argon2.checkpw(password, user.user_password.password)
   end
 
   @doc false
@@ -71,16 +72,14 @@ defmodule Api.Accounts.User do
   @doc false
   defp public_shared_changeset(user, attrs) do
     user
-    |> cast(attrs, [:display_name, :email, :password, :pronouns])
+    |> cast(attrs, [:display_name, :email, :pronouns])
     |> cast_attachments(attrs, [:avatar])
-    |> validate_required([:email, :password])
+    |> validate_required([:email])
     |> validate_length(:display_name, max: 100, message: "remote.errors.detail.length.length")
     |> validate_length(:email, max: 1000, message: "remote.errors.detail.length.length")
     |> validate_format(:email, ~r/^[A-Za-z0-9._%+-+']+@[A-Za-z0-9.-]+\.[A-Za-z]+$/, message: "remote.errors.detail.format.email")
-    |> validate_length(:password, max: 1000, message: "remote.errors.detail.length.length")
     |> validate_length(:pronouns, max: 64, message: "remote.errors.detail.length.length")
     |> unique_constraint(:email)
-    |> put_pass_hash()
   end
 
   @doc false
@@ -88,9 +87,4 @@ defmodule Api.Accounts.User do
     user
     |> cast(attrs, [:is_banned])
   end
-
-  defp put_pass_hash(%Ecto.Changeset{valid?: true, changes: %{password: password}} = changeset) do
-    change(changeset, %{ password: Comeonin.Argon2.hashpwsalt(password) })
-  end
-  defp put_pass_hash(changeset), do: changeset
 end

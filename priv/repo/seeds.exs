@@ -11,12 +11,12 @@
 # and so on) as they will fail if something goes wrong.
 import Api.Factory
 import Ecto.Query
-tags = insert_list(6, :tag)
-celeste = Kernel.elem(Api.Repo.transaction(ApiWeb.Services.UserManager.insert_user(params_for(:user, %{username: "celeste", email: "celeste@trans.time"}))), 1).user
-Api.Repo.transaction(ApiWeb.Services.UserManager.insert_user(params_for(:user, %{username: "libra", email: "libra@trans.time"})))
-other_users = Enum.map(1..5, fn(_i) ->
-  Kernel.elem(Api.Repo.transaction(ApiWeb.Services.UserManager.insert_user(params_for(:user))), 1).user
-end)
+# tags = insert_list(6, :tag)
+celeste = Kernel.elem(Api.Repo.transaction(ApiWeb.Services.UserManager.insert_user(%{username: "celeste", email: "celeste@trans.time", password: "asdfasdf"})), 1).user
+Api.Repo.transaction(ApiWeb.Services.UserManager.insert_user(%{username: "libra", email: "libra@trans.time", password: "asdfasdf"}))
+# other_users = Enum.map(1..5, fn(_i) ->
+#   Kernel.elem(Api.Repo.transaction(ApiWeb.Services.UserManager.insert_user(params_for(:user))), 1).user
+# end)
 # timeline_items = []
 #
 # timeline_items = for _ <- 1..30, do: insert(:timeline_item, %{user: celeste, tags: Enum.take_random(tags, 3), users: Enum.take_random(other_users, 2), post: insert(:post), private: Enum.random([true, false])})
@@ -63,7 +63,7 @@ end)
 #   |> Api.Repo.all)
 # |> Api.Repo.update!
 
-Enum.each(other_users, fn(user) ->
-  insert(:follow, %{followed: user, follower: celeste})
-  insert(:follow, %{followed: celeste, follower: user})
-end)
+# Enum.each(other_users, fn(user) ->
+#   insert(:follow, %{followed: user, follower: celeste})
+#   insert(:follow, %{followed: celeste, follower: user})
+# end)

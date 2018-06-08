@@ -53,7 +53,6 @@ defmodule Api.Factory do
       email: Faker.Internet.email,
       display_name: Faker.Pokemon.name,
       is_moderator: true,
-      password: Comeonin.Argon2.hashpwsalt("asdfasdf"),
       pronouns: Enum.random(["she/her", "he/him", "they/them", "she/her; they/them", "he/him; they/them"]),
       username: Faker.Pokemon.name,
       user_identities: build_list(2, :user_identity)
