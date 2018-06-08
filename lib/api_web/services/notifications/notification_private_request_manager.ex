@@ -5,7 +5,7 @@ defmodule ApiWeb.Services.Notifications.NotificationPrivateRequestManager do
   alias Ecto.Multi
 
   def insert(follow) do
-    if (follow.requested_private) do
+    if (follow.has_requested_private) do
       insert_or_update(follow, Api.Repo.one(NotificationPrivateRequest
         |> join(:inner, [npr], n in assoc(npr, :notification))
         |> where([npr, n], n.user_id == ^follow.followed_id)
@@ -19,8 +19,8 @@ defmodule ApiWeb.Services.Notifications.NotificationPrivateRequestManager do
   defp insert_or_update(_, %NotificationPrivateRequest{} = npr) do
     changeset = Notification.private_changeset(npr.notification, %{
       updated_at: DateTime.utc_now(),
-      read: false,
-      seen: false
+      is_read: false,
+      is_seen: false
     })
 
     Multi.new

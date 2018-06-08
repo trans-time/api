@@ -15,7 +15,7 @@ defmodule ApiWeb.CommentController do
   end
 
   def handle_delete(conn, record) do
-    handle_request(conn, record.user_id, CommentManager.delete(record, %{deleted_by_user: true}))
+    handle_request(conn, record.user_id, CommentManager.delete(record, %{is_marked_for_deletion_by_user: true}))
   end
 
   def handle_update(conn, record, attributes) do
@@ -45,13 +45,13 @@ defmodule ApiWeb.CommentController do
     where(query, timeline_item_id: ^timeline_item_id)
   end
 
-  def filter(_conn, query, "deleted", deleted) do
-    where(query, deleted: ^deleted)
+  def filter(_conn, query, "is_marked_for_deletion", is_marked_for_deletion) do
+    where(query, is_marked_for_deletion: ^is_marked_for_deletion)
   end
 
-  def filter(conn, query, "under_moderation", under_moderation) do
+  def filter(conn, query, "is_under_moderation", is_under_moderation) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || -1)
-    where(query, [ti], ti.under_moderation == ^under_moderation or ti.user_id == ^current_user_id)
+    where(query, [ti], ti.is_under_moderation == ^is_under_moderation or ti.user_id == ^current_user_id)
   end
 
   def sort(_conn, query, "inserted_at", inserted_at) do

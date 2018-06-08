@@ -3,7 +3,7 @@ defmodule ApiWeb.CommentView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{CommentView, TimelineItemView, ReactionView, TextVersionView, UserView}
 
-  attributes [:inserted_at, :deleted, :under_moderation, :text, :comment_count, :moon_count, :star_count, :sun_count, :reaction_count]
+  attributes [:inserted_at, :is_marked_for_deletion, :is_under_moderation, :text, :comment_count, :moon_count, :star_count, :sun_count, :reaction_count]
 
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)

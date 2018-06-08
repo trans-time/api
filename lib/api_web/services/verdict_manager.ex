@@ -16,14 +16,14 @@ defmodule ApiWeb.Services.VerdictManager do
       else: Api.Repo.one(from c in Comment, where: c.id == ^moderation_report.comment_id, join: ti in assoc(c, :timeline_item), preload: [timeline_item: ti])
     timeline_item = if flaggable_is_timeline_item, do: flaggable, else: flaggable.timeline_item
     previous_verdict = Api.Repo.one(from v in Verdict, where: v.moderation_report_id == ^moderation_report.id, order_by: [desc: v.id], limit: 1)
-    flaggable_changeset =  if flaggable_is_timeline_item, do: TimelineItem.private_changeset(flaggable, %{under_moderation: false}), else: Comment.private_changeset(flaggable, %{under_moderation: false})
+    flaggable_changeset =  if flaggable_is_timeline_item, do: TimelineItem.private_changeset(flaggable, %{is_under_moderation: false}), else: Comment.private_changeset(flaggable, %{is_under_moderation: false})
     attributes = Map.put(attributes, "previous_maturity_rating", (if (attributes["action_change_maturity_rating"] && previous_verdict), do: previous_verdict.previous_maturity_rating, else: timeline_item.maturity_rating))
 
     verdict_changeset = Verdict.changeset(%Verdict{}, attributes)
     moderation_report_changeset = ModerationReport.changeset(moderation_report, %{
-      resolved: true,
+      is_resolved: true,
       was_violation: attributes["was_violation"],
-      should_ignore: flaggable.ignore_flags
+      should_ignore: flaggable.is_ignoring_flags
     })
 
     Multi.new
@@ -74,39 +74,39 @@ defmodule ApiWeb.Services.VerdictManager do
           {:ok, verdict}
       end
     end)
-    |> Multi.append(delete_media_multi(attributes["action_delete_media"], attributes["delete_image_ids"], previous_verdict, timeline_item))
-    |> Multi.append(delete_flaggable_multi(attributes["action_deleted_flaggable"], flaggable, timeline_item, flaggable_is_timeline_item, previous_verdict))
-    |> Multi.append(ignore_flags_multi(attributes["action_ignore_flags"], flaggable, flaggable_is_timeline_item, previous_verdict))
+    |> Multi.append(delete_media_multi(attributes["action_mark_images_for_deletion"], attributes["delete_image_ids"], previous_verdict, timeline_item))
+    |> Multi.append(delete_flaggable_multi(attributes["action_mark_flaggable_for_deletion"], flaggable, timeline_item, flaggable_is_timeline_item, previous_verdict))
+    |> Multi.append(is_ignoring_flags_multi(attributes["action_ignore_flags"], flaggable, flaggable_is_timeline_item, previous_verdict))
     |> Multi.merge(fn %{verdict: verdict} ->
       NotificationModerationResolutionManager.insert_all(verdict)
     end)
   end
 
-  defp delete_media_multi(action_delete_media, delete_image_ids, previous_verdict, timeline_item) do
+  defp delete_media_multi(action_mark_images_for_deletion, delete_image_ids, previous_verdict, timeline_item) do
     cond do
-      action_delete_media ->
+      action_mark_images_for_deletion ->
         images = Api.Repo.preload(timeline_item, [post: [:images]]).post.images
         Enum.reduce(images, Multi.new, fn (image, multi) ->
           cond do
-            Enum.member?(delete_image_ids, image.id) && !image.deleted_by_moderator ->
-              Multi.append(multi, ImageManager.delete(image, %{deleted_by_moderator: true}, "image_#{image.id}"))
-            !Enum.member?(delete_image_ids, image.id) && image.deleted_by_moderator ->
+            Enum.member?(delete_image_ids, image.id) && !image.is_marked_for_deletion_by_moderator ->
+              Multi.append(multi, ImageManager.delete(image, %{is_marked_for_deletion_by_moderator: true}, "image_#{image.id}"))
+            !Enum.member?(delete_image_ids, image.id) && image.is_marked_for_deletion_by_moderator ->
               Multi.append(multi, ImageManager.undelete(image, %{
-                deleted: image.deleted_by_user,
-                deleted_by_moderator: false
+                is_marked_for_deletion: image.is_marked_for_deletion_by_user,
+                is_marked_for_deletion_by_moderator: false
               }, "image_#{image.id}"))
             true ->
               multi
           end
         end)
-      !action_delete_media && previous_verdict && previous_verdict.action_delete_media ->
+      !action_mark_images_for_deletion && previous_verdict && previous_verdict.action_mark_images_for_deletion ->
         images = Api.Repo.preload(timeline_item, [post: [:images]]).post.images
         Enum.reduce(images, Multi.new, fn (image, multi) ->
           cond do
-            image.deleted_by_moderator ->
+            image.is_marked_for_deletion_by_moderator ->
               Multi.append(multi, ImageManager.undelete(image, %{
-                deleted: image.deleted_by_user,
-                deleted_by_moderator: false
+                is_marked_for_deletion: image.is_marked_for_deletion_by_user,
+                is_marked_for_deletion_by_moderator: false
               }, "image_#{image.id}"))
             true ->
               multi
@@ -116,24 +116,24 @@ defmodule ApiWeb.Services.VerdictManager do
     end
   end
 
-  defp delete_flaggable_multi(action_deleted_flaggable, flaggable, timeline_item, flaggable_is_timeline_item, previous_verdict) do
+  defp delete_flaggable_multi(action_mark_flaggable_for_deletion, flaggable, timeline_item, flaggable_is_timeline_item, previous_verdict) do
     cond do
-      action_deleted_flaggable && flaggable.deleted_by_moderator == false ->
+      action_mark_flaggable_for_deletion && flaggable.is_marked_for_deletion_by_moderator == false ->
         if flaggable_is_timeline_item do
-          TimelineItemManager.delete(flaggable, %{deleted_by_moderator: true})
+          TimelineItemManager.delete(flaggable, %{is_marked_for_deletion_by_moderator: true})
         else
-          CommentManager.delete(flaggable, %{deleted_by_moderator: true})
+          CommentManager.delete(flaggable, %{is_marked_for_deletion_by_moderator: true})
         end
-      !action_deleted_flaggable && flaggable.deleted_by_moderator == true ->
+      !action_mark_flaggable_for_deletion && flaggable.is_marked_for_deletion_by_moderator == true ->
         if flaggable_is_timeline_item do
           Multi.append(TimelineItemManager.undelete(flaggable, %{
-            deleted: flaggable.deleted_by_user,
-            deleted_by_moderator: false
+            is_marked_for_deletion: flaggable.is_marked_for_deletion_by_user,
+            is_marked_for_deletion_by_moderator: false
           }), NotificationManager.remove_from_moderation(flaggable))
         else
           Multi.append(CommentManager.undelete(flaggable, %{
-            deleted: flaggable.deleted_by_user,
-            deleted_by_moderator: false
+            is_marked_for_deletion: flaggable.is_marked_for_deletion_by_user,
+            is_marked_for_deletion_by_moderator: false
           }), NotificationManager.remove_from_moderation(flaggable))
         end
       true ->
@@ -141,14 +141,14 @@ defmodule ApiWeb.Services.VerdictManager do
     end
   end
 
-  defp ignore_flags_multi(action_ignore_flags, flaggable, flaggable_is_timeline_item, previous_verdict) do
+  defp is_ignoring_flags_multi(action_ignore_flags, flaggable, flaggable_is_timeline_item, previous_verdict) do
     cond do
-      action_ignore_flags && flaggable.ignore_flags == false ->
-         flaggable_changeset = if flaggable_is_timeline_item, do: TimelineItem.private_changeset(flaggable, %{ignore_flags: true}), else: Comment.private_changeset(flaggable, %{ignore_flags: true})
+      action_ignore_flags && flaggable.is_ignoring_flags == false ->
+         flaggable_changeset = if flaggable_is_timeline_item, do: TimelineItem.private_changeset(flaggable, %{is_ignoring_flags: true}), else: Comment.private_changeset(flaggable, %{is_ignoring_flags: true})
          Multi.new
          |> Multi.update(:flaggable, flaggable_changeset)
-     !action_ignore_flags && flaggable.ignore_flags == true ->
-        flaggable_changeset = if flaggable_is_timeline_item, do: TimelineItem.private_changeset(flaggable, %{ignore_flags: false}), else: Comment.private_changeset(flaggable, %{ignore_flags: false})
+     !action_ignore_flags && flaggable.is_ignoring_flags == true ->
+        flaggable_changeset = if flaggable_is_timeline_item, do: TimelineItem.private_changeset(flaggable, %{is_ignoring_flags: false}), else: Comment.private_changeset(flaggable, %{is_ignoring_flags: false})
         query = if flaggable_is_timeline_item, do: from(mr in ModerationReport, where: mr.timeline_item_id == ^flaggable.id), else: from(mr in ModerationReport, where: mr.comment_id == ^flaggable.id)
 
         Multi.new

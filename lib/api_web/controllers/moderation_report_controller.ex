@@ -10,8 +10,8 @@ defmodule ApiWeb.ModerationReportController do
 
   def model, do: ModerationReport
 
-  def sort(_conn, query, "resolved", direction) do
-    order_by(query, [{^direction, :resolved}])
+  def sort(_conn, query, "is_resolved", direction) do
+    order_by(query, [{^direction, :is_resolved}])
   end
 
   def filter(_conn, query, "should_ignore", should_ignore) do

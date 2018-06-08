@@ -19,8 +19,8 @@ defmodule ApiWeb.Services.Notifications.NotificationCommentReactionManager do
   defp insert_or_update(_, %NotificationCommentReaction{} = ncr) do
     changeset = Notification.private_changeset(ncr.notification, %{
       updated_at: DateTime.utc_now(),
-      read: false,
-      seen: false
+      is_read: false,
+      is_seen: false
     })
 
     Multi.new

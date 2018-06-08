@@ -8,7 +8,7 @@ defmodule ApiWeb.Services.ImageManager do
     # Enum.each(ImageFile.get_versions(), fn (version) ->
     #   ImageFile.delete({ImageFile.url({record.src, record}, version), record})
     # end)
-    changeset = Image.private_changeset(record, Map.merge(%{deleted: true, deleted_at: DateTime.utc_now()}, attributes))
+    changeset = Image.private_changeset(record, Map.merge(%{is_marked_for_deletion: true, marked_for_deletion_on: DateTime.utc_now()}, attributes))
     Multi.new
     |> Multi.update(multi_name, changeset)
   end

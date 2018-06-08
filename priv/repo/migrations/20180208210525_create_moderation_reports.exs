@@ -3,7 +3,7 @@ defmodule Api.Repo.Migrations.CreateModerationReports do
 
   def change do
     create table(:moderation_reports) do
-      add :resolved, :boolean, default: false, null: false
+      add :is_resolved, :boolean, default: false, null: false
       add :should_ignore, :boolean, default: false, null: false
       add :was_violation, :boolean, default: false, null: false
       add :comment_id, references(:comments, on_delete: :nothing)
@@ -14,7 +14,7 @@ defmodule Api.Repo.Migrations.CreateModerationReports do
     end
 
     create index(:moderation_reports, [:comment_id])
-    create index(:moderation_reports, [:resolved])
+    create index(:moderation_reports, [:is_resolved])
     create index(:moderation_reports, [:should_ignore])
     create index(:moderation_reports, [:was_violation])
     create index(:moderation_reports, [:timeline_item_id])

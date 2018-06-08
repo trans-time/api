@@ -15,14 +15,14 @@ defmodule Api.Timeline.TimelineItem do
     field :reaction_count, :integer, default: 0
     field :comment_count, :integer, default: 0
     field :comments_are_locked, :boolean, default: false
-    field :deleted, :boolean, default: false
-    field :deleted_by_moderator, :boolean, default: false
-    field :deleted_by_user, :boolean, default: false
-    field :deleted_at, :utc_datetime
-    field :ignore_flags, :boolean, default: false
+    field :is_marked_for_deletion, :boolean, default: false
+    field :is_marked_for_deletion_by_moderator, :boolean, default: false
+    field :is_marked_for_deletion_by_user, :boolean, default: false
+    field :marked_for_deletion_on, :utc_datetime
+    field :is_ignoring_flags, :boolean, default: false
     field :maturity_rating, :integer, default: 0
-    field :private, :boolean, default: false
-    field :under_moderation, :boolean, default: false
+    field :is_private, :boolean, default: false
+    field :is_under_moderation, :boolean, default: false
 
     many_to_many :tags, Tag, join_through: "timeline_items_tags", on_replace: :delete
     many_to_many :users, User, join_through: "timeline_items_users", on_replace: :delete
@@ -42,8 +42,8 @@ defmodule Api.Timeline.TimelineItem do
   @doc false
   def changeset(%TimelineItem{} = timeline_item, attrs) do
     timeline_item
-    |> cast(attrs, [:date, :maturity_rating, :private, :user_id])
-    |> validate_required([:date, :private])
+    |> cast(attrs, [:date, :maturity_rating, :is_private, :user_id])
+    |> validate_required([:date, :is_private])
     |> validate_that_date_is_not_in_the_future(:date)
     |> assoc_constraint(:user)
   end
@@ -51,7 +51,7 @@ defmodule Api.Timeline.TimelineItem do
   @doc false
   def private_changeset(%TimelineItem{} = post, attrs) do
     post
-    |> cast(attrs, [:comments_are_locked, :deleted, :deleted_by_moderator, :deleted_by_user, :deleted_at, :ignore_flags, :under_moderation])
+    |> cast(attrs, [:comments_are_locked, :is_marked_for_deletion, :is_marked_for_deletion_by_moderator, :is_marked_for_deletion_by_user, :marked_for_deletion_on, :is_ignoring_flags, :is_under_moderation])
   end
 
   def validate_that_date_is_not_in_the_future(changeset, field, options \\ []) do

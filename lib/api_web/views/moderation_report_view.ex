@@ -3,7 +3,7 @@ defmodule ApiWeb.ModerationReportView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{CommentView, TimelineItemView, FlagView, UserView, VerdictView}
 
-  attributes [:inserted_at, :was_violation, :resolved]
+  attributes [:inserted_at, :was_violation, :is_resolved]
 
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)

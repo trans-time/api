@@ -8,14 +8,14 @@ defmodule Api.Timeline.Comment do
 
 
   schema "comments" do
-    field :deleted, :boolean, default: false
-    field :deleted_by_moderator, :boolean, default: false
-    field :deleted_by_user, :boolean, default: false
-    field :deleted_with_parent, :boolean, default: false
-    field :deleted_at, :utc_datetime
-    field :ignore_flags, :boolean, default: false
+    field :is_marked_for_deletion, :boolean, default: false
+    field :is_marked_for_deletion_by_moderator, :boolean, default: false
+    field :is_marked_for_deletion_by_user, :boolean, default: false
+    field :is_marked_for_deletion_with_parent, :boolean, default: false
+    field :marked_for_deletion_on, :utc_datetime
+    field :is_ignoring_flags, :boolean, default: false
     field :text, :string
-    field :under_moderation, :boolean, default: false
+    field :is_under_moderation, :boolean, default: false
     field :comment_count, :integer, default: 0
     field :moon_count, :integer, default: 0
     field :star_count, :integer, default: 0
@@ -58,7 +58,7 @@ defmodule Api.Timeline.Comment do
   @doc false
   def private_changeset(%Comment{} = comment, attrs) do
     comment
-    |> cast(attrs, [:comment_count, :deleted, :deleted_by_moderator, :deleted_by_user, :deleted_with_parent, :deleted_at, :ignore_flags, :under_moderation])
+    |> cast(attrs, [:comment_count, :is_marked_for_deletion, :is_marked_for_deletion_by_moderator, :is_marked_for_deletion_by_user, :is_marked_for_deletion_with_parent, :marked_for_deletion_on, :is_ignoring_flags, :is_under_moderation])
   end
 
   def validate_that_comments_are_unlocked(changeset, field, options \\ []) do

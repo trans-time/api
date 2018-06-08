@@ -13,8 +13,8 @@ defmodule ApiWeb.Services.Notifications.NotificationModerationRequestManager do
       |> join(:inner, [n], nmr in assoc(n, :notification_moderation_request)),
       [set: [
         updated_at: DateTime.utc_now(),
-        read: false,
-        seen: false
+        is_read: false,
+        is_seen: false
       ]],
       returning: true
     )

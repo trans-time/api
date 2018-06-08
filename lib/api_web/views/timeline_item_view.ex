@@ -3,7 +3,7 @@ defmodule ApiWeb.TimelineItemView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{CommentView, PostView, ReactionView, TagView, UserView}
 
-  attributes [:date, :deleted, :private, :maturity_rating, :text, :comments_are_locked, :comment_count, :moon_count, :star_count, :sun_count, :reaction_count, :under_moderation]
+  attributes [:date, :is_marked_for_deletion, :is_private, :maturity_rating, :text, :comments_are_locked, :comment_count, :moon_count, :star_count, :sun_count, :reaction_count, :is_under_moderation]
 
   def current_user_reaction(_params, _conn), do: nil
 

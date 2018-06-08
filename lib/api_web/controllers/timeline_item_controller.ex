@@ -19,8 +19,8 @@ defmodule ApiWeb.TimelineItemController do
     end
   end
 
-  def filter(_conn, query, "deleted", deleted) do
-    where(query, deleted: ^deleted)
+  def filter(_conn, query, "is_marked_for_deletion", is_marked_for_deletion) do
+    where(query, is_marked_for_deletion: ^is_marked_for_deletion)
   end
 
   def filter(conn, query, "follower_id", follower_id) do
@@ -62,9 +62,9 @@ defmodule ApiWeb.TimelineItemController do
     end)
   end
 
-  def filter(conn, query, "private", private) do
+  def filter(conn, query, "is_private", is_private) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
-    where(query, [ti], ti.private == ^private or ti.user_id == ^current_user_id or fragment("exists(select 1 from follows f where f.follower_id = ? and f.followed_id = ? and f.can_view_private = true)", ^current_user_id, ti.user_id))
+    where(query, [ti], ti.is_private == ^is_private or ti.user_id == ^current_user_id or fragment("exists(select 1 from follows f where f.follower_id = ? and f.followed_id = ? and f.can_view_private = true)", ^current_user_id, ti.user_id))
   end
 
   def filter(_conn, query, "refresh_ids", refresh_ids) do
@@ -87,9 +87,9 @@ defmodule ApiWeb.TimelineItemController do
     end)
   end
 
-  def filter(conn, query, "under_moderation", under_moderation) do
+  def filter(conn, query, "is_under_moderation", is_under_moderation) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
-    where(query, [ti], ti.under_moderation == ^under_moderation or ti.user_id == ^current_user_id)
+    where(query, [ti], ti.is_under_moderation == ^is_under_moderation or ti.user_id == ^current_user_id)
   end
 
   def filter(conn, query, "user_id", user_id) do

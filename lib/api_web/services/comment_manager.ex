@@ -8,7 +8,7 @@ defmodule ApiWeb.Services.CommentManager do
   alias Ecto.Multi
 
   def delete(record, attributes) do
-    changeset = Comment.private_changeset(record, Map.merge(%{deleted: true, deleted_at: DateTime.utc_now(), comment_count: 0}, attributes))
+    changeset = Comment.private_changeset(record, Map.merge(%{is_marked_for_deletion: true, marked_for_deletion_on: DateTime.utc_now(), comment_count: 0}, attributes))
 
     comment_count_change = 1 + record.comment_count
 
@@ -16,19 +16,19 @@ defmodule ApiWeb.Services.CommentManager do
     |> Multi.append(delete_notifications(record))
     |> Multi.update_all(:commentable, get_commentable(record), inc: [comment_count: -comment_count_change])
     |> Multi.update_all(:parent, Ecto.assoc(record, :parent), inc: [comment_count: -1])
-    |> Multi.update_all(:children, Ecto.assoc(record, :children) |> where(deleted: false), set: [deleted: true, deleted_with_parent: true])
+    |> Multi.update_all(:children, Ecto.assoc(record, :children) |> where(is_marked_for_deletion: false), set: [is_marked_for_deletion: true, is_marked_for_deletion_with_parent: true])
     |> Multi.update(:comment, changeset)
   end
 
   def undelete(record, attributes) do
-    deleted_children = Api.Repo.all(from c in Comment, where: c.parent_id == ^record.id and c.deleted_with_parent == ^true and c.deleted_by_moderator == ^false and c.deleted_by_user == ^false)
-    comment_count = Kernel.length(deleted_children)
+    is_marked_for_deletion_children = Api.Repo.all(from c in Comment, where: c.parent_id == ^record.id and c.is_marked_for_deletion_with_parent == ^true and c.is_marked_for_deletion_by_moderator == ^false and c.is_marked_for_deletion_by_user == ^false)
+    comment_count = Kernel.length(is_marked_for_deletion_children)
     changeset = Comment.private_changeset(record, Map.merge(attributes, %{comment_count: comment_count}))
 
     Multi.new
     |> Multi.update_all(:commentable, get_commentable(record), inc: [comment_count: comment_count + 1])
     |> Multi.update_all(:parent, Ecto.assoc(record, :parent), inc: [comment_count: 1])
-    |> Multi.update_all(:children, Ecto.assoc(record, :children) |> where(deleted_with_parent: true, deleted_by_moderator: false, deleted_by_user: false), set: [deleted: false, deleted_with_parent: false])
+    |> Multi.update_all(:children, Ecto.assoc(record, :children) |> where(is_marked_for_deletion_with_parent: true, is_marked_for_deletion_by_moderator: false, is_marked_for_deletion_by_user: false), set: [is_marked_for_deletion: false, is_marked_for_deletion_with_parent: false])
     |> Multi.update(:comment, changeset)
     |> Multi.append(insert_notifications(record))
   end
@@ -56,7 +56,7 @@ defmodule ApiWeb.Services.CommentManager do
 
   def update(record, attributes) do
     comment_changeset = Comment.public_update_changeset(record, attributes)
-    comment_private_changeset = Comment.private_changeset(record, %{ignore_flags: false})
+    comment_private_changeset = Comment.private_changeset(record, %{is_ignoring_flags: false})
     text_version_changeset = TextVersion.changeset(%TextVersion{}, %{
       text: record.text,
       attribute: "text",

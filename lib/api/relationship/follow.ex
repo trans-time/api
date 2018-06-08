@@ -7,7 +7,7 @@ defmodule Api.Relationship.Follow do
 
   schema "follows" do
     field :can_view_private, :boolean, default: false
-    field :requested_private, :boolean, default: false
+    field :has_requested_private, :boolean, default: false
 
     belongs_to :followed, User
     belongs_to :follower, User
@@ -19,7 +19,7 @@ defmodule Api.Relationship.Follow do
   def public_insert_follower_changeset(%Follow{} = follow, attrs) do
     follow
     |> cast(attrs, [:follower_id, :followed_id])
-    |> validate_required([:can_view_private, :requested_private])
+    |> validate_required([:can_view_private, :has_requested_private])
     |> unique_constraint(:followed_id, name: :follows_followed_id_follower_id_index, message: "remote.errors.detail.unique.follow")
     |> assoc_constraint(:followed)
     |> assoc_constraint(:follower)
@@ -28,8 +28,8 @@ defmodule Api.Relationship.Follow do
   @doc false
   def public_update_follower_changeset(%Follow{} = follow, attrs) do
     follow
-    |> cast(attrs, [:requested_private])
-    |> validate_required([:requested_private])
+    |> cast(attrs, [:has_requested_private])
+    |> validate_required([:has_requested_private])
   end
 
   @doc false

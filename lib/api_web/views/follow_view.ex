@@ -3,7 +3,7 @@ defmodule ApiWeb.FollowView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{UserView}
 
-  attributes [:can_view_private, :requested_private]
+  attributes [:can_view_private, :has_requested_private]
 
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)

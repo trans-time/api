@@ -19,8 +19,8 @@ defmodule ApiWeb.Services.Notifications.NotificationTimelineItemReactionManager 
   defp insert_or_update(_, %NotificationTimelineItemReaction{} = ntir) do
     changeset = Notification.private_changeset(ntir.notification, %{
       updated_at: DateTime.utc_now(),
-      read: false,
-      seen: false
+      is_read: false,
+      is_seen: false
     })
 
     Multi.new

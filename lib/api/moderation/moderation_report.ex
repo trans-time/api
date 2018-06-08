@@ -10,7 +10,7 @@ defmodule Api.Moderation.ModerationReport do
 
   schema "moderation_reports" do
     field :was_violation, :boolean, default: false
-    field :resolved, :boolean, default: false
+    field :is_resolved, :boolean, default: false
     field :should_ignore, :boolean, default: false
 
     belongs_to :comment, Comment
@@ -25,8 +25,8 @@ defmodule Api.Moderation.ModerationReport do
   @doc false
   def changeset(%ModerationReport{} = user, attrs) do
     user
-    |> cast(attrs, [:resolved, :was_violation, :comment_id, :timeline_item_id, :indicted_id])
-    |> validate_required([:resolved, :was_violation])
+    |> cast(attrs, [:is_resolved, :was_violation, :comment_id, :timeline_item_id, :indicted_id])
+    |> validate_required([:is_resolved, :was_violation])
     |> assoc_constraint(:comment)
     |> assoc_constraint(:timeline_item)
     |> assoc_constraint(:indicted)

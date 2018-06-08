@@ -10,14 +10,14 @@ defmodule Api.Repo.Migrations.CreateTimelineItems do
       add :sun_count, :integer, default: 0, null: false
       add :reaction_count, :integer, default: 0, null: false
       add :date, :utc_datetime, null: false
-      add :deleted, :boolean, default: false, null: false
-      add :deleted_by_user, :boolean, default: false, null: false
-      add :deleted_by_moderator, :boolean, default: false, null: false
-      add :deleted_at, :utc_datetime
-      add :ignore_flags, :boolean, default: false, null: false
+      add :is_marked_for_deletion, :boolean, default: false, null: false
+      add :is_marked_for_deletion_by_user, :boolean, default: false, null: false
+      add :is_marked_for_deletion_by_moderator, :boolean, default: false, null: false
+      add :marked_for_deletion_on, :utc_datetime
+      add :is_ignoring_flags, :boolean, default: false, null: false
       add :maturity_rating, :integer, default: 0, null: false
-      add :private, :boolean, default: false, null: false
-      add :under_moderation, :boolean, default: false, null: false
+      add :is_private, :boolean, default: false, null: false
+      add :is_under_moderation, :boolean, default: false, null: false
       add :user_id, references(:users, on_delete: :delete_all), null: false
 
       timestamps()
@@ -25,10 +25,10 @@ defmodule Api.Repo.Migrations.CreateTimelineItems do
 
 
     create index(:timeline_items, [:comments_are_locked], using: :hash)
-    create index(:timeline_items, [:deleted], type: :hash)
-    create index(:timeline_items, [:deleted_at], type: :hash)
-    create index(:timeline_items, [:private], type: :hash)
-    create index(:timeline_items, [:under_moderation], type: :hash)
+    create index(:timeline_items, [:is_marked_for_deletion], type: :hash)
+    create index(:timeline_items, [:marked_for_deletion_on], type: :hash)
+    create index(:timeline_items, [:is_private], type: :hash)
+    create index(:timeline_items, [:is_under_moderation], type: :hash)
     create index(:timeline_items, [:user_id], type: :hash)
     create index(:timeline_items, ["date DESC"])
     create index(:timeline_items, ["comment_count DESC"])

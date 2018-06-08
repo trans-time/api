@@ -10,6 +10,8 @@ defmodule Api.Accounts.UserPassword do
     field :password, :string
 
     belongs_to :user, User
+
+    timestamps()
   end
 
   @doc false

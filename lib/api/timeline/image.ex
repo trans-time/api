@@ -8,10 +8,10 @@ defmodule Api.Timeline.Image do
   schema "images" do
     field :order, :integer
     field :src, Api.Timeline.ImageFile.Type
-    field :deleted, :boolean, default: false
-    field :deleted_by_moderator, :boolean, default: false
-    field :deleted_by_user, :boolean, default: false
-    field :deleted_at, :utc_datetime
+    field :is_marked_for_deletion, :boolean, default: false
+    field :is_marked_for_deletion_by_moderator, :boolean, default: false
+    field :is_marked_for_deletion_by_user, :boolean, default: false
+    field :marked_for_deletion_on, :utc_datetime
     belongs_to :post, Post
 
     timestamps()
@@ -22,13 +22,13 @@ defmodule Api.Timeline.Image do
     image
     |> cast(attrs, [:order, :post_id])
     |> cast_attachments(attrs, [:src])
-    |> validate_required([:order, :deleted, :deleted_by_moderator, :deleted_by_user])
+    |> validate_required([:order, :is_marked_for_deletion, :is_marked_for_deletion_by_moderator, :is_marked_for_deletion_by_user])
   end
 
   @doc false
   def private_changeset(%Image{} = image, attrs) do
     image
-    |> cast(attrs, [:deleted, :deleted_by_moderator, :deleted_by_user, :deleted_at])
-    |> validate_required([:order, :deleted, :deleted_by_moderator, :deleted_by_user])
+    |> cast(attrs, [:is_marked_for_deletion, :is_marked_for_deletion_by_moderator, :is_marked_for_deletion_by_user, :marked_for_deletion_on])
+    |> validate_required([:order, :is_marked_for_deletion, :is_marked_for_deletion_by_moderator, :is_marked_for_deletion_by_user])
   end
 end

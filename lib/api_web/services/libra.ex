@@ -88,7 +88,7 @@ defmodule ApiWeb.Services.Libra do
     |> Multi.run(:libra_has_infractions, fn %{libra_infractions: libra_infractions} -> {:ok, !Enum.empty?(libra_infractions.quotes)} end)
     |> Multi.merge(fn %{libra_has_infractions: libra_has_infractions, libra_flaggable: libra_flaggable, libra_infractions: libra_infractions} ->
       if (libra_has_infractions) do
-        Multi.append(insert_flag(libra_infractions, libra_flaggable), mark_flaggable_as_under_moderation(libra_flaggable))
+        Multi.append(insert_flag(libra_infractions, libra_flaggable), mark_flaggable_as_is_under_moderation(libra_flaggable))
         |> Multi.append(NotificationModerationRequestManager.update_and_insert())
       else
         Multi.new
@@ -121,10 +121,10 @@ defmodule ApiWeb.Services.Libra do
     {:ok, infractions}
   end
 
-  defp mark_flaggable_as_under_moderation(flaggable) do
+  defp mark_flaggable_as_is_under_moderation(flaggable) do
     Multi.new
     |> Multi.update(:libra_flaggable_update, flaggable.__struct__.private_changeset(flaggable, %{
-      under_moderation: true
+      is_under_moderation: true
     }))
   end
 

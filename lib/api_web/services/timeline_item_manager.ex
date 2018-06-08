@@ -9,7 +9,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
   alias Ecto.Multi
 
   def delete(timeline_item, attributes) do
-    timeline_item_changeset = TimelineItem.private_changeset(timeline_item, Map.merge(%{deleted: true, deleted_at: DateTime.utc_now()}, attributes))
+    timeline_item_changeset = TimelineItem.private_changeset(timeline_item, Map.merge(%{is_marked_for_deletion: true, marked_for_deletion_on: DateTime.utc_now()}, attributes))
 
     {tags, users} = gather_tags_and_users(timeline_item)
     tag_records = Api.Repo.all(from t in Tag, where: t.name in ^tags)
@@ -161,7 +161,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
         if (user_tag_summary_record != nil) do
           add_or_remove_from_private_timeline_item_ids(user_tag_summary_record, timeline_item)
         else
-          private_timeline_item_ids = if (timeline_item.private), do: [timeline_item.id], else: []
+          private_timeline_item_ids = if (timeline_item.is_private), do: [timeline_item.id], else: []
           Api.Repo.insert(UserTagSummary.changeset(%UserTagSummary{}, %{author_id: user.id, subject_id: user_record.id, private_timeline_item_ids: private_timeline_item_ids }))
         end
       end)
@@ -184,7 +184,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
 
   def update(timeline_item, attributes, old_tags, current_tags, old_users, current_users, user) do
     timeline_item_changeset = TimelineItem.changeset(timeline_item, attributes)
-    timeline_item_private_changeset = TimelineItem.private_changeset(timeline_item, %{ignore_flags: false})
+    timeline_item_private_changeset = TimelineItem.private_changeset(timeline_item, %{is_ignoring_flags: false})
 
     added_tags = current_tags -- old_tags
     removed_tags = old_tags -- current_tags
@@ -305,7 +305,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
           if (user_tag_summary_record != nil) do
             add_or_remove_from_private_timeline_item_ids(user_tag_summary_record, timeline_item)
           else
-            private_timeline_item_ids = if (timeline_item.private), do: [timeline_item.id], else: []
+            private_timeline_item_ids = if (timeline_item.is_private), do: [timeline_item.id], else: []
             Api.Repo.insert(UserTagSummary.changeset(%UserTagSummary{}, %{author_id: user.id, subject_id: user_record.id, private_timeline_item_ids: private_timeline_item_ids }))
           end
         end)
@@ -354,7 +354,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
           if (user_tag_summary_record != nil) do
             add_or_remove_from_private_timeline_item_ids(user_tag_summary_record, timeline_item)
           else
-            private_timeline_item_ids = if (timeline_item.private), do: [timeline_item.id], else: []
+            private_timeline_item_ids = if (timeline_item.is_private), do: [timeline_item.id], else: []
             Api.Repo.insert(UserTagSummary.changeset(%UserTagSummary{}, %{author_id: user.id, subject_id: user_record.id, private_timeline_item_ids: private_timeline_item_ids }))
           end
         end)
@@ -378,7 +378,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
   end
 
   defp add_or_remove_from_private_timeline_item_ids(user_tag_summary_record, timeline_item) do
-    private_timeline_item_ids = if (timeline_item.private), do: Enum.uniq([timeline_item.id | user_tag_summary_record.private_timeline_item_ids]), else: user_tag_summary_record.private_timeline_item_ids -- [timeline_item.id]
+    private_timeline_item_ids = if (timeline_item.is_private), do: Enum.uniq([timeline_item.id | user_tag_summary_record.private_timeline_item_ids]), else: user_tag_summary_record.private_timeline_item_ids -- [timeline_item.id]
 
     update_with_private_timeline_item_ids(user_tag_summary_record, private_timeline_item_ids)
   end

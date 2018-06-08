@@ -20,7 +20,7 @@ defmodule ApiWeb.NotificationView do
     UserView
   }
 
-  attributes [:read, :seen]
+  attributes [:is_read, :is_seen]
 
   def preload(record_or_records, conn, _include_opts) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
