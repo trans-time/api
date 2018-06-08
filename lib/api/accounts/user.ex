@@ -52,20 +52,34 @@ defmodule Api.Accounts.User do
   end
 
   @doc false
-  def changeset(%User{} = user, attrs) do
+  def public_insert_changeset(%User{} = user, attrs) do
     user
-    |> cast(attrs, [:display_name, :email, :password, :pronouns, :username])
+    |> cast(attrs, [:username])
+    |> validate_required([:username])
+    |> validate_length(:username, max: 64, message: "remote.errors.detail.length.length")
+    |> validate_format(:username, ~r/^[a-zA-Z0-9_]*$/, message: "remote.errors.detail.format.alphanumericUnderscore")
+    |> unique_constraint(:username)
+    |> public_shared_changeset(attrs)
+  end
+
+  @doc false
+  def public_update_changeset(%User{} = user, attrs) do
+    user
+    |> public_shared_changeset(attrs)
+  end
+
+  @doc false
+  defp public_shared_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:display_name, :email, :password, :pronouns])
     |> cast_attachments(attrs, [:avatar])
-    |> validate_required([:email, :password, :username])
+    |> validate_required([:email, :password])
     |> validate_length(:display_name, max: 100, message: "remote.errors.detail.length.length")
     |> validate_length(:email, max: 1000, message: "remote.errors.detail.length.length")
     |> validate_format(:email, ~r/^[A-Za-z0-9._%+-+']+@[A-Za-z0-9.-]+\.[A-Za-z]+$/, message: "remote.errors.detail.format.email")
     |> validate_length(:password, max: 1000, message: "remote.errors.detail.length.length")
     |> validate_length(:pronouns, max: 64, message: "remote.errors.detail.length.length")
-    |> validate_length(:username, max: 64, message: "remote.errors.detail.length.length")
-    |> validate_format(:username, ~r/^[a-zA-Z0-9_]*$/, message: "remote.errors.detail.format.alphanumericUnderscore")
     |> unique_constraint(:email)
-    |> unique_constraint(:username)
     |> put_pass_hash()
   end
 

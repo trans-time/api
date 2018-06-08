@@ -34,7 +34,7 @@ defmodule ApiWeb.NotificationView do
       notification_comment_comment: [
         comment: [
           :user,
-          :parent
+          parent: [:user]
         ]
       ],
       notification_comment_reaction: [
@@ -63,7 +63,7 @@ defmodule ApiWeb.NotificationView do
       notification_timeline_item_comment: [
         comment: [
           :user,
-          :timeline_item
+          timeline_item: [:user]
         ]
       ],
       notification_timeline_item_reaction: [

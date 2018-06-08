@@ -6,7 +6,7 @@ defmodule ApiWeb.Services.UserManager do
   alias Ecto.Multi
 
   def insert_user(attributes) do
-    changeset = User.changeset(%User{
+    changeset = User.public_update_changeset(%User{
       current_user: %CurrentUser{},
       user_profile: %UserProfile{}
     }, attributes)

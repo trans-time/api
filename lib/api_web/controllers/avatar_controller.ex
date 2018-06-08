@@ -5,7 +5,7 @@ defmodule ApiWeb.AvatarController do
 
   def create(conn, params) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
-    changeset = User.changeset(Api.Repo.get(User, current_user_id), %{"avatar" => params["file"]})
+    changeset = User.public_update_changeset(Api.Repo.get(User, current_user_id), %{"avatar" => params["file"]})
 
     case Api.Repo.update(changeset) do
       {:ok, user} ->
@@ -24,7 +24,7 @@ defmodule ApiWeb.AvatarController do
   def delete(conn, params) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
     current_user = Api.Repo.get(User, current_user_id)
-    changeset = User.changeset(current_user, %{"avatar" => nil})
+    changeset = User.public_update_changeset(current_user, %{"avatar" => nil})
 
     case Api.Repo.update(changeset) do
       {:ok, user} ->
