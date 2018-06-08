@@ -28,6 +28,7 @@ defmodule ApiWeb.UserController do
     safe_query = "%#{String.replace(username, "%", "\\%")}%"
     query
     |> where([u], ilike(u.username, ^safe_query) or ilike(u.display_name, ^safe_query))
+    |> order_by(desc: :follower_count)
   end
 
   def filter(_conn, query, "limit", limit) do

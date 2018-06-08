@@ -13,6 +13,7 @@ defmodule ApiWeb.TagController do
     safe_query = "%#{String.replace(name, "%", "\\%")}%"
     query
     |> where([t], ilike(t.name, ^safe_query))
+    |> order_by(desc: :tagging_count)
   end
 
   def filter(_conn, query, "limit", limit) do

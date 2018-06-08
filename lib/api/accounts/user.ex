@@ -14,6 +14,7 @@ defmodule Api.Accounts.User do
   schema "users" do
     field :avatar, Api.Profile.Avatar.Type
     field :email, :string
+    field :follower_count, :integer, default: 0
     field :display_name, :string
     field :is_banned, :boolean, default: false
     field :is_moderator, :boolean, default: false

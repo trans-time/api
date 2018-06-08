@@ -48,6 +48,10 @@ defmodule ApiWeb.Services.TimelineItemManager do
       |> Ecto.Changeset.put_assoc(:users, [])
       |> Api.Repo.update
     end)
+    |> Multi.merge(fn %{aggregated_tag_records: aggregated_tag_records} ->
+      Multi.new
+      |> Multi.update_all(:tagging_counts, Tag |> where([t], t.id in ^Enum.map(aggregated_tag_records, fn(tag) -> tag.id end)), inc: [tagging_count: -1])
+    end)
     multi = Enum.reduce(tags, multi, fn (tag, multi) ->
       multi
       |> multi_remove_tag_summary_tag("remove_user_tag_summary_tag_#{tag}", tag, :user_tag_summary)
@@ -132,6 +136,10 @@ defmodule ApiWeb.Services.TimelineItemManager do
     end)
     |> Multi.run(:aggregated_tag_records, fn args ->
       {:ok, Enum.map(tags, fn (tag) -> args["find_or_create_tag_#{tag}"] end)}
+    end)
+    |> Multi.merge(fn %{aggregated_tag_records: aggregated_tag_records} ->
+      Multi.new
+      |> Multi.update_all(:tagging_counts, Tag |> where([t], t.id in ^Enum.map(aggregated_tag_records, fn(tag) -> tag.id end)), inc: [tagging_count: 1])
     end)
     |> Multi.run(:put_tag_associations, fn %{timeline_item: timeline_item, aggregated_tag_records: aggregated_tag_records} ->
       Api.Repo.preload(timeline_item, [:tags, :users])
@@ -219,10 +227,14 @@ defmodule ApiWeb.Services.TimelineItemManager do
     |> Multi.run(:aggregated_tag_records, fn args ->
       {:ok, Enum.uniq(Enum.map(added_tags, fn (tag) -> args["find_or_create_tag_#{tag}"] end) ++ tag_records)}
     end)
-    |> Multi.run(:put_tag_associations, fn %{timeline_item: timeline_item, aggregated_tag_records: aggregated_tag_records} ->
+    |> Multi.run(:added_tag_records, fn %{aggregated_tag_records: aggregated_tag_records} ->
+      {:ok, Enum.map(added_tags, fn (tag) -> Enum.find(aggregated_tag_records, fn (tag_record) -> tag_record.name == tag end) end)}
+    end)
+    |> Multi.run(:removed_tag_records, fn %{aggregated_tag_records: aggregated_tag_records} ->
+      {:ok, Enum.map(removed_tags, fn (tag) -> Enum.find(aggregated_tag_records, fn (tag_record) -> tag_record.name == tag end) end)}
+    end)
+    |> Multi.run(:put_tag_associations, fn %{timeline_item: timeline_item, added_tag_records: added_tag_records, removed_tag_records: removed_tag_records} ->
       timeline_item = Api.Repo.preload(timeline_item, [:tags, :users])
-      added_tag_records = Enum.map(added_tags, fn (tag) -> Enum.find(aggregated_tag_records, fn (tag_record) -> tag_record.name == tag end) end)
-      removed_tag_records = Enum.map(removed_tags, fn (tag) -> Enum.find(aggregated_tag_records, fn (tag_record) -> tag_record.name == tag end) end)
       added_user_records = Enum.map(added_users, fn (username) -> Enum.find(user_records, fn (user_record) -> user_record.username == username end)end)
       removed_user_records = Enum.map(removed_users, fn (username) -> Enum.find(user_records, fn (user_record) -> user_record.username == username end)end)
       timeline_item
@@ -231,6 +243,14 @@ defmodule ApiWeb.Services.TimelineItemManager do
       |> Ecto.Changeset.put_assoc(:tags, (timeline_item.tags ++ added_tag_records) -- removed_tag_records)
       |> Ecto.Changeset.put_assoc(:users, (timeline_item.users ++ added_user_records) -- removed_user_records)
       |> Api.Repo.update
+    end)
+    |> Multi.merge(fn %{added_tag_records: added_tag_records} ->
+      Multi.new
+      |> Multi.update_all(:added_tagging_counts, Tag |> where([t], t.id in ^Enum.map(added_tag_records, fn(tag) -> tag.id end)), inc: [tagging_count: 1])
+    end)
+    |> Multi.merge(fn %{removed_tag_records: removed_tag_records} ->
+      Multi.new
+      |> Multi.update_all(:removed_tagging_counts, Tag |> where([t], t.id in ^Enum.map(removed_tag_records, fn(tag) -> tag.id end)), inc: [tagging_count: -1])
     end)
     multi = Enum.reduce(added_tags, multi, fn (tag, multi) ->
       multi

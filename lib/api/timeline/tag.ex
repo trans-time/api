@@ -7,6 +7,7 @@ defmodule Api.Timeline.Tag do
 
   schema "tags" do
     field :name, :string
+    field :tagging_count, :integer, default: 0
     many_to_many :user_tag_summaries, UserTagSummary, join_through: "user_tag_summaries_tags"
 
     timestamps()

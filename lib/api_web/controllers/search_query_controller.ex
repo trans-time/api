@@ -31,20 +31,23 @@ defmodule ApiWeb.SearchQueryController do
   end
 
   def identities_query(query) do
-    Api.Repo.all(from t in Api.Profile.Identity,
-      where: ilike(t.name, ^query),
+    Api.Repo.all(from i in Api.Profile.Identity,
+      where: ilike(i.name, ^query),
+      order_by: [desc: :user_identity_count],
       limit: 5)
   end
 
   def tags_query(query) do
     Api.Repo.all(from t in Api.Timeline.Tag,
       where: ilike(t.name, ^query),
+      order_by: [desc: :tagging_count],
       limit: 5)
   end
 
   def users_query(query) do
-    Api.Repo.all(from t in Api.Accounts.User,
-      where: ilike(t.username, ^query) or ilike(t.display_name, ^query),
+    Api.Repo.all(from u in Api.Accounts.User,
+      where: ilike(u.username, ^query) or ilike(u.display_name, ^query),
+      order_by: [desc: :follower_count],
       limit: 5)
   end
 end

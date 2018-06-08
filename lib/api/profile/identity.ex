@@ -6,6 +6,7 @@ defmodule Api.Profile.Identity do
 
   schema "identities" do
     field :name, :string
+    field :user_identity_count, :integer, default: 0
 
     has_many :user_identities, UserIdentity
 
