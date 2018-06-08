@@ -4,34 +4,34 @@ defmodule ApiWeb.FollowController do
   use ApiWeb, :controller
   use JaResource # Optionally put in web/web.ex
   plug JaResource
+  alias ApiWeb.Services.FollowManager
 
   alias Api.Relationship.Follow
 
   def model, do: Follow
 
   def handle_create(conn, attributes) do
-    handle_request(conn,  String.to_integer(attributes["follower_id"]), fn() -> Api.Repo.insert(Follow.public_insert_follower_changeset(%Follow{}, attributes)) end)
+    handle_request(conn,  String.to_integer(attributes["follower_id"]), FollowManager.insert(attributes))
   end
 
   def handle_delete(conn, record) do
-    handle_request(conn, record.follower_id, fn() -> Api.Repo.delete(record) end)
+    handle_request(conn, record.follower_id, FollowManager.delete(record))
   end
 
   def handle_update(conn, record, attributes) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
+    user_id = if record.followed_id == current_user_id, do: record.followed_id, else: record.follower_id
 
-    if (current_user_id == record.follower_id) do
-      handle_request(conn, record.follower_id, fn() -> Api.Repo.update(Follow.public_update_follower_changeset(record, attributes)) end)
-    else
-      handle_request(conn, record.followed_id, fn() -> Api.Repo.update(Follow.public_update_followed_changeset(record, attributes)) end)
-    end
+    handle_request(conn, user_id, FollowManager.update(current_user_id == record.follower_id, record, attributes))
   end
 
-  defp handle_request(conn, user_id, cb) do
+  defp handle_request(conn, user_id, multi) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
 
     case user_id do
-      ^current_user_id -> cb.()
+      ^current_user_id ->
+        transaction = Api.Repo.transaction(multi)
+        if Kernel.elem(transaction, 0) === :ok, do: Kernel.elem(transaction, 1).follow, else: transaction
       _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
     end
   end

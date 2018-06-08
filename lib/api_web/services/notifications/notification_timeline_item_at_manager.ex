@@ -47,7 +47,7 @@ defmodule ApiWeb.Services.Notifications.NotificationTimelineItemAtManager do
       now = DateTime.utc_now()
 
       {amount, notifications} = Api.Repo.insert_all(Notification, Enum.map(users, fn (user) ->
-        %{user_id: user.id, inserted_at: now, updated_at: now}
+        %{user_id: user.id, updated_at: now}
       end), returning: true)
 
       if (amount == Kernel.length(users)), do: {:ok, notifications}, else: {:error, notifications}
@@ -56,7 +56,7 @@ defmodule ApiWeb.Services.Notifications.NotificationTimelineItemAtManager do
       now = DateTime.utc_now()
 
       {amount, _} = Api.Repo.insert_all(NotificationTimelineItemAt, Enum.map(notifications, fn (notification) ->
-        %{timeline_item_id: timeline_item.id, notification_id: notification.id, inserted_at: now, updated_at: now}
+        %{timeline_item_id: timeline_item.id, notification_id: notification.id}
       end))
 
       if (amount == Kernel.length(notifications)), do: {:ok, amount}, else: {:error, amount}

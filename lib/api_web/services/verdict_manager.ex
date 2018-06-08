@@ -6,7 +6,7 @@ defmodule ApiWeb.Services.VerdictManager do
   alias Api.Moderation.{ModerationReport, Verdict}
   alias Api.Timeline.{Comment, TimelineItem}
   alias ApiWeb.Services.{CommentManager, ImageManager, ModerationManager, TimelineItemManager}
-  alias ApiWeb.Services.Notifications.NotificationManager
+  alias ApiWeb.Services.Notifications.{NotificationManager, NotificationModerationResolutionManager}
 
   def insert(attributes) do
     moderation_report = Api.Repo.get(ModerationReport, attributes["moderation_report_id"])
@@ -77,11 +77,9 @@ defmodule ApiWeb.Services.VerdictManager do
     |> Multi.append(delete_media_multi(attributes["action_delete_media"], attributes["delete_image_ids"], previous_verdict, timeline_item))
     |> Multi.append(delete_flaggable_multi(attributes["action_deleted_flaggable"], flaggable, timeline_item, flaggable_is_timeline_item, previous_verdict))
     |> Multi.append(ignore_flags_multi(attributes["action_ignore_flags"], flaggable, flaggable_is_timeline_item, previous_verdict))
-    # df_multi = delete_flaggable_multi(attributes["action_deleted_flaggable"], flaggable, timeline_item, flaggable_is_timeline_item, previous_verdict)
-    # if_multi = ignore_flags_multi(attributes["action_ignore_flags"], flaggable, flaggable_is_timeline_item, previous_verdict)
-    # multi_sequence = delete_media_multi(multi_sequence, attributes["action_delete_media"], attributes["delete_image_ids"], previous_verdict, timeline_item)
-    # multi_sequence = Multi.append(multi_sequence, df_multi)
-    # Multi.append(multi_sequence, if_multi)
+    |> Multi.merge(fn %{verdict: verdict} ->
+      NotificationModerationResolutionManager.insert_all(verdict)
+    end)
   end
 
   defp delete_media_multi(action_delete_media, delete_image_ids, previous_verdict, timeline_item) do

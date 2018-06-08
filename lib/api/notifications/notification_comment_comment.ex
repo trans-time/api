@@ -1,18 +1,18 @@
-defmodule Api.Notifications.NotificationCommentAt do
+defmodule Api.Notifications.NotificationCommentComment do
   use Api.Schema
   import Ecto.Changeset
   alias Api.Timeline.Comment
-  alias Api.Notifications.{NotificationCommentAt, Notification}
+  alias Api.Notifications.{NotificationCommentComment, Notification}
 
 
-  schema "notification_comment_ats" do
+  schema "notification_comment_comments" do
     belongs_to :comment, Comment
     belongs_to :notification, Notification
   end
 
   @doc false
-  def private_changeset(%NotificationCommentAt{} = notification_comment_at, attrs) do
-    notification_comment_at
+  def private_changeset(%NotificationCommentComment{} = notification_comment_comment, attrs) do
+    notification_comment_comment
     |> cast(attrs, [:comment_id, :notification_id])
     |> validate_required([:comment_id, :notification_id])
     |> assoc_constraint(:comment)

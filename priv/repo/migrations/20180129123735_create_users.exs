@@ -18,6 +18,7 @@ defmodule Api.Repo.Migrations.CreateUsers do
     create unique_index(:users, [:email])
     create unique_index(:users, [:username])
     create index(:users, [:is_banned], using: :hash)
+    create index(:users, [:is_moderator], using: :hash)
     create index(:users, ["username gin_trgm_ops"], using: :gin)
     create index(:users, ["lower(display_name) gin_trgm_ops"], using: :gin)
   end

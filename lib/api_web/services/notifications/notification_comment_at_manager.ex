@@ -43,11 +43,14 @@ defmodule ApiWeb.Services.Notifications.NotificationCommentAtManager do
 
   defp insert_all_from_users(comment, users) do
     Multi.new
+    |> Multi.run(:notification_comment_at_user_ids, fn _ ->
+      {:ok, Enum.map(users, fn (user) -> user.id end)}
+    end)
     |> Multi.run(:notification_comment_at_notifications, fn _ ->
       now = DateTime.utc_now()
 
       {amount, notifications} = Api.Repo.insert_all(Notification, Enum.map(users, fn (user) ->
-        %{user_id: user.id, inserted_at: now, updated_at: now}
+        %{user_id: user.id, updated_at: now}
       end), returning: true)
 
       if (amount == Kernel.length(users)), do: {:ok, notifications}, else: {:error, notifications}
@@ -56,7 +59,7 @@ defmodule ApiWeb.Services.Notifications.NotificationCommentAtManager do
       now = DateTime.utc_now()
 
       {amount, _} = Api.Repo.insert_all(NotificationCommentAt, Enum.map(notifications, fn (notification) ->
-        %{comment_id: comment.id, notification_id: notification.id, inserted_at: now, updated_at: now}
+        %{comment_id: comment.id, notification_id: notification.id}
       end))
 
       if (amount == Kernel.length(notifications)), do: {:ok, amount}, else: {:error, amount}

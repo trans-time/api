@@ -2,6 +2,7 @@ defmodule ApiWeb.Services.Libra do
   use Timex
 
   alias ApiWeb.Services.FlagManager
+  alias ApiWeb.Services.Notifications.NotificationModerationRequestManager
   alias Ecto.Multi
 
   @infractions %{
@@ -88,6 +89,7 @@ defmodule ApiWeb.Services.Libra do
     |> Multi.merge(fn %{libra_has_infractions: libra_has_infractions, libra_flaggable: libra_flaggable, libra_infractions: libra_infractions} ->
       if (libra_has_infractions) do
         Multi.append(insert_flag(libra_infractions, libra_flaggable), mark_flaggable_as_under_moderation(libra_flaggable))
+        |> Multi.append(NotificationModerationRequestManager.update_and_insert())
       else
         Multi.new
       end

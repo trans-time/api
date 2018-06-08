@@ -12,6 +12,7 @@ defmodule Api.Timeline.TimelineItem do
     field :moon_count, :integer, default: 0
     field :star_count, :integer, default: 0
     field :sun_count, :integer, default: 0
+    field :reaction_count, :integer, default: 0
     field :comment_count, :integer, default: 0
     field :comments_are_locked, :boolean, default: false
     field :deleted, :boolean, default: false

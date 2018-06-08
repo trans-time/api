@@ -8,6 +8,7 @@ defmodule Api.Repo.Migrations.CreateTimelineItems do
       add :moon_count, :integer, default: 0, null: false
       add :star_count, :integer, default: 0, null: false
       add :sun_count, :integer, default: 0, null: false
+      add :reaction_count, :integer, default: 0, null: false
       add :date, :utc_datetime, null: false
       add :deleted, :boolean, default: false, null: false
       add :deleted_by_user, :boolean, default: false, null: false
@@ -30,5 +31,9 @@ defmodule Api.Repo.Migrations.CreateTimelineItems do
     create index(:timeline_items, [:private], type: :hash)
     create index(:timeline_items, [:under_moderation], type: :hash)
     create index(:timeline_items, [:user_id], type: :hash)
+    create index(:timeline_items, [:moon_count], type: :hash)
+    create index(:timeline_items, [:star_count], type: :hash)
+    create index(:timeline_items, [:sun_count], type: :hash)
+    create index(:timeline_items, [:reaction_count], type: :hash)
   end
 end

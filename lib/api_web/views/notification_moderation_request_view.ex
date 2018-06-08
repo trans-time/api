@@ -1,9 +1,6 @@
-defmodule ApiWeb.ReactionView do
+defmodule ApiWeb.NotificationModerationRequestView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{UserView}
-
-  attributes [:reaction_type]
 
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)
@@ -11,7 +8,6 @@ defmodule ApiWeb.ReactionView do
 
   def relationships(user, _conn) do
     Enum.reduce([
-      %{key: :user, view: UserView},
     ], %{}, fn(relationship, relationships) ->
       if Ecto.assoc_loaded?(Map.get(user, relationship.key)) do
         Map.put(relationships, relationship.key, %HasMany{

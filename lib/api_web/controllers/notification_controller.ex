@@ -21,8 +21,8 @@ defmodule ApiWeb.NotificationController do
     end
   end
 
-  def sort(_conn, query, "inserted_at", inserted_at) do
-    order_by(query, [{^inserted_at, :inserted_at}])
+  def sort(_conn, query, "updated_at", updated_at) do
+    order_by(query, [{^updated_at, :updated_at}])
   end
 
   def handle_index_query(%{query_params: qp} = conn, query) do

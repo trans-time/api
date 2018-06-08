@@ -5,23 +5,24 @@ defmodule ApiWeb.FollowView do
 
   attributes [:can_view_private, :requested_private]
 
-  has_one :followed,
-    serializer: UserView,
-    include: false
-
-  has_one :follower,
-    serializer: UserView,
-    include: false
-
-  def followed(%{followed: %Ecto.Association.NotLoaded{}, followed_id: nil}, _conn), do: nil
-  def followed(%{followed: %Ecto.Association.NotLoaded{}, followed_id: id}, _conn), do: %{id: id}
-  def followed(%{followed: followed}, _conn), do: followed
-
-  def follower(%{follower: %Ecto.Association.NotLoaded{}, follower_id: nil}, _conn), do: nil
-  def follower(%{follower: %Ecto.Association.NotLoaded{}, follower_id: id}, _conn), do: %{id: id}
-  def follower(%{follower: follower}, _conn), do: follower
-
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)
+  end
+
+  def relationships(user, _conn) do
+    Enum.reduce([
+      %{key: :followed, view: UserView},
+      %{key: :follower, view: UserView}
+    ], %{}, fn(relationship, relationships) ->
+      if Ecto.assoc_loaded?(Map.get(user, relationship.key)) do
+        Map.put(relationships, relationship.key, %HasMany{
+          serializer: relationship.view,
+          include: true,
+          data: Map.get(user, relationship.key)
+        })
+      else
+        relationships
+      end
+    end)
   end
 end

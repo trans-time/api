@@ -1,9 +1,7 @@
-defmodule ApiWeb.NotificationCommentView do
+defmodule ApiWeb.NotificationFollowView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{NotificationView,TimelineItemView}
-
-  attributes [:commenter_count]
+  alias ApiWeb.{NotificationView,FollowView}
 
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)
@@ -11,7 +9,7 @@ defmodule ApiWeb.NotificationCommentView do
 
   def relationships(user, _conn) do
     Enum.reduce([
-      %{key: :timeline_item, view: TimelineItemView}
+      %{key: :follow, view: FollowView}
     ], %{}, fn(relationship, relationships) ->
       if Ecto.assoc_loaded?(Map.get(user, relationship.key)) do
         Map.put(relationships, relationship.key, %HasMany{

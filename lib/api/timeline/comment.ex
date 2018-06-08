@@ -20,6 +20,7 @@ defmodule Api.Timeline.Comment do
     field :moon_count, :integer, default: 0
     field :star_count, :integer, default: 0
     field :sun_count, :integer, default: 0
+    field :reaction_count, :integer, default: 0
 
     belongs_to :user, User
     belongs_to :timeline_item, TimelineItem
@@ -28,6 +29,7 @@ defmodule Api.Timeline.Comment do
     has_many :moderation_reports, ModerationReport
     has_many :reactions, Reaction
     has_many :text_versions, TextVersion
+    many_to_many :watchers, User, join_through: "comment_watchers", join_keys: [watched_id: :id, watcher_id: :id]
 
     has_many :notification_comment_ats, NotificationCommentAt
 
