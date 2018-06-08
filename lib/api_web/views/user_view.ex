@@ -5,7 +5,7 @@ defmodule ApiWeb.UserView do
 
   attributes [:avatar, :display_name, :is_moderator, :pronouns, :username]
 
-  def is_moderator(_a, _b), do: true
+  # def is_moderator(_a, _b), do: true
 
   def avatar(user) do
     Api.Profile.Avatar.url({user.avatar, user}, :full)

@@ -26,5 +26,5 @@ defmodule ApiWeb.Guardian.ModeratorAuthPipeline do
   plug Guardian.Plug.VerifyHeader, realm: "Bearer"
   plug Guardian.Plug.LoadResource, allow_blank: true
   plug ApiWeb.Plugs.IsNotBanned
-  # plug ApiWeb.Plugs.IsModerator
+  plug ApiWeb.Plugs.IsModerator
 end
