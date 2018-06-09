@@ -32,6 +32,14 @@ config :api, Api.Repo,
   pool_size: 20,
   ssl: true
 
+config :api, Api.Accounts.Guardian,
+  secret_key: System.get_env("GUARDIAN_SECRET")
+
+config :ex_aws,
+  access_key_id: [System.get_env("AWS_KEY"), :instance_role],
+  secret_access_key: [System.get_env("AWS_SECRET"), :instance_role]
+
+
 # Do not print debug messages in production
 config :logger, level: :info
 
@@ -79,4 +87,4 @@ config :arc,
 
 # Finally import the config/prod.secret.exs
 # which should be versioned separately.
-import_config "prod.secret.exs"
+# import_config "prod.secret.exs"
