@@ -1,0 +1,11 @@
+erl_crash.dump
+.git
+.gitignore
+_build
+deps
+assets/node_modules
+test
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+.git
+.gitignore
