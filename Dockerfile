@@ -24,3 +24,4 @@ RUN cd assets/ && \
 # USER default
 
 # CMD ["mix", "phx.server"]
+CMD ["iex"]
