@@ -34,7 +34,7 @@ defmodule ApiWeb.Router do
     plug JaSerializer.Deserializer
   end
 
-  scope "/api/v1", ApiWeb, as: :api do
+  scope "/v1", ApiWeb, as: :api do
     pipe_through :json_auth
 
     delete "/avatars", AvatarController, :delete
@@ -43,7 +43,7 @@ defmodule ApiWeb.Router do
     post "/images/:image_id/files", ImageFileController, :create
   end
 
-  scope "/api/v1", ApiWeb, as: :api do
+  scope "/v1", ApiWeb, as: :api do
     pipe_through :json_api_auth
 
     get "/", PageController, :index
@@ -68,12 +68,12 @@ defmodule ApiWeb.Router do
     resources "/user-tag-summaries", UserTagSummaryController, only: [:index]
   end
 
-  scope "/api/v1", ApiWeb, as: :api do
+  scope "/v1", ApiWeb, as: :api do
     pipe_through :json_api_moderator_auth
     resources "/verdicts", VerdictController, only: [:create]
   end
 
-  scope "/api/v1/auth", ApiWeb do
+  scope "/v1/auth", ApiWeb do
     pipe_through :json_api
     post "/identity/callback", AuthController, :identity_callback
   end
