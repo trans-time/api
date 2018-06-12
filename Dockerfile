@@ -21,6 +21,6 @@ RUN cd assets/ && \
     cd - && \
     mix do compile, phx.digest
 
-USER default
+# USER default
 
 CMD mix ecto.migrate && mix phx.server
