@@ -38,6 +38,7 @@ defmodule Api.Mixfile do
       {:argon2_elixir, "~> 1.2"},
       {:comeonin, "~> 4.0"},
       {:cowboy, "~> 1.0"},
+      {:cors_plug, "~> 1.5"},
       {:ex_aws, "~> 2.0", override: true},
       {:ex_aws_s3, "~> 2.0"},
       {:ex_machina, "~> 2.1"},

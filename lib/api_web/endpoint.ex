@@ -39,6 +39,8 @@ defmodule ApiWeb.Endpoint do
     key: "_api_key",
     signing_salt: "qKi2cEXP"
 
+  plug CORSPlug, origin: ["https://www.transtime.is"]
+
   plug ApiWeb.Router
 
   @doc """
