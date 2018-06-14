@@ -1,14 +1,17 @@
 {
-  "AWSEBDockerrunVersion": "1",
-  "Ports": [
-    {
-      "ContainerPort": 4000
-    }
-  ],
-  "Volumes": [
-    {
-      "ContainerDirectory": "/api-prod"
-    }
-  ],
-  "Logging": "/var/log/nginx"
+ "AWSEBDockerrunVersion": "1",
+ "Authentication": {
+   "Bucket": "trans-time-docker",
+   "Key": ".dockercfg"
+ },
+ "Image": {
+    "Name": "transtime/phoenix-alpine",
+    "Update": "true"
+  },
+ "Ports": [
+   {
+     "ContainerPort": "4000"
+   }
+ ],
+ "Logging": "/var/log"
 }
