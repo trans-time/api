@@ -1,20 +1,19 @@
 import Ecto.Query
 
 defmodule Api.CronJobs.UnlockComments do
-  alias Api.Timeline.Post
+  alias Api.Timeline.TimelineItem
   alias ApiWeb.Services.ModerationManager
 
   def call() do
-    query = from p in Post,
-      where: p.comments_are_locked == ^true,
-      join: ti in assoc(p, :timeline_item),
+    query = from ti in TimelineItem,
+      where: ti.comments_are_locked == ^true,
       join: u in assoc(ti, :user),
       join: i in assoc(u, :indictions),
       join: v in assoc(i, :verdicts),
-      preload: [timeline_item: {ti, user: {u, indictions: {i, verdicts: v}}}]
+      preload: [user: {u, indictions: {i, verdicts: v}}]
 
-    Enum.each(Api.Repo.all(query), fn (post) ->
-      ModerationManager.consider_unlocking_comments(post)
+    Enum.each(Api.Repo.all(query), fn (timeline_item) ->
+      ModerationManager.consider_unlocking_comments(timeline_item)
     end)
   end
 end
