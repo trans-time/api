@@ -4,7 +4,7 @@
     {
       "name": "api-prod",
       "host": {
-        "sourcePath": "/app"
+        "sourcePath": "/api"
       }
     }
   ],
@@ -14,7 +14,7 @@
       "essential": true,
       "portMappings": [
         {
-          "hostPort": 443,
+          "hostPort": 80,
           "containerPort": 4000
         }
       ]
