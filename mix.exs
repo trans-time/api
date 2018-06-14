@@ -37,6 +37,7 @@ defmodule Api.Mixfile do
       {:arc_ecto, "~> 0.7.0"},
       {:argon2_elixir, "~> 1.2"},
       {:comeonin, "~> 4.0"},
+      {:corsica, "~> 1.0"},
       {:cowboy, "~> 1.0"},
       {:ex_aws, "~> 2.0", override: true},
       {:ex_aws_s3, "~> 2.0"},

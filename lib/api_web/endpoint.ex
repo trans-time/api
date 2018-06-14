@@ -39,6 +39,8 @@ defmodule ApiWeb.Endpoint do
     key: "_api_key",
     signing_salt: "qKi2cEXP"
 
+  plug Corsica, origins: "*"
+
   plug ApiWeb.Router
 
   @doc """
