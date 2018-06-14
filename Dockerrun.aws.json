@@ -1,23 +1,14 @@
 {
-  "AWSEBDockerrunVersion": 1,
-  "volumes": [
+  "AWSEBDockerrunVersion": "1",
+  "Ports": [
     {
-      "name": "api-prod",
-      "host": {
-        "sourcePath": "/api"
-      }
+      "ContainerPort": 4000
     }
   ],
-  "containerDefinitions": [
+  "Volumes": [
     {
-      "name": "api-prod",
-      "essential": true,
-      "portMappings": [
-        {
-          "hostPort": 80,
-          "containerPort": 4000
-        }
-      ]
+      "ContainerDirectory": "/api-prod"
     }
-  ]
+  ],
+  "Logging": "/var/log/nginx"
 }
