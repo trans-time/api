@@ -1,9 +1,5 @@
 {
  "AWSEBDockerrunVersion": "1",
- "Authentication": {
-   "Bucket": "trans-time-docker",
-   "Key": ".docker/.dockercfg"
- },
  "Image": {
     "Name": "transtime/phoenix-alpine",
     "Update": "true"
