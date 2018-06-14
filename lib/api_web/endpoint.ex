@@ -39,7 +39,7 @@ defmodule ApiWeb.Endpoint do
     key: "_api_key",
     signing_salt: "qKi2cEXP"
 
-  plug Corsica, origins: "*"
+  plug Corsica, origins: "*", allow_headers: :all, allow_methods: :all, allow_credentials: true
 
   plug ApiWeb.Router
 
