@@ -1,0 +1,18 @@
+{
+ "AWSEBDockerrunVersion": "1",
+ "Image": {
+    "Name": "transtime/phoenix-alpine",
+    "Update": "true"
+  },
+ "Ports": [
+   {
+     "ContainerPort": "4000",
+     "HostPort": "4000"
+   }
+ ],
+ "Volumes": [{
+    "HostDirectory": "/var/log",
+    "ContainerDirectory": "/opt/log"
+  }],
+  "Logging": "/var/log"
+}

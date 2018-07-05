@@ -15,29 +15,29 @@ use Mix.Config
 # which you typically run after static files are built.
 config :api, ApiWeb.Endpoint,
   http: [port: {:system, "PORT"}, compress: true],
-  url: [scheme: "http", host: System.get_env("HOST"), port: {:system, "PORT"}],
+  url: [scheme: "http", host: "${HOST}", port: {:system, "PORT"}],
   # url: [host: "example.com", port: 80],
-  secret_key_base: System.get_env("SECRET_KEY_BASE"),
+  secret_key_base: "${SECRET_KEY_BASE}",
   load_from_system_env: true,
   cache_static_manifest: "priv/static/cache_manifest.json",
   server: true
 
 config :api, Api.Repo,
   adapter: Ecto.Adapters.Postgres,
-  database: System.get_env("RDS_DB_NAME"),
-  username: System.get_env("RDS_USERNAME"),
-  password: System.get_env("RDS_PASSWORD"),
-  hostname: System.get_env("RDS_HOSTNAME"),
-  port: System.get_env("RDS_PORT") || 5432,
+  database: "${RDS_DB_NAME}",
+  username: "${RDS_USERNAME}",
+  password: "${RDS_PASSWORD}",
+  hostname: "${RDS_HOSTNAME}",
+  port: "${RDS_PORT}" || 5432,
   pool_size: 20,
   ssl: true
 
 config :api, Api.Accounts.Guardian,
-  secret_key: System.get_env("GUARDIAN_SECRET")
+  secret_key: "${GUARDIAN_SECRET}"
 
 config :ex_aws,
-  access_key_id: [System.get_env("AWS_KEY"), :instance_role],
-  secret_access_key: [System.get_env("AWS_SECRET"), :instance_role]
+  access_key_id: ["${AWS_KEY}", :instance_role],
+  secret_access_key: ["${AWS_SECRET}", :instance_role]
 
 
 # Do not print debug messages in production
@@ -57,8 +57,8 @@ config :arc,
 #       url: [host: "example.com", port: 443],
 #       https: [:inet6,
 #               port: 443,
-#               keyfile: System.get_env("SOME_APP_SSL_KEY_PATH"),
-#               certfile: System.get_env("SOME_APP_SSL_CERT_PATH")]
+#               keyfile: "${SOME_APP_SSL_KEY_PATH}",
+#               certfile: "${SOME_APP_SSL_CERT_PATH}"]
 #
 # Where those two env variables return an absolute path to
 # the key and cert in disk or a relative path inside priv,

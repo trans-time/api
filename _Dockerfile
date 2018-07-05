@@ -1,0 +1,51 @@
+FROM bitwalker/alpine-elixir-phoenix as builder
+
+ADD mix.exs mix.lock ./
+RUN mix do deps.get, deps.compile
+
+ADD . .
+RUN mix release --env=prod --verbose
+
+### Release
+
+FROM alpine:3.6
+
+RUN apk upgrade --no-cache && \
+    apk add --no-cache bash openssl
+
+FROM bitwalker/alpine-elixir-phoenix:latest
+
+# Set exposed ports
+EXPOSE 4000
+ENV PORT=4000 MIX_ENV=prod
+
+# Cache elixir deps
+# ADD mix.exs mix.lock ./
+# RUN mix do deps.get, deps.compile
+#
+# # Same with npm deps
+# ADD assets/package.json assets/
+# RUN cd assets && \
+#     npm install
+#
+ADD . .
+#
+# # Run frontend build, compile, and digest assets
+# RUN mix do compile, phx.digest
+# RUN mix release --env=prod --verbose
+
+# USER default
+
+# CMD mix phx.server
+
+COPY --from=builder _build/prod/rel/api/releases/0.0.1/api.tar.gz .
+
+
+
+
+
+
+
+RUN tar zxf api.tar.gz && rm api.tar.gz
+
+CMD ["/api/bin/api", "foreground"]

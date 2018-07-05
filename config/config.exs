@@ -56,8 +56,8 @@ config :api, Api.Accounts.Guardian,
 config :api, Api.Scheduler,
   jobs: [
     # Runs every midnight:
-    {"@daily", fn -> Api.CronJobs.UnbanUsers.call() end},
-    {"@daily", fn -> Api.CronJobs.UnlockComments.call() end}
+    {"@daily", {Api.CronJobs.UnbanUsers, :call, []}},
+    {"@daily", {Api.CronJobs.UnlockComments, :call, []}}
   ]
 
 # Import environment specific config. This must remain at the bottom

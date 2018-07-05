@@ -14,6 +14,10 @@ defmodule ApiWeb.Router do
     plug ApiWeb.Guardian.AuthPipeline
   end
 
+  pipeline :basic do
+    plug :accepts, ["json", "html"]
+  end
+
   pipeline :json_api do
     plug :accepts, ["json", "json-api"]
     plug JaSerializer.ContentTypeNegotiation
@@ -32,6 +36,11 @@ defmodule ApiWeb.Router do
     plug ApiWeb.Guardian.ModeratorAuthPipeline
     plug JaSerializer.ContentTypeNegotiation
     plug JaSerializer.Deserializer
+  end
+
+  scope "/v1", ApiWeb, as: :api do
+    pipe_through :basic
+    get "/health", HealthController, :index
   end
 
   scope "/v1", ApiWeb, as: :api do
