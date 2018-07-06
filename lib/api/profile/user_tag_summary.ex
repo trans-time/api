@@ -19,7 +19,7 @@ defmodule Api.Profile.UserTagSummary do
   @doc false
   def changeset(%UserTagSummary{} = user_tag_summary, attrs) do
     user_tag_summary
-    |> cast(attrs, [:author_id, :subject_id])
+    |> cast(attrs, [:author_id, :subject_id, :private_timeline_item_ids])
     |> assoc_constraint(:author)
     |> assoc_constraint(:subject)
   end

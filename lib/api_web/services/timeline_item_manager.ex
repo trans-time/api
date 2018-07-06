@@ -390,6 +390,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
   end
 
   defp update_with_private_timeline_item_ids(user_tag_summary_record, private_timeline_item_ids) do
+    IO.inspect(Enum.empty?(private_timeline_item_ids -- user_tag_summary_record.private_timeline_item_ids))
     if (Enum.empty?(private_timeline_item_ids -- user_tag_summary_record.private_timeline_item_ids)) do
       {:ok, user_tag_summary_record}
     else
@@ -409,7 +410,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
       end)
 
       if (user_tag_summary_tag_record != nil) do
-        Api.Repo.update(UserTagSummaryTag.changeset(user_tag_summary_tag_record, %{timeline_item_ids: [timeline_item.id | user_tag_summary_tag_record.timeline_item_ids]}))
+        Api.Repo.update(UserTagSummaryTag.changeset(user_tag_summary_tag_record, %{timeline_item_ids: Enum.uniq([timeline_item.id | user_tag_summary_tag_record.timeline_item_ids])}))
       else
         Api.Repo.insert(UserTagSummaryTag.changeset(%UserTagSummaryTag{}, %{user_tag_summary_id: user_tag_summary_record.id, tag_id: tag_record.id, timeline_item_ids: [timeline_item.id]}))
       end
@@ -427,7 +428,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
       end)
 
       if (user_tag_summary_user_record != nil) do
-        Api.Repo.update(UserTagSummaryUser.changeset(user_tag_summary_user_record, %{timeline_item_ids: [timeline_item.id | user_tag_summary_user_record.timeline_item_ids]}))
+        Api.Repo.update(UserTagSummaryUser.changeset(user_tag_summary_user_record, %{timeline_item_ids: Enum.uniq([timeline_item.id | user_tag_summary_user_record.timeline_item_ids])}))
       else
         Api.Repo.insert(UserTagSummaryUser.changeset(%UserTagSummaryUser{}, %{user_tag_summary_id: user_tag_summary_record.id, user_id: user_record.id, timeline_item_ids: [timeline_item.id]}))
       end
