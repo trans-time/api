@@ -390,7 +390,6 @@ defmodule ApiWeb.Services.TimelineItemManager do
   end
 
   defp update_with_private_timeline_item_ids(user_tag_summary_record, private_timeline_item_ids) do
-    IO.inspect(Enum.empty?(private_timeline_item_ids -- user_tag_summary_record.private_timeline_item_ids))
     if (Enum.empty?(private_timeline_item_ids -- user_tag_summary_record.private_timeline_item_ids)) do
       {:ok, user_tag_summary_record}
     else
