@@ -166,7 +166,7 @@ defmodule ApiWeb.TimelineItemController do
 
       [limit, offset]
     else
-      if qp["last_timeline_item"] do
+      if qp["last_timeline_item"] != "" do
         [limit, max(0, Api.Repo.aggregate(query, :count, :id) - limit)]
       else
         [limit, 0]
