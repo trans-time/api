@@ -34,12 +34,8 @@ ENV PORT=4000 \
 
 COPY --from=builder /export/ .
 
-# RUN tar zxf api.tar.gz && rm api.tar.gz
-
 RUN chown -R root ./releases
 
 USER root
-
-# CMD ["/api/bin/api", "foreground"]
 
 CMD ["/bin/api", "foreground"]

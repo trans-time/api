@@ -45,6 +45,7 @@ config :logger, level: :info
 
 config :arc,
   storage: Arc.Storage.S3,
+  asset_host: "https://media.transtime.is",
   bucket: "trans-time-user-uploads"
 
 # ## SSL Support

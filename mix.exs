@@ -33,8 +33,8 @@ defmodule Api.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:arc, "~> 0.8.0"},
-      {:arc_ecto, "~> 0.7.0"},
+      {:arc, "~> 0.10.0"},
+      {:arc_ecto, "~> 0.10.0"},
       {:argon2_elixir, "~> 1.2"},
       {:comeonin, "~> 4.0"},
       {:corsica, "~> 1.0"},
