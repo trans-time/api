@@ -2,6 +2,7 @@ import Ecto.Query
 
 defmodule ApiWeb.Services.Notifications.NotificationCommentReactionManager do
   alias Api.Notifications.{Notification, NotificationCommentReaction}
+  alias ApiWeb.Services.Notifications.NotificationManager
   alias Ecto.Multi
 
   def insert(comment) do
@@ -17,22 +18,12 @@ defmodule ApiWeb.Services.Notifications.NotificationCommentReactionManager do
   end
 
   defp insert_or_update(_, %NotificationCommentReaction{} = ncr) do
-    changeset = Notification.private_changeset(ncr.notification, %{
-      updated_at: DateTime.utc_now(),
-      is_read: false,
-      is_seen: false
-    })
-
-    Multi.new
-    |> Multi.update(:notification_comment_reaction_notification, changeset)
+    NotificationManager.update(:notification_comment_reaction_notification, ncr.notification)
   end
 
   defp insert_or_update(comment, _) do
     Multi.new
-    |> Multi.insert(:notification_comment_reaction_notification, Notification.private_changeset(%Notification{}, %{
-      user_id: comment.user_id,
-      updated_at: DateTime.utc_now()
-    }))
+    |> Multi.append(NotificationManager.insert(:notification_comment_reaction_notification, comment.user_id))
     |> Multi.run(:notification_comment_reaction, fn %{notification_comment_reaction_notification: notification} ->
       Api.Repo.insert(NotificationCommentReaction.private_changeset(%NotificationCommentReaction{}, %{
         notification_id: notification.id,

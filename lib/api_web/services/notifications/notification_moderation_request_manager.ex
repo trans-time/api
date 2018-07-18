@@ -3,12 +3,12 @@ import Ecto.Query
 defmodule ApiWeb.Services.Notifications.NotificationModerationRequestManager do
   alias Api.Accounts.User
   alias Api.Notifications.{Notification, NotificationModerationRequest}
+  alias ApiWeb.Services.Notifications.NotificationManager
   alias Ecto.Multi
 
   def update_and_insert() do
     Multi.new
     |> Multi.update_all(:update_all_moderation_request_notifications,
-      # from(n in Notification, inner_join: assoc(n, :notification_moderation_request)),
       Notification
       |> join(:inner, [n], nmr in assoc(n, :notification_moderation_request)),
       [set: [
@@ -18,8 +18,10 @@ defmodule ApiWeb.Services.Notifications.NotificationModerationRequestManager do
       ]],
       returning: true
     )
-    |> Multi.run(:insert_moderation_request_notifications, fn %{update_all_moderation_request_notifications: {_, notifications }} ->
-      moderator_ids = Enum.map(Api.Repo.all(User |> where([u], u.is_moderator == ^true)), fn (user) -> user.id end)
+    |> Multi.run(:moderator_ids, fn _ ->
+      {:ok, Enum.map(Api.Repo.all(User |> where([u], u.is_moderator == ^true)), fn (user) -> user.id end)}
+    end)
+    |> Multi.run(:insert_moderation_request_notifications, fn %{moderator_ids: moderator_ids, update_all_moderation_request_notifications: {_, notifications }} ->
       preexisting_moderator_ids = Enum.map(notifications, fn (notification) -> notification.user_id end)
       new_moderator_ids = moderator_ids -- preexisting_moderator_ids
       now = DateTime.utc_now()
@@ -38,6 +40,10 @@ defmodule ApiWeb.Services.Notifications.NotificationModerationRequestManager do
       end))
 
       if (amount == Kernel.length(notifications)), do: {:ok, amount}, else: {:error, amount}
+    end)
+    |> Multi.run(:broadcast_notifications, fn %{moderator_ids: moderator_ids} ->
+      NotificationManager.broadcast_notifications(moderator_ids)
+      {:ok, %{}}
     end)
   end
 end

@@ -3,6 +3,7 @@ import Ecto.Query
 defmodule ApiWeb.Services.Notifications.NotificationCommentAtManager do
   alias Api.Accounts.User
   alias Api.Notifications.{Notification, NotificationCommentAt}
+  alias ApiWeb.Services.Notifications.NotificationManager
   alias Ecto.Multi
 
   def delete_all(comment) do
@@ -46,16 +47,10 @@ defmodule ApiWeb.Services.Notifications.NotificationCommentAtManager do
     |> Multi.run(:notification_comment_at_user_ids, fn _ ->
       {:ok, Enum.map(users, fn (user) -> user.id end)}
     end)
-    |> Multi.run(:notification_comment_at_notifications, fn _ ->
-      now = DateTime.utc_now()
-
-      {amount, notifications} = Api.Repo.insert_all(Notification, Enum.map(users, fn (user) ->
-        %{user_id: user.id, updated_at: now}
-      end), returning: true)
-
-      if (amount == Kernel.length(users)), do: {:ok, notifications}, else: {:error, notifications}
-    end)
-    |> Multi.run(:notification_comment_ats, fn %{notification_comment_at_notifications: notifications} ->
+    |> Multi.append(NotificationManager.insert_all(:notification_comment_at_notifications, Enum.map(users, fn (user) ->
+      user.id
+    end)))
+    |> Multi.run(:notification_comment_ats, fn %{notification_comment_at_notifications: {_, notifications}} ->
       now = DateTime.utc_now()
 
       {amount, _} = Api.Repo.insert_all(NotificationCommentAt, Enum.map(notifications, fn (notification) ->

@@ -3,6 +3,7 @@ import Ecto.Query
 defmodule ApiWeb.Services.Notifications.NotificationModerationResolutionManager do
   alias Api.Accounts.User
   alias Api.Notifications.{Notification, NotificationModerationResolution}
+  alias ApiWeb.Services.Notifications.NotificationManager
   alias Ecto.Multi
 
   # def delete_all(verdict) do
@@ -34,16 +35,8 @@ defmodule ApiWeb.Services.Notifications.NotificationModerationResolutionManager 
 
   defp insert_all_from_users(verdict, user_ids) do
     Multi.new
-    |> Multi.run(:notification_moderation_resolution_notifications, fn _ ->
-      now = DateTime.utc_now()
-
-      {amount, notifications} = Api.Repo.insert_all(Notification, Enum.map(user_ids, fn (user_id) ->
-        %{user_id: user_id, updated_at: now}
-      end), returning: true)
-
-      if (amount == Kernel.length(user_ids)), do: {:ok, notifications}, else: {:error, notifications}
-    end)
-    |> Multi.run(:notification_moderation_resolutions, fn %{notification_moderation_resolution_notifications: notifications} ->
+    |> Multi.append(NotificationManager.insert_all(:notification_moderation_resolution_notifications, user_ids))
+    |> Multi.run(:notification_moderation_resolutions, fn %{notification_moderation_resolution_notifications: {_, notifications}} ->
       now = DateTime.utc_now()
 
       {amount, _} = Api.Repo.insert_all(NotificationModerationResolution, Enum.map(notifications, fn (notification) ->

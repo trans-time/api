@@ -32,6 +32,7 @@ config :api, ApiWeb.Endpoint,
 
 # Watch static and templates for browser reloading.
 config :api, ApiWeb.Endpoint,
+  url: [host: "0.0.0.0"],
   live_reload: [
     patterns: [
       ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},

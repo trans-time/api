@@ -3,6 +3,7 @@ import Ecto.Query
 defmodule ApiWeb.Services.Notifications.NotificationTimelineItemAtManager do
   alias Api.Accounts.User
   alias Api.Notifications.{Notification, NotificationTimelineItemAt}
+  alias ApiWeb.Services.Notifications.NotificationManager
   alias Ecto.Multi
 
   def delete_all(timeline_item) do
@@ -43,16 +44,10 @@ defmodule ApiWeb.Services.Notifications.NotificationTimelineItemAtManager do
 
   defp insert_all_from_users(timeline_item, users) do
     Multi.new
-    |> Multi.run(:notification_timeline_item_at_notifications, fn _ ->
-      now = DateTime.utc_now()
-
-      {amount, notifications} = Api.Repo.insert_all(Notification, Enum.map(users, fn (user) ->
-        %{user_id: user.id, updated_at: now}
-      end), returning: true)
-
-      if (amount == Kernel.length(users)), do: {:ok, notifications}, else: {:error, notifications}
-    end)
-    |> Multi.run(:notification_timeline_item_ats, fn %{notification_timeline_item_at_notifications: notifications} ->
+    |> Multi.append(NotificationManager.insert_all(:notification_timeline_item_at_notifications, Enum.map(users, fn (user) ->
+      user.id
+    end)))
+    |> Multi.run(:notification_timeline_item_ats, fn %{notification_timeline_item_at_notifications: {_, notifications}} ->
       now = DateTime.utc_now()
 
       {amount, _} = Api.Repo.insert_all(NotificationTimelineItemAt, Enum.map(notifications, fn (notification) ->

@@ -2,6 +2,7 @@ import Ecto.Query
 
 defmodule ApiWeb.Services.Notifications.NotificationPrivateGrantManager do
   alias Api.Notifications.{Notification, NotificationPrivateGrant}
+  alias ApiWeb.Services.Notifications.NotificationManager
   alias Ecto.Multi
 
   def insert_or_delete(follow) do
@@ -10,10 +11,7 @@ defmodule ApiWeb.Services.Notifications.NotificationPrivateGrantManager do
 
   defp insert(follow) do
     Multi.new
-    |> Multi.insert(:notification_private_grant_notification, Notification.private_changeset(%Notification{}, %{
-      user_id: follow.follower_id,
-      updated_at: DateTime.utc_now()
-    }))
+    |> Multi.append(NotificationManager.insert(:notification_private_grant_notification, follow.follower_id))
     |> Multi.run(:notification_private_grant, fn %{notification_private_grant_notification: notification} ->
       Api.Repo.insert(NotificationPrivateGrant.private_changeset(%NotificationPrivateGrant{}, %{
         notification_id: notification.id,

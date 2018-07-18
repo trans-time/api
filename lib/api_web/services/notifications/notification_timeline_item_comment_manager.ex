@@ -4,6 +4,7 @@ defmodule ApiWeb.Services.Notifications.NotificationTimelineItemCommentManager d
   alias Api.Accounts.User
   alias Api.Timeline.Comment
   alias Api.Notifications.{Notification, NotificationTimelineItemComment}
+  alias ApiWeb.Services.Notifications.NotificationManager
   alias Ecto.Multi
 
   def delete(comment) do
@@ -33,16 +34,10 @@ defmodule ApiWeb.Services.Notifications.NotificationTimelineItemCommentManager d
     } ->
       {:ok, Enum.map(users, fn (user) -> user.id end) -- (notification_comment_at_user_ids ++ notification_comment_comment_user_ids)}
     end)
-    |> Multi.run(:notification_timeline_item_comment_notifications, fn %{notification_timeline_item_comment_user_ids: notification_timeline_item_comment_user_ids} ->
-      now = DateTime.utc_now()
-
-      {amount, notifications} = Api.Repo.insert_all(Notification, Enum.map(notification_timeline_item_comment_user_ids, fn (user_id) ->
-        %{user_id: user_id, updated_at: now}
-      end), returning: true)
-
-      if (amount == Kernel.length(notification_timeline_item_comment_user_ids)), do: {:ok, notifications}, else: {:error, notifications}
+    |> Multi.merge(fn %{notification_timeline_item_comment_user_ids: notification_timeline_item_comment_user_ids} ->
+      NotificationManager.insert_all(:notification_timeline_item_comment_notifications, notification_timeline_item_comment_user_ids)
     end)
-    |> Multi.run(:notification_timeline_item_comments, fn %{notification_timeline_item_comment_notifications: notifications} ->
+    |> Multi.run(:notification_timeline_item_comments, fn %{notification_timeline_item_comment_notifications: {_, notifications}} ->
       {amount, _} = Api.Repo.insert_all(NotificationTimelineItemComment, Enum.map(notifications, fn (notification) ->
         %{comment_id: comment.id, notification_id: notification.id}
       end))

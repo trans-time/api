@@ -1,7 +1,8 @@
 import Ecto.Query
 
 defmodule ApiWeb.Services.Notifications.NotificationTimelineItemReactionManager do
-  alias Api.Notifications.{Notification, NotificationTimelineItemReaction}
+  alias Api.Notifications.NotificationTimelineItemReaction
+  alias ApiWeb.Services.Notifications.NotificationManager
   alias Ecto.Multi
 
   def insert(timeline_item) do
@@ -17,22 +18,12 @@ defmodule ApiWeb.Services.Notifications.NotificationTimelineItemReactionManager 
   end
 
   defp insert_or_update(_, %NotificationTimelineItemReaction{} = ntir) do
-    changeset = Notification.private_changeset(ntir.notification, %{
-      updated_at: DateTime.utc_now(),
-      is_read: false,
-      is_seen: false
-    })
-
-    Multi.new
-    |> Multi.update(:notification_timeline_item_reaction_notification, changeset)
+    NotificationManager.update(:notification_timeline_item_reaction_notification, ntir.notification)
   end
 
   defp insert_or_update(timeline_item, _) do
     Multi.new
-    |> Multi.insert(:notification_timeline_item_reaction_notification, Notification.private_changeset(%Notification{}, %{
-      user_id: timeline_item.user_id,
-      updated_at: DateTime.utc_now()
-    }))
+    |> Multi.append(NotificationManager.insert(:notification_timeline_item_reaction_notification, timeline_item.user_id))
     |> Multi.run(:notification_timeline_item_reaction, fn %{notification_timeline_item_reaction_notification: notification} ->
       Api.Repo.insert(NotificationTimelineItemReaction.private_changeset(%NotificationTimelineItemReaction{}, %{
         notification_id: notification.id,

@@ -4,6 +4,7 @@ defmodule ApiWeb.Services.Notifications.NotificationFollowManager do
   alias Api.Accounts.User
   alias Api.Timeline.Comment
   alias Api.Notifications.{Notification, NotificationFollow}
+  alias ApiWeb.Services.Notifications.NotificationManager
   alias Ecto.Multi
 
   def delete(follow) do
@@ -20,10 +21,7 @@ defmodule ApiWeb.Services.Notifications.NotificationFollowManager do
 
   def insert(follow) do
     Multi.new
-    |> Multi.insert(:notification_follow_notification, Notification.private_changeset(%Notification{}, %{
-      user_id: follow.followed_id,
-      updated_at: DateTime.utc_now()
-    }))
+    |> Multi.append(NotificationManager.insert(:notification_follow_notification, follow.followed_id))
     |> Multi.run(:notification_follow, fn %{notification_follow_notification: notification} ->
       Api.Repo.insert(NotificationFollow.private_changeset(%NotificationFollow{}, %{
         notification_id: notification.id,

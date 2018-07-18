@@ -2,6 +2,7 @@ import Ecto.Query
 
 defmodule ApiWeb.Services.Notifications.NotificationPrivateRequestManager do
   alias Api.Notifications.{Notification, NotificationPrivateRequest}
+  alias ApiWeb.Services.Notifications.NotificationManager
   alias Ecto.Multi
 
   def insert(follow) do
@@ -17,22 +18,12 @@ defmodule ApiWeb.Services.Notifications.NotificationPrivateRequestManager do
   end
 
   defp insert_or_update(_, %NotificationPrivateRequest{} = npr) do
-    changeset = Notification.private_changeset(npr.notification, %{
-      updated_at: DateTime.utc_now(),
-      is_read: false,
-      is_seen: false
-    })
-
-    Multi.new
-    |> Multi.update(:notification_private_request_notification, changeset)
+    NotificationManager.update(:notification_private_request_notification, npr.notification)
   end
 
   defp insert_or_update(follow, _) do
     Multi.new
-    |> Multi.insert(:notification_private_request_notification, Notification.private_changeset(%Notification{}, %{
-      user_id: follow.followed_id,
-      updated_at: DateTime.utc_now()
-    }))
+    |> Multi.append(NotificationManager.insert(:notification_private_request_notification, follow.followed_id))
     |> Multi.run(:notification_private_request, fn %{notification_private_request_notification: notification} ->
       Api.Repo.insert(NotificationPrivateRequest.private_changeset(%NotificationPrivateRequest{}, %{
         notification_id: notification.id
