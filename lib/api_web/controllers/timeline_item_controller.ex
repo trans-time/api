@@ -135,20 +135,13 @@ defmodule ApiWeb.TimelineItemController do
   end
 
   def get_limit_and_offset(qp, query) do
-    limit = String.to_integer(qp["page_size"])
+    limit = 10
     from_id = qp["from_timeline_item_id"]
     should_progress = qp["should_progress"]
 
     if from_id && byte_size(from_id) > 0 do
-      order = "ORDER BY date DESC"
-      offset = List.first(repo().all(
-        from e in subquery(
-          from t in query,
-            select: %{id: t.id, rn: fragment("row_number() OVER(ORDER BY date DESC)")}
-        ),
-          where: e.id == ^String.to_integer(from_id),
-          select: e.rn
-      )) || 0
+      date_direction = if (qp["sort"] == "-date"), do: :desc, else: :asc
+      offset = get_row_number(date_direction, query, from_id) || 0
 
       cond do
         qp["initial_query"] && String.to_existing_atom(qp["initial_query"]) ->
@@ -168,5 +161,27 @@ defmodule ApiWeb.TimelineItemController do
     else
       [limit, 0]
     end
+  end
+
+  def get_row_number(direction = :asc, query, from_id) do
+    List.first(repo().all(
+      from e in subquery(
+        from t in query,
+          select: %{id: t.id, rn: fragment("row_number() OVER(ORDER BY date ASC)")}
+      ),
+        where: e.id == ^String.to_integer(from_id),
+        select: e.rn
+    ))
+  end
+
+  def get_row_number(_, query, from_id) do
+    List.first(repo().all(
+      from e in subquery(
+        from t in query,
+          select: %{id: t.id, rn: fragment("row_number() OVER(ORDER BY date DESC)")}
+      ),
+        where: e.id == ^String.to_integer(from_id),
+        select: e.rn
+    ))
   end
 end
