@@ -50,7 +50,7 @@ defmodule ApiWeb.CommentController do
   end
 
   def filter(conn, query, "is_under_moderation", is_under_moderation) do
-    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || -1)
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
     where(query, [ti], ti.is_under_moderation == ^is_under_moderation or ti.user_id == ^current_user_id)
   end
 
