@@ -3,6 +3,7 @@ import Ecto.Query
 defmodule ApiWeb.Services.UserManager do
   alias Api.Accounts.{CurrentUser, User, UserPassword}
   alias Api.Profile.{UserProfile, UserTagSummary}
+  alias ApiWeb.Services.FollowManager
   alias Ecto.Multi
 
   def insert_user(attributes) do
@@ -23,6 +24,12 @@ defmodule ApiWeb.Services.UserManager do
         author_id: user.id,
         subject_id: user.id
       }))
+    end)
+    |> Multi.merge(fn %{user: user} ->
+      FollowManager.insert(%{
+        "followed_id" => Api.Repo.get_by!(Api.Accounts.User, username: "celeste").id,
+        "follower_id" => user.id
+      })
     end)
   end
 end
