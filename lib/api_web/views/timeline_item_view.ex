@@ -15,6 +15,7 @@ defmodule ApiWeb.TimelineItemView do
     Enum.reduce([
       %{key: :user, view: UserView},
       %{key: :comments, view: CommentView},
+      %{key: :latest_comment, view: CommentView},
       %{key: :reactions, view: ReactionView},
       %{key: :tags, view: TagView},
       %{key: :users, view: UserView},
