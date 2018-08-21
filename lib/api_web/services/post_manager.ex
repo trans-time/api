@@ -52,12 +52,6 @@ defmodule ApiWeb.Services.PostManager do
     post_changeset = Post.changeset(record, attributes)
 
     if Map.has_key?(post_changeset.changes, :text) do
-      text_version_changeset = TextVersion.changeset(%TextVersion{}, %{
-        text: record.text,
-        attribute: "text",
-        post_id: record.id
-      })
-
       old_tags = gather_tags("#", Map.get(record, :text))
       current_tags = gather_tags("#", Map.get(post_changeset.changes, :text))
       old_users = gather_tags("@", Map.get(record, :text))
@@ -66,7 +60,16 @@ defmodule ApiWeb.Services.PostManager do
       Multi.new
       |> Multi.update(:timelineable, post_changeset)
       |> Multi.run(:text_version, fn %{} ->
-        Api.Repo.insert(text_version_changeset)
+        if (record.text != nil) do
+          text_version_changeset = TextVersion.changeset(%TextVersion{}, %{
+            text: record.text,
+            attribute: "text",
+            post_id: record.id
+          })
+          Api.Repo.insert(text_version_changeset)
+        else
+          {:ok, record}
+        end
       end)
       |> Multi.append(TimelineItemManager.update(timeline_item, attributes, old_tags, current_tags, old_users, current_users, user))
       |> Multi.append(Libra.review(attributes["text"]))
@@ -86,7 +89,7 @@ defmodule ApiWeb.Services.PostManager do
 
   def insert_notifications(timeline_item) do
     timeline_item = Api.Repo.preload(timeline_item, [:post])
-    
+
     Multi.new
     |> Multi.append(NotificationTimelineItemAtManager.insert_all(timeline_item))
   end
