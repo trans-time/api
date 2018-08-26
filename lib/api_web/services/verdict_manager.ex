@@ -5,7 +5,7 @@ defmodule ApiWeb.Services.VerdictManager do
   alias Api.Accounts.User
   alias Api.Moderation.{ModerationReport, Verdict}
   alias Api.Timeline.{Comment, TimelineItem}
-  alias ApiWeb.Services.{CommentManager, ImageManager, ModerationManager, TimelineItemManager}
+  alias ApiWeb.Services.{CommentManager, ContentWarningManager, ImageManager, ModerationManager, TimelineItemManager}
   alias ApiWeb.Services.Notifications.{NotificationManager, NotificationModerationResolutionManager, NotificationModerationViolationManager}
 
   def insert(attributes) do
@@ -17,7 +17,7 @@ defmodule ApiWeb.Services.VerdictManager do
     timeline_item = if flaggable_is_timeline_item, do: flaggable, else: flaggable.timeline_item
     previous_verdict = Api.Repo.one(from v in Verdict, where: v.moderation_report_id == ^moderation_report.id, order_by: [desc: v.id], limit: 1)
     flaggable_changeset =  if flaggable_is_timeline_item, do: TimelineItem.private_changeset(flaggable, %{is_under_moderation: false}), else: Comment.private_changeset(flaggable, %{is_under_moderation: false})
-    attributes = Map.put(attributes, "previous_maturity_rating", (if (attributes["action_change_maturity_rating"] && previous_verdict), do: previous_verdict.previous_maturity_rating, else: timeline_item.maturity_rating))
+    attributes = Map.put(attributes, "previous_content_warnings", (if (attributes["action_change_content_warnings"] && previous_verdict), do: previous_verdict.previous_content_warnings, else: Enum.join(Enum.map(Api.Repo.preload(timeline_item, [:content_warnings]).content_warnings, fn (cw) -> cw.name end), ",")))
 
     verdict_changeset = Verdict.changeset(%Verdict{}, attributes)
     moderation_report_changeset = ModerationReport.changeset(moderation_report, %{
@@ -64,14 +64,17 @@ defmodule ApiWeb.Services.VerdictManager do
           {:ok, verdict}
       end
     end)
-    |> Multi.run(:verdict_change_maturity_rating, fn %{verdict: verdict} ->
+    |> Multi.merge(fn %{verdict: verdict} ->
+      current_content_warnings = Enum.sort(Enum.map(String.split(verdict.action_change_content_warnings || "", ","), fn (cw) -> String.trim(cw) end))
+      old_content_warnings = Enum.sort(Enum.map(Api.Repo.preload(timeline_item, [:content_warnings]).content_warnings, fn (cw) -> cw.name end))
       cond do
-        verdict.action_change_maturity_rating && timeline_item.maturity_rating != verdict.action_change_maturity_rating ->
-          Api.Repo.update(TimelineItem.changeset(timeline_item, %{ maturity_rating: verdict.action_change_maturity_rating }))
-        !verdict.action_change_maturity_rating && previous_verdict && previous_verdict.action_change_maturity_rating ->
-          Api.Repo.update(TimelineItem.changeset(timeline_item, %{ maturity_rating: previous_verdict.previous_maturity_rating }))
+        verdict.action_change_content_warnings && old_content_warnings != current_content_warnings ->
+          ContentWarningManager.update(timeline_item, current_content_warnings, old_content_warnings)
+        !verdict.action_change_content_warnings && previous_verdict && previous_verdict.action_change_content_warnings ->
+          current_content_warnings = Enum.sort(Enum.map(String.split(previous_verdict.previous_content_warnings || "", ","), fn (cw) -> String.trim(cw) end))
+          ContentWarningManager.update(timeline_item, current_content_warnings, old_content_warnings)
         true ->
-          {:ok, verdict}
+          Multi.new
       end
     end)
     |> Multi.append(delete_media_multi(attributes["action_mark_images_for_deletion"], attributes["delete_image_ids"], previous_verdict, timeline_item))

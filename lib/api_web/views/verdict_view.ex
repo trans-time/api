@@ -6,7 +6,7 @@ defmodule ApiWeb.VerdictView do
   attributes [
     :inserted_at, :moderator_comment, :was_violation,
     :action_banned_user, :action_mark_flaggable_for_deletion, :action_ignore_flags, :action_lock_comments,
-    :action_change_maturity_rating,
+    :action_change_content_warnings, :previous_content_warnings,
     :action_mark_images_for_deletion, :delete_image_ids,
     :ban_user_until, :lock_comments_until
   ]

@@ -3,7 +3,7 @@ defmodule ApiWeb.FlagView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{CommentView, TimelineItemView, ModerationReportView, UserView}
 
-  attributes [:inserted_at, :text, :bot, :illicit_activity, :trolling, :unconsenting_image, :incorrect_maturity_rating]
+  attributes [:inserted_at, :text, :bot, :illicit_activity, :trolling, :unconsenting_image, :incorrect_content_warning]
 
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)
