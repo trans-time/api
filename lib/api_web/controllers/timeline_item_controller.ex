@@ -53,11 +53,19 @@ defmodule ApiWeb.TimelineItemController do
         :user ->
           join(query, :inner, [ti], u in "users", ti.user_id == u.id and u.username == ^main_query)
           |> group_by([ti], ti.id)
-        _ ->
+        :tag ->
           join(query, :inner, [ti], tit in "timeline_items_tags", tit.timeline_item_id == ti.id)
           |> join(:inner, [..., tit], t in "tags", tit.tag_id == t.id)
           |> group_by([ti, ..., t], [ti.id, t.name])
           |> having([..., t], t.name == ^main_query)
+        :generic ->
+          join(query, :full, [ti], u in "users", ti.user_id == u.id)
+          |> join(:full, [..., u], ui in "user_identities", ui.user_id == u.id)
+          |> join(:full, [..., ui], i in "identities", ui.identity_id == i.id)
+          |> join(:full, [ti], tit in "timeline_items_tags", tit.timeline_item_id == ti.id)
+          |> join(:full, [..., tit], t in "tags", tit.tag_id == t.id)
+          |> group_by([ti, ..., u, ui, i, tit, t], [ti.id, t.name, u.username, i.name])
+          |> having([..., u, ui, i, tit, t], u.username == ^main_query or t.name == ^main_query or i.name == ^main_query)
       end
     end)
   end
