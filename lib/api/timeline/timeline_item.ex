@@ -44,7 +44,6 @@ defmodule Api.Timeline.TimelineItem do
     timeline_item
     |> cast(attrs, [:date, :is_private, :user_id])
     |> validate_required([:date, :is_private])
-    |> validate_that_date_is_not_in_the_future(:date)
     |> assoc_constraint(:user)
   end
 
@@ -52,14 +51,5 @@ defmodule Api.Timeline.TimelineItem do
   def private_changeset(%TimelineItem{} = post, attrs) do
     post
     |> cast(attrs, [:comments_are_locked, :is_marked_for_deletion, :is_marked_for_deletion_by_moderator, :is_marked_for_deletion_by_user, :marked_for_deletion_on, :is_ignoring_flags, :is_under_moderation])
-  end
-
-  def validate_that_date_is_not_in_the_future(changeset, field, options \\ []) do
-    validate_change(changeset, field, fn _, datetime ->
-      case DateTime.compare(datetime, DateTime.utc_now()) == :gt do
-        true -> [{field, options[:message] || "remote.errors.detail.invalid.dateAfterNow"}]
-        false -> []
-      end
-    end)
   end
 end

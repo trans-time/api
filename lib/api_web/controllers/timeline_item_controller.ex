@@ -123,6 +123,10 @@ defmodule ApiWeb.TimelineItemController do
     order_by(query, [{^direction, :date}])
   end
 
+  def sort(_conn, query, "inserted_at", direction) do
+    order_by(query, [{^direction, :inserted_at}])
+  end
+
   def handle_index_query(%{query_params: qp} = conn, query) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
 
@@ -148,8 +152,9 @@ defmodule ApiWeb.TimelineItemController do
     should_progress = qp["should_progress"]
 
     if from_id && byte_size(from_id) > 0 do
-      date_direction = if (qp["sort"] == "-date"), do: :desc, else: :asc
-      offset = get_row_number(date_direction, query, from_id) || 0
+      sortBy = String.trim(qp["sort"], "-")
+      sortDirection = if (String.first(qp["sort"]) == "-"), do: "desc", else: "asc"
+      offset = get_row_number(sortBy, sortDirection, query, from_id) || 0
 
       cond do
         qp["initial_query"] && String.to_existing_atom(qp["initial_query"]) ->
@@ -171,7 +176,7 @@ defmodule ApiWeb.TimelineItemController do
     end
   end
 
-  def get_row_number(direction = :asc, query, from_id) do
+  def get_row_number(column = "date", direction = "asc", query, from_id) do
     List.first(repo().all(
       from e in subquery(
         from t in query,
@@ -182,11 +187,33 @@ defmodule ApiWeb.TimelineItemController do
     ))
   end
 
-  def get_row_number(_, query, from_id) do
+  def get_row_number(column = "date", direction = "desc", query, from_id) do
     List.first(repo().all(
       from e in subquery(
         from t in query,
           select: %{id: t.id, rn: fragment("row_number() OVER(ORDER BY date DESC)")}
+      ),
+        where: e.id == ^String.to_integer(from_id),
+        select: e.rn
+    ))
+  end
+
+  def get_row_number(column = "inserted_at", direction = "asc", query, from_id) do
+    List.first(repo().all(
+      from e in subquery(
+        from t in query,
+          select: %{id: t.id, rn: fragment("row_number() OVER(ORDER BY ? ASC)", t.inserted_at)}
+      ),
+        where: e.id == ^String.to_integer(from_id),
+        select: e.rn
+    ))
+  end
+
+  def get_row_number(column = "inserted_at", direction = "desc", query, from_id) do
+    List.first(repo().all(
+      from e in subquery(
+        from t in query,
+          select: %{id: t.id, rn: fragment("row_number() OVER(ORDER BY ? DESC)", t.inserted_at)}
       ),
         where: e.id == ^String.to_integer(from_id),
         select: e.rn
