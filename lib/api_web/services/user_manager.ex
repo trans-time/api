@@ -31,5 +31,11 @@ defmodule ApiWeb.Services.UserManager do
         "follower_id" => user.id
       })
     end)
+    |> Multi.run(:user_email, fn %{user: user} ->
+      Api.Mail.Email.welcome(user.username, user.email)
+      |> Api.Mail.Mailer.deliver_later()
+
+      {:ok, user}
+    end)
   end
 end

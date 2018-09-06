@@ -60,6 +60,17 @@ config :api, Api.Scheduler,
     {"@daily", {Api.CronJobs.UnlockComments, :call, []}}
   ]
 
+# config :api, Api.Mail.Mailer,
+#   adapter: Bamboo.SesAdapter
+
+config :premailex, html_parser: Premailex.HTMLParser.Meeseeks
+
+config :api, Api.Mail.Mailer,
+  adapter: Bamboo.SMTPAdapter,
+  tls: :always, # can be `:always` or `:never`
+  ssl: false, # can be `true`
+  retries: 1
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env}.exs"
