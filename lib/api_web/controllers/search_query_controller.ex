@@ -47,7 +47,7 @@ defmodule ApiWeb.SearchQueryController do
   def users_query(query) do
     Api.Repo.all(from u in Api.Accounts.User,
       where: ilike(u.username, ^query) or ilike(u.display_name, ^query),
-      order_by: [desc: :follower_count],
+      order_by: [desc: :follower_count, desc: :is_trans],
       limit: 5)
   end
 end

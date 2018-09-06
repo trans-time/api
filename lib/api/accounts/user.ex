@@ -18,6 +18,7 @@ defmodule Api.Accounts.User do
     field :display_name, :string
     field :is_banned, :boolean, default: false
     field :is_moderator, :boolean, default: false
+    field :is_trans, :boolean, default: true
     field :pronouns, :string
     field :username, :string
 
@@ -73,7 +74,7 @@ defmodule Api.Accounts.User do
   @doc false
   defp public_shared_changeset(user, attrs) do
     user
-    |> cast(attrs, [:display_name, :email, :pronouns])
+    |> cast(attrs, [:display_name, :email, :pronouns, :is_trans])
     |> cast_attachments(attrs, [:avatar])
     |> validate_required([:email])
     |> validate_length(:display_name, max: 100, message: "remote.errors.detail.length.length")
