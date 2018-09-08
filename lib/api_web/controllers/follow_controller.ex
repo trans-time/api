@@ -1,4 +1,4 @@
-import Ecto.Query, only: [where: 2]
+import Ecto.Query, only: [where: 2, order_by: 2]
 
 defmodule ApiWeb.FollowController do
   use ApiWeb, :controller
@@ -42,6 +42,14 @@ defmodule ApiWeb.FollowController do
 
   def filter(_conn, query, "follower_id", follower_id) do
     where(query, follower_id: ^follower_id)
+  end
+
+  def sort(_conn, query, "inserted_at", direction) do
+    order_by(query, [{^direction, :inserted_at}])
+  end
+
+  def sort(_conn, query, "has_requested_private", direction) do
+    order_by(query, [{^direction, :has_requested_private}])
   end
 
   def handle_index_query(%{query_params: qp}, query) do

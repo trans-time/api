@@ -41,6 +41,10 @@ defmodule ApiWeb.ReactionController do
     where(query, timeline_item_id: ^timeline_item_id)
   end
 
+  def sort(_conn, query, "inserted_at", direction) do
+    order_by(query, [{^direction, :inserted_at}])
+  end
+
   def handle_index_query(%{query_params: qp}, query) do
     repo().paginate(query, qp)
   end
