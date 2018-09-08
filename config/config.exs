@@ -63,7 +63,7 @@ config :api, Api.Scheduler,
 # config :api, Api.Mail.Mailer,
 #   adapter: Bamboo.SesAdapter
 
-config :premailex, html_parser: Premailex.HTMLParser.Meeseeks
+# config :premailex, html_parser: Premailex.HTMLParser.Meeseeks
 
 config :api, Api.Mail.Mailer,
   adapter: Bamboo.SMTPAdapter,

@@ -52,7 +52,6 @@ defmodule Api.Mixfile do
       {:indifferent, "~> 0.9"},
       {:ja_resource, "~> 0.3"},
       {:ja_serializer, "~> 0.12"},
-      {:meeseeks, "~> 0.10.0"},
       {:phoenix, "~> 1.3.0"},
       {:phoenix_ecto, "~> 3.2"},
       {:phoenix_html, "~> 2.10"},
