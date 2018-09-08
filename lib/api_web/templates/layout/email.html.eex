@@ -65,26 +65,21 @@
         clear: both;
       }
 
-      .content {
+      .content, .footer {
         margin: 0 auto;
         max-width: 580px;
-        background: white;
         padding: 30px 35px;
       }
 
-      // helpers
-      .text-center {
+      .content {
+        background: white;
+      }
+
+      .footer {
         text-align: center;
       }
 
-      .text-right {
-        text-align: right;
-      }
-
-      .text-left {
-        text-align: left;
-      }
-
+      // helpers
       .muted {
         color: #666;
       }
@@ -93,8 +88,17 @@
   <body>
     <div class="container">
       <div class="content">
+        <h1>hi <%= @username %>!</h1>
+
         <%= render @view_module, @view_template, assigns %>
+
+        <p class="muted">-celeste and the `trans time` team</p>
       </div>
+
+      <footer class="footer">
+        <a href="https://www.transtime.is">trans time</a> *
+        <a href="https://www.transtime.is/subscriptions?mailSubscriptionToken=<%= assigns.mail_subscription_token %>">unsubscribe</a>
+      </footer>
     </div>
   </body>
 </html>

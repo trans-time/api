@@ -1,11 +1,9 @@
-<h1>hi <%= @username %>!</h1>
+<p>to confirm your email address, please <a href="https://www.transtime.is/email-confirmation?mailConfirmationToken=<%= assigns.mail_confirmation_token %>">click here</a>! otherwise, we won't be to send you updates, notifications, and other important emails.</p>
 
-<p>if you haven't done so already, be sure to check out <a href='https://www.transtime.is/users/celeste/timeline?lastTimelineItem=true&tags=%5B"tutorial"%5D'>our tutorial.</a></p>
+<p>also, if you haven't done so already, be sure to check out <a href='https://www.transtime.is/users/celeste/timeline?lastTimelineItem=true&tags=%5B"tutorial"%5D'>our tutorial.</a></p>
 
 <p>we're still a super young community, and that makes you one of our first members!!! thank you so much for being willing to try something new.</p>
 
 <p>if you have any feedback, you can @ us on <a href="https://twitter.com/transtimeis">twitter</a> or make a post on `trans time` with the #feedback hashtag. your thoughts could really help us lvl up!</p>
 
 <p>and before we forget, welcome to `trans time`! it's wonderful to have you here. ^__^</p>
-
-<p class="muted">-celeste and the `trans time` team</p>

@@ -2,8 +2,9 @@ import Ecto.Query
 
 defmodule ApiWeb.Services.UserManager do
   alias Api.Accounts.{CurrentUser, User, UserPassword}
+  alias Api.Mail.MailConfirmationToken
   alias Api.Profile.{UserProfile, UserTagSummary}
-  alias ApiWeb.Services.FollowManager
+  alias ApiWeb.Services.{FollowManager, MailManager, SubscriptionManager}
   alias Ecto.Multi
 
   def insert_user(attributes) do
@@ -31,11 +32,16 @@ defmodule ApiWeb.Services.UserManager do
         "follower_id" => user.id
       })
     end)
-    |> Multi.run(:user_email, fn %{user: user} ->
-      Api.Mail.Email.welcome(user.username, user.email)
-      |> Api.Mail.Mailer.deliver_later()
-
-      {:ok, user}
+    |> Multi.merge(fn %{user: user} ->
+      SubscriptionManager.subscribe_to_all(["announcements", "notifications"], user)
+    end)
+    |> Multi.run(:mail_confirmation_token, fn %{user: user} ->
+      Api.Repo.insert(MailConfirmationToken.changeset(%MailConfirmationToken{}, %{
+        user_id: user.id
+      }))
+    end)
+    |> Multi.merge(fn args ->
+      MailManager.send(args.user, args, :welcome)
     end)
   end
 end

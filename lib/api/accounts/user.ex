@@ -9,6 +9,7 @@ defmodule Api.Accounts.User do
   alias Api.Profile.{UserIdentity, UserProfile, UserTagSummary}
   alias Api.Relationship.{Block, Follow}
   alias Api.Timeline.{Reaction, TimelineItem}
+  alias Api.Mail.Subscription
 
 
   schema "users" do
@@ -16,6 +17,7 @@ defmodule Api.Accounts.User do
     field :email, :string
     field :follower_count, :integer, default: 0
     field :display_name, :string
+    field :email_is_confirmed, :boolean, default: false
     field :is_banned, :boolean, default: false
     field :is_moderator, :boolean, default: false
     field :is_trans, :boolean, default: true
@@ -36,6 +38,7 @@ defmodule Api.Accounts.User do
     has_one :user_profile, UserProfile
     has_many :user_tag_summaries_about_user, UserTagSummary, foreign_key: :subject_id
     has_many :user_tag_summaries_by_user, UserTagSummary, foreign_key: :author_id
+    has_many :subscriptions, Subscription
 
     timestamps()
   end
@@ -87,6 +90,7 @@ defmodule Api.Accounts.User do
   @doc false
   def private_changeset(%User{} = user, attrs) do
     user
-    |> cast(attrs, [:is_banned])
+    |> cast(attrs, [:is_banned, :email_is_confirmed])
+    |> public_shared_changeset(attrs)
   end
 end
