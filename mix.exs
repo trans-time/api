@@ -61,6 +61,7 @@ defmodule Api.Mixfile do
       {:postgrex, ">= 0.0.0"},
       {:premailex, "~> 0.3.0"},
       {:quantum, "~> 2.2"},
+      {:recaptcha, "~> 2.3"},
       {:scrivener_ecto, "~> 1.3"},
       {:sweet_xml, "~> 0.6"},
       {:timex, "~> 3.0"},

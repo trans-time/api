@@ -32,6 +32,16 @@ config :api, Api.Repo,
   pool_size: 20,
   ssl: true
 
+
+config :api, Api.Mail.Mailer,
+  server: "${SES_SERVER}",
+  port: "${SES_PORT}",
+  username: "${SMTP_USERNAME}",
+  password: "${SMTP_PASSWORD}"
+
+config :recaptcha,
+  secret: "${RECAPTCHA_SECRET}"
+
 config :api, Api.Accounts.Guardian,
   secret_key: "${GUARDIAN_SECRET}"
 

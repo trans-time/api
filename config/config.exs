@@ -60,10 +60,8 @@ config :api, Api.Scheduler,
     {"@daily", {Api.CronJobs.UnlockComments, :call, []}}
   ]
 
-# config :api, Api.Mail.Mailer,
-#   adapter: Bamboo.SesAdapter
-
-# config :premailex, html_parser: Premailex.HTMLParser.Meeseeks
+config :recaptcha,
+  public_key: "6LfCT28UAAAAAN28PKrUUx1vrCCufEDBjHK-I-Hc"
 
 config :api, Api.Mail.Mailer,
   adapter: Bamboo.SMTPAdapter,
