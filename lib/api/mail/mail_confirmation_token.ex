@@ -13,6 +13,8 @@ defmodule Api.Mail.MailConfirmationToken do
     field :reminder_was_sent, :boolean, default: false
 
     belongs_to :user, User
+
+    timestamps()
   end
 
   @doc false

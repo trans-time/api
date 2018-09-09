@@ -7,6 +7,7 @@ defmodule Api.Notifications.Notification do
     NotificationCommentAt,
     NotificationCommentComment,
     NotificationCommentReaction,
+    NotificationEmailConfirmation,
     NotificationFollow,
     NotificationModerationRequest,
     NotificationModerationResolution,
@@ -28,6 +29,7 @@ defmodule Api.Notifications.Notification do
     has_one :notification_comment_at, NotificationCommentAt
     has_one :notification_comment_comment, NotificationCommentComment
     has_one :notification_comment_reaction, NotificationCommentReaction
+    has_one :notification_email_confirmation, NotificationEmailConfirmation
     has_one :notification_follow, NotificationFollow
     has_one :notification_moderation_request, NotificationModerationRequest
     has_one :notification_moderation_resolution, NotificationModerationResolution

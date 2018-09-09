@@ -9,6 +9,7 @@ defmodule ApiWeb.NotificationView do
     NotificationCommentAtView,
     NotificationCommentCommentView,
     NotificationCommentReactionView,
+    NotificationEmailConfirmationView,
     NotificationFollowView,
     NotificationModerationRequestView,
     NotificationModerationResolutionView,
@@ -27,6 +28,7 @@ defmodule ApiWeb.NotificationView do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
 
     Api.Repo.preload(record_or_records, [
+      :notification_email_confirmation,
       :notification_moderation_request,
       :notification_private_request,
       notification_comment_at: [
@@ -89,6 +91,7 @@ defmodule ApiWeb.NotificationView do
       %{key: :notification_comment_at, view: NotificationCommentAtView},
       %{key: :notification_comment_comment, view: NotificationCommentCommentView},
       %{key: :notification_comment_reaction, view: NotificationCommentReactionView},
+      %{key: :notification_email_confirmation, view: NotificationEmailConfirmationView},
       %{key: :notification_follow, view: NotificationFollowView},
       %{key: :notification_moderation_request, view: NotificationModerationRequestView},
       %{key: :notification_moderation_resolution, view: NotificationModerationResolutionView},

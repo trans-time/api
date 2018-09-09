@@ -5,7 +5,6 @@ defmodule Api.Mail.Email do
     new_email
     |> from({"trans time", "hi@transtime.is"})
     |> to({user.username, user.email})
-    # |> to({"my_username", "hi@transtime.is"})
     |> assign(:username, user.username)
     |> assign(:mail_confirmation_token, options.mail_confirmation_token.token)
     |> add_mail_subscription_token(mail_subscription_token)
@@ -20,7 +19,6 @@ defmodule Api.Mail.Email do
     new_email
     |> from({"trans time", "hi@transtime.is"})
     |> to({user.username, options.mail_confirmation_token.email || user.email})
-    # |> to({"my_username", "hi@transtime.is"})
     |> assign(:username, user.username)
     |> assign(:mail_confirmation_token, options.mail_confirmation_token.token)
     |> add_mail_subscription_token(mail_subscription_token)
@@ -31,11 +29,24 @@ defmodule Api.Mail.Email do
     |> premail()
   end
 
+  def confirmation_reminder(user, mail_subscription_token, options) do
+    new_email
+    |> from({"trans time", "hi@transtime.is"})
+    |> to({user.username, options.mail_confirmation_token.email || user.email})
+    |> assign(:username, user.username)
+    |> assign(:mail_confirmation_token, options.mail_confirmation_token.token)
+    |> add_mail_subscription_token(mail_subscription_token)
+    |> put_html_layout({ApiWeb.LayoutView, "email.html"})
+    |> put_text_layout(false)
+    |> subject("please remember to confirm your email")
+    |> render("confirmation_reminder.html")
+    |> premail()
+  end
+
   def mail_recovery(user, mail_subscription_token, options) do
     new_email
     |> from({"trans time", "hi@transtime.is"})
     |> to({user.username, user.mail_recovery_token.email})
-    # |> to({"my_username", "hi@transtime.is"})
     |> assign(:username, user.username)
     |> assign(:mail_recovery_token, options.mail_recovery_token.token)
     |> assign(:new_email_address, options.user.email)

@@ -60,7 +60,8 @@ config :api, Api.Scheduler,
     {"@daily", {Api.CronJobs.UnlockComments, :call, []}},
     {"@daily", {Api.CronJobs.UnlockUsers, :call, []}},
     {"@daily", {Api.CronJobs.DeleteStaleTokens, :call, []}},
-    {"* * * *", {Api.CronJobs.DeleteContentMarkedForDeletion, :call, []}}
+    {"@daily", {Api.CronJobs.SendConfirmationReminder, :call, []}},
+    # {"@daily", {Api.CronJobs.DeleteContentMarkedForDeletion, :call, []}}
   ]
 
 config :recaptcha,

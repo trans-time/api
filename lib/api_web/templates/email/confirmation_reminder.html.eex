@@ -1,0 +1,7 @@
+<p>just wanted to remind you to confirm your email address:</p>
+
+<p><a href="https://www.transtime.is/email-confirmation?mailConfirmationToken=<%= assigns.mail_confirmation_token %>">https://www.transtime.is/email-confirmation?mailConfirmationToken=<%= assigns.mail_confirmation_token %></a></p>
+
+<p>if you don't want to, no worries! ｡^‿^｡</p>
+
+<p>to avoid spamming people, we'll never send announcements, notifications, and other updates to unconfirmed email addresses, so if you want those . . . well, you have the link ^</p>
