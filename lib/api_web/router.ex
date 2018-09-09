@@ -61,6 +61,8 @@ defmodule ApiWeb.Router do
     resources "/comments", CommentController, only: [:create, :delete, :index, :show, :update]
     resources "/email-changes", EmailChangeController, only: [:create]
     resources "/email-confirmations", EmailConfirmationController, only: [:create]
+    resources "/email-password-resets", EmailPasswordResetController, only: [:create]
+    resources "/email-password-reset-requests", EmailPasswordResetRequestController, only: [:create]
     resources "/email-recoveries", EmailRecoveryController, only: [:create]
     resources "/email-unlocks", EmailUnlockController, only: [:create]
     resources "/flags", FlagController, only: [:create, :index, :show]

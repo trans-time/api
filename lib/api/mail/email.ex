@@ -43,6 +43,20 @@ defmodule Api.Mail.Email do
     |> premail()
   end
 
+  def password_reset(user, mail_subscription_token, options) do
+    new_email
+    |> from({"trans time", "hi@transtime.is"})
+    |> to({user.username, user.email})
+    |> assign(:username, user.username)
+    |> assign(:mail_password_reset_token, options.mail_password_reset_token.token)
+    |> add_mail_subscription_token(mail_subscription_token)
+    |> put_html_layout({ApiWeb.LayoutView, "email.html"})
+    |> put_text_layout(false)
+    |> subject("password reset")
+    |> render("password_reset.html")
+    |> premail()
+  end
+
   def mail_recovery(user, mail_subscription_token, options) do
     new_email
     |> from({"trans time", "hi@transtime.is"})
