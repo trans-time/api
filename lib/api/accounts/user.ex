@@ -14,11 +14,13 @@ defmodule Api.Accounts.User do
 
   schema "users" do
     field :avatar, Api.Profile.Avatar.Type
+    field :consecutive_failed_logins, :integer, default: 0
     field :email, :string
     field :follower_count, :integer, default: 0
     field :display_name, :string
     field :email_is_confirmed, :boolean, default: false
     field :is_banned, :boolean, default: false
+    field :is_locked, :boolean, default: false
     field :is_moderator, :boolean, default: false
     field :is_trans, :boolean, default: true
     field :pronouns, :string
@@ -90,7 +92,7 @@ defmodule Api.Accounts.User do
   @doc false
   def private_changeset(%User{} = user, attrs) do
     user
-    |> cast(attrs, [:is_banned, :email_is_confirmed])
+    |> cast(attrs, [:is_banned, :is_locked, :consecutive_failed_logins, :email_is_confirmed])
     |> public_shared_changeset(attrs)
   end
 end

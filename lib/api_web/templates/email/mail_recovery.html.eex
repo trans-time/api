@@ -1,3 +1,4 @@
 <p>you're email address has been updated to <%= assigns.new_email_address %>.</p>
 
-<p>if you'd like to return to using this email address, just <a href="https://www.transtime.is/email-recovery?mailRecoveryToken=<%= assigns.mail_recovery_token %>">click here</a>.</p>
+<p>if you'd like to return to using this email address, just visit:</p>
+<p><a href="https://www.transtime.is/email-recovery?mailRecoveryToken=<%= assigns.mail_recovery_token %>">https://www.transtime.is/email-recovery?mailRecoveryToken=<%= assigns.mail_recovery_token %></a></p>

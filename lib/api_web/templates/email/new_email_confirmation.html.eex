@@ -1,1 +1,3 @@
-<p>to confirm your new email address, just <a href="https://www.transtime.is/email-confirmation?mailConfirmationToken=<%= assigns.mail_confirmation_token %>">click here</a>.</p>
+<p>to confirm your new email address, just visit:</p>
+
+<p><a href="https://www.transtime.is/email-confirmation?mailConfirmationToken=<%= assigns.mail_confirmation_token %>">https://www.transtime.is/email-confirmation?mailConfirmationToken=<%= assigns.mail_confirmation_token %></a></p>

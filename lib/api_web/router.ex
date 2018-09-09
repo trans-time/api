@@ -62,6 +62,7 @@ defmodule ApiWeb.Router do
     resources "/email-changes", EmailChangeController, only: [:create]
     resources "/email-confirmations", EmailConfirmationController, only: [:create]
     resources "/email-recoveries", EmailRecoveryController, only: [:create]
+    resources "/email-unlocks", EmailUnlockController, only: [:create]
     resources "/flags", FlagController, only: [:create, :index, :show]
     resources "/follows", FollowController, only: [:create, :delete, :index, :update]
     resources "/images", ImageController, only: [:create, :delete, :update]
