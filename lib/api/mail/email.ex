@@ -60,7 +60,7 @@ defmodule Api.Mail.Email do
   def mail_recovery(user, mail_subscription_token, options) do
     new_email
     |> from({"trans time", "hi@transtime.is"})
-    |> to({user.username, user.mail_recovery_token.email})
+    |> to({user.username, options.mail_recovery_token.email})
     |> assign(:username, user.username)
     |> assign(:mail_recovery_token, options.mail_recovery_token.token)
     |> assign(:new_email_address, options.user.email)
