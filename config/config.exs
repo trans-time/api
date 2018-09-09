@@ -57,7 +57,10 @@ config :api, Api.Scheduler,
   jobs: [
     # Runs every midnight:
     {"@daily", {Api.CronJobs.UnbanUsers, :call, []}},
-    {"@daily", {Api.CronJobs.UnlockComments, :call, []}}
+    {"@daily", {Api.CronJobs.UnlockComments, :call, []}},
+    {"@daily", {Api.CronJobs.UnlockUsers, :call, []}},
+    {"@daily", {Api.CronJobs.DeleteStaleTokens, :call, []}},
+    {"* * * *", {Api.CronJobs.DeleteContentMarkedForDeletion, :call, []}}
   ]
 
 config :recaptcha,

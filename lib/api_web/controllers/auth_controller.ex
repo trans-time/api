@@ -58,7 +58,7 @@ defmodule ApiWeb.AuthController do
                       Multi.new
                     end
                   end)
-                  
+
                   Api.Repo.transaction(multi)
 
                   invalid_identity(conn)
