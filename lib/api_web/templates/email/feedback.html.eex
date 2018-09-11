@@ -1,0 +1,3 @@
+<p><%= assigns.body %></p>
+
+<p><a href="mailto:<%= assigns.email %>"><%= assigns.email %></a></p>

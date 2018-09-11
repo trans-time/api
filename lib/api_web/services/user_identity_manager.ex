@@ -21,7 +21,7 @@ defmodule ApiWeb.Services.UserIdentityManager do
     identity_name = attributes["name"]
     previous_identity = Api.Repo.get(Identity, record.identity_id)
 
-    if (previous_identity.name !== identity_name), do: identity = Api.Repo.get_by(Identity, %{name: identity_name}), else: identity = previous_identity
+    identity = if (previous_identity.name !== identity_name), do: Api.Repo.get_by(Identity, %{name: identity_name}), else: previous_identity
 
     handle_insert_and_update(UserIdentity.public_update_changeset(record, attributes), identity, identity_name, previous_identity)
   end

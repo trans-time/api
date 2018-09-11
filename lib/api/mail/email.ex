@@ -1,6 +1,18 @@
 defmodule Api.Mail.Email do
   use Bamboo.Phoenix, view: ApiWeb.EmailView
 
+  def feedback(options) do
+    new_email
+    |> from({"trans time", "hi@transtime.is"})
+    |> to({"feedback", "feedback@transtime.is"})
+    |> assign(:body, options["body"])
+    |> assign(:email, options["email"])
+    |> put_text_layout(false)
+    |> subject("trans time feedback - #{Timex.format!(Timex.now(), "{ISO:Extended}")}")
+    |> render("feedback.html")
+    |> premail()
+  end
+
   def welcome(user, mail_subscription_token, options) do
     new_email
     |> from({"trans time", "hi@transtime.is"})

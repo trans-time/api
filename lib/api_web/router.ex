@@ -65,6 +65,7 @@ defmodule ApiWeb.Router do
     resources "/email-password-reset-requests", EmailPasswordResetRequestController, only: [:create]
     resources "/email-recoveries", EmailRecoveryController, only: [:create]
     resources "/email-unlocks", EmailUnlockController, only: [:create]
+    resources "/feedbacks", FeedbackController, only: [:create, :index, :show]
     resources "/flags", FlagController, only: [:create, :index, :show]
     resources "/follows", FollowController, only: [:create, :delete, :index, :update]
     resources "/images", ImageController, only: [:create, :delete, :update]
