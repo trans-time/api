@@ -3,9 +3,7 @@ defmodule ApiWeb.UserView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{BlockView, CurrentUserView, FollowView, ModerationReportView, UserIdentityView, UserProfileView, UserTagSummaryView, UserView}
 
-  attributes [:avatar, :display_name, :is_moderator, :is_trans, :pronouns, :username]
-
-  # def is_moderator(_a, _b), do: true
+  attributes [:avatar, :display_name, :is_moderator, :is_trans, :pronouns, :token, :username]
 
   def avatar(user) do
     Api.Profile.Avatar.url({user.avatar, user}, :full)
