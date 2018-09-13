@@ -34,7 +34,7 @@ defmodule ApiWeb.Services.Libra do
       ho: ~r/(\b|^)h+[o0]+(\b|$)/,
       slut: ~r/[s$]+[l1]+u+t+/,
       thot: ~r/t+h+[o0]+t+/,
-      whore: ~r/w*h+[o0]+r+e*/,
+      whore: ~r/w+h+[o0]+r+e*/,
       # racial, derived from https://github.com/tinwatchman/grawlix-racism/blob/master/grawlix-racism.js
       chink: ~r/c+h+[i1]+n+k+/,
       darkie: ~r/d+[a@]+r+k+(y+|[i1]+[e3]*)/,
