@@ -156,23 +156,33 @@ defmodule ApiWeb.TimelineItemController do
       sortDirection = if (String.first(qp["sort"]) == "-"), do: "desc", else: "asc"
       offset = get_row_number(sortBy, sortDirection, query, from_id) || 0
 
-      cond do
-        qp["initial_query"] && String.to_existing_atom(qp["initial_query"]) ->
-          offset = offset - div(limit, 2)
-        qp["should_progress"] && String.to_existing_atom(qp["should_progress"]) ->
-          offset = offset - (limit + 1)
-        true ->
-          offset
-      end
+      modify_offset_and_limit_by_qp(qp, limit, offset)
+    else
+      [limit, 0]
+    end
+  end
 
-      if offset < 0 do
-        limit = limit + offset
-        offset = 0
-      end
+  defp modify_offset_and_limit_by_qp(qp, limit, offset) do
+    cond do
+      qp["initial_query"] && String.to_existing_atom(qp["initial_query"]) ->
+        offset = offset - div(limit, 2)
+        ensure_offset_is_not_negative(limit, offset)
+      qp["should_progress"] && String.to_existing_atom(qp["should_progress"]) ->
+        offset = offset - (limit + 1)
+        ensure_offset_is_not_negative(limit, offset)
+      true ->
+        [limit, offset]
+    end
+  end
+
+  defp ensure_offset_is_not_negative(limit, offset) do
+    if offset < 0 do
+      limit = limit + offset
+      offset = 0
 
       [limit, offset]
     else
-      [limit, 0]
+      [limit, offset]
     end
   end
 
