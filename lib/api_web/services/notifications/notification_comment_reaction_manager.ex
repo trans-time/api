@@ -1,33 +1,29 @@
 import Ecto.Query
 
 defmodule ApiWeb.Services.Notifications.NotificationCommentReactionManager do
-  alias Api.Notifications.{Notification, NotificationCommentReaction}
+  alias Api.Notifications.{Notification, NotificationCommentReactionV2}
   alias ApiWeb.Services.Notifications.NotificationManager
   alias Ecto.Multi
 
-  def insert(comment) do
-    insert_from_reactable(comment)
+  def delete(reaction) do
+    Multi.new
+    |> Multi.run(:remove_notification_reaction_notifications, fn _ ->
+      {amount, notifications} = Api.Repo.delete_all(Notification
+        |> join(:inner, [n], nf in assoc(n, :notification_comment_reaction_v2))
+        |> where([n, nf], nf.reaction_id == ^reaction.id),
+      returning: true)
+
+      {:ok, notifications}
+    end)
   end
 
-  defp insert_from_reactable(comment) do
-    insert_or_update(comment, Api.Repo.one(NotificationCommentReaction
-      |> where([nc], nc.comment_id == ^comment.id)
-      |> join(:inner, [nc], n in assoc(nc, :notification))
-      |> preload([nc, n], [notification: n])
-    ))
-  end
-
-  defp insert_or_update(_, %NotificationCommentReaction{} = ncr) do
-    NotificationManager.update(:notification_comment_reaction_notification, ncr.notification)
-  end
-
-  defp insert_or_update(comment, _) do
+  def insert(reaction, comment) do
     Multi.new
     |> Multi.append(NotificationManager.insert(:notification_comment_reaction_notification, comment.user_id))
     |> Multi.run(:notification_comment_reaction, fn %{notification_comment_reaction_notification: notification} ->
-      Api.Repo.insert(NotificationCommentReaction.private_changeset(%NotificationCommentReaction{}, %{
+      Api.Repo.insert(NotificationCommentReactionV2.private_changeset(%NotificationCommentReactionV2{}, %{
         notification_id: notification.id,
-        comment_id: comment.id
+        reaction_id: reaction.id
       }))
     end)
   end

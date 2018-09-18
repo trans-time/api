@@ -7,6 +7,7 @@ defmodule ApiWeb.Services.ReactionManager do
 
   def delete(record) do
     Multi.new
+    |> Multi.append(merge_delete_notification(record))
     |> Multi.update_all(:reactable, get_reactable(record), inc: inc(record, -1) ++ [reaction_count: -1])
     |> Multi.delete(:reaction, record)
   end
@@ -17,8 +18,8 @@ defmodule ApiWeb.Services.ReactionManager do
     Multi.new
     |> Multi.update_all(:reactable, get_reactable(attributes), [inc: inc(attributes, 1) ++ [reaction_count: 1]], returning: true)
     |> Multi.insert(:reaction, changeset)
-    |> Multi.merge(fn %{reactable: {_, [reactable | _]}} ->
-      merge_notification(reactable)
+    |> Multi.merge(fn %{reaction: reaction, reactable: {_, [reactable | _]}} ->
+      merge_notification(reaction, reactable)
     end)
   end
 
@@ -47,11 +48,18 @@ defmodule ApiWeb.Services.ReactionManager do
     end
   end
 
-  defp merge_notification(%TimelineItem{} = timeline_item) do
-    NotificationTimelineItemReactionManager.insert(timeline_item)
+  defp merge_delete_notification(reaction) do
+    cond do
+      reaction.timeline_item_id != nil -> NotificationTimelineItemReactionManager.delete(reaction)
+      true -> NotificationCommentReactionManager.delete(reaction)
+    end
   end
 
-  defp merge_notification(%Comment{} = comment) do
-    NotificationCommentReactionManager.insert(comment)
+  defp merge_notification(reaction, %TimelineItem{} = timeline_item) do
+    NotificationTimelineItemReactionManager.insert(reaction, timeline_item)
+  end
+
+  defp merge_notification(reaction, %Comment{} = comment) do
+    NotificationCommentReactionManager.insert(reaction, comment)
   end
 end

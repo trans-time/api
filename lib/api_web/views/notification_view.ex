@@ -4,11 +4,12 @@ defmodule ApiWeb.NotificationView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
   alias Api.Relationship.Follow
-  alias Api.Timeline.Reaction
+  alias Api.Timeline.{Comment, Post, Reaction}
   alias ApiWeb.{
     NotificationCommentAtView,
     NotificationCommentCommentView,
     NotificationCommentReactionView,
+    NotificationCommentReactionV2View,
     NotificationEmailConfirmationView,
     NotificationFollowView,
     NotificationModerationRequestView,
@@ -19,6 +20,7 @@ defmodule ApiWeb.NotificationView do
     NotificationTimelineItemAtView,
     NotificationTimelineItemCommentView,
     NotificationTimelineItemReactionView,
+    NotificationTimelineItemReactionV2View,
     UserView
   }
 
@@ -35,10 +37,20 @@ defmodule ApiWeb.NotificationView do
         comment: [:user]
       ],
       notification_comment_comment: [
-        comment: [
-          :user,
-          parent: [:user]
-        ]
+        comment: from(c in Comment,
+          join: u in assoc(c, :user),
+          join: p in assoc(c, :parent),
+          join: pu in assoc(p, :user),
+          select: %{
+            id: c.id,
+            text: fragment("LEFT(?, 50)", c.text),
+            user: u,
+            parent: %{
+              id: p.id,
+              user: pu
+            }
+          }
+        )
       ],
       notification_comment_reaction: [
         comment: [
@@ -48,6 +60,17 @@ defmodule ApiWeb.NotificationView do
             limit: 2,
             join: u in assoc(r, :user),
             preload: [user: u]
+          )
+        ]
+      ],
+      notification_comment_reaction_v2: [
+        reaction: [
+          :user,
+          comment: from(c in Comment,
+            select: %{
+              id: c.id,
+              text: fragment("LEFT(?, 50)", c.text)
+            }
           )
         ]
       ],
@@ -64,16 +87,30 @@ defmodule ApiWeb.NotificationView do
         follow: [:followed]
       ],
       notification_timeline_item_at: [
-        timeline_item: [:user]
+        timeline_item: [:user, :post]
       ],
       notification_timeline_item_comment: [
         comment: [
           :user,
-          timeline_item: [:user]
+          timeline_item: [
+            :user,
+            post: from(p in Post,
+              select: %{
+                id: p.id,
+                text: fragment("LEFT(?, 50)", p.text)
+              }
+            )
+          ]
         ]
       ],
       notification_timeline_item_reaction: [
         timeline_item: [
+          post: from(p in Post,
+            select: %{
+              id: p.id,
+              text: fragment("LEFT(?, 50)", p.text)
+            }
+          ),
           reactions: from(r in Reaction,
             where: r.user_id != ^current_user_id,
             order_by: r.inserted_at,
@@ -81,6 +118,19 @@ defmodule ApiWeb.NotificationView do
             join: u in assoc(r, :user),
             preload: [user: u]
           )
+        ]
+      ],
+      notification_timeline_item_reaction_v2: [
+        reaction: [
+          :user,
+          timeline_item: [
+            post: from(p in Post,
+              select: %{
+                id: p.id,
+                text: fragment("LEFT(?, 50)", p.text)
+              }
+            )
+          ]
         ]
       ]
     ])
@@ -91,6 +141,7 @@ defmodule ApiWeb.NotificationView do
       %{key: :notification_comment_at, view: NotificationCommentAtView},
       %{key: :notification_comment_comment, view: NotificationCommentCommentView},
       %{key: :notification_comment_reaction, view: NotificationCommentReactionView},
+      %{key: :notification_comment_reaction_v2, view: NotificationCommentReactionV2View},
       %{key: :notification_email_confirmation, view: NotificationEmailConfirmationView},
       %{key: :notification_follow, view: NotificationFollowView},
       %{key: :notification_moderation_request, view: NotificationModerationRequestView},
@@ -101,6 +152,7 @@ defmodule ApiWeb.NotificationView do
       %{key: :notification_timeline_item_at, view: NotificationTimelineItemAtView},
       %{key: :notification_timeline_item_comment, view: NotificationTimelineItemCommentView},
       %{key: :notification_timeline_item_reaction, view: NotificationTimelineItemReactionView},
+      %{key: :notification_timeline_item_reaction_v2, view: NotificationTimelineItemReactionV2View},
       %{key: :user, view: UserView},
     ], %{}, fn(relationship, relationships) ->
       if Ecto.assoc_loaded?(Map.get(user, relationship.key)) do

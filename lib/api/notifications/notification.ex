@@ -7,6 +7,7 @@ defmodule Api.Notifications.Notification do
     NotificationCommentAt,
     NotificationCommentComment,
     NotificationCommentReaction,
+    NotificationCommentReactionV2,
     NotificationEmailConfirmation,
     NotificationFollow,
     NotificationModerationRequest,
@@ -16,7 +17,8 @@ defmodule Api.Notifications.Notification do
     NotificationPrivateRequest,
     NotificationTimelineItemComment,
     NotificationTimelineItemAt,
-    NotificationTimelineItemReaction
+    NotificationTimelineItemReaction,
+    NotificationTimelineItemReactionV2
   }
 
 
@@ -29,6 +31,7 @@ defmodule Api.Notifications.Notification do
     has_one :notification_comment_at, NotificationCommentAt
     has_one :notification_comment_comment, NotificationCommentComment
     has_one :notification_comment_reaction, NotificationCommentReaction
+    has_one :notification_comment_reaction_v2, NotificationCommentReactionV2
     has_one :notification_email_confirmation, NotificationEmailConfirmation
     has_one :notification_follow, NotificationFollow
     has_one :notification_moderation_request, NotificationModerationRequest
@@ -39,6 +42,7 @@ defmodule Api.Notifications.Notification do
     has_one :notification_timeline_item_at, NotificationTimelineItemAt
     has_one :notification_timeline_item_comment, NotificationTimelineItemComment
     has_one :notification_timeline_item_reaction, NotificationTimelineItemReaction
+    has_one :notification_timeline_item_reaction_v2, NotificationTimelineItemReactionV2
   end
 
   @doc false
