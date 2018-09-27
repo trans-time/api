@@ -3,7 +3,16 @@ defmodule ApiWeb.PostView do
   use JaSerializer.PhoenixView
   alias ApiWeb.{ImageView, ReactionView, TextVersionView, TimelineItemView}
 
-  attributes [:text]
+  attributes [:short_text, :text]
+
+  def attributes(post, conn) do
+    if (Map.has_key?(post, :short_text)) do
+      super(post, conn)
+      |> Map.take([:short_text])
+    else
+      super(post, conn)
+    end
+  end
 
   def preload(record_or_records, _conn, include_opts) do
     Api.Repo.preload(record_or_records, include_opts)

@@ -43,7 +43,7 @@ defmodule ApiWeb.NotificationView do
           join: pu in assoc(p, :user),
           select: %{
             id: c.id,
-            text: fragment("LEFT(?, 50)", c.text),
+            short_text: fragment("LEFT(?, 50)", c.text),
             user: u,
             parent: %{
               id: p.id,
@@ -69,7 +69,7 @@ defmodule ApiWeb.NotificationView do
           comment: from(c in Comment,
             select: %{
               id: c.id,
-              text: fragment("LEFT(?, 50)", c.text)
+              short_text: fragment("LEFT(?, 50)", c.text)
             }
           )
         ]
@@ -97,7 +97,7 @@ defmodule ApiWeb.NotificationView do
             post: from(p in Post,
               select: %{
                 id: p.id,
-                text: fragment("LEFT(?, 50)", p.text)
+                short_text: fragment("LEFT(?, 50)", p.text)
               }
             )
           ]
@@ -108,7 +108,7 @@ defmodule ApiWeb.NotificationView do
           post: from(p in Post,
             select: %{
               id: p.id,
-              text: fragment("LEFT(?, 50)", p.text)
+              short_text: fragment("LEFT(?, 50)", p.text)
             }
           ),
           reactions: from(r in Reaction,
@@ -127,7 +127,7 @@ defmodule ApiWeb.NotificationView do
             post: from(p in Post,
               select: %{
                 id: p.id,
-                text: fragment("LEFT(?, 50)", p.text)
+                short_text: fragment("LEFT(?, 50)", p.text)
               }
             )
           ]
