@@ -61,6 +61,7 @@ config :api, Api.Scheduler,
     {"@daily", {Api.CronJobs.UnlockUsers, :call, []}},
     {"@daily", {Api.CronJobs.DeleteStaleTokens, :call, []}},
     {"@daily", {Api.CronJobs.SendConfirmationReminder, :call, []}},
+    {"@daily", {Api.CronJobs.SendNotificationNotice, :call, []}},
     # {"@daily", {Api.CronJobs.DeleteContentMarkedForDeletion, :call, []}}
   ]
 

@@ -6,6 +6,7 @@ defmodule Api.Accounts.User do
   import Ecto.Changeset
   alias Api.Accounts.{CurrentUser, User, UserPassword}
   alias Api.Moderation.{Flag, ModerationReport}
+  alias Api.Notifications.Notification
   alias Api.Profile.{UserIdentity, UserProfile, UserTagSummary}
   alias Api.Relationship.{Block, Follow}
   alias Api.Timeline.{Reaction, TimelineItem}
@@ -34,6 +35,7 @@ defmodule Api.Accounts.User do
     has_many :flags, Flag
     has_many :followeds, Follow, foreign_key: :follower_id
     has_many :followers, Follow, foreign_key: :followed_id
+    has_many :notifications, Notification
     has_many :reactions, Reaction
     has_many :timeline_items, TimelineItem
     has_many :user_identities, UserIdentity

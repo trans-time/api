@@ -27,6 +27,19 @@ defmodule Api.Mail.Email do
     |> premail()
   end
 
+  def notification_notice(user, mail_subscription_token, options) do
+    new_email
+    |> from({"trans time", "hi@transtime.is"})
+    |> to({user.username, user.email})
+    |> assign(:username, user.username)
+    |> add_mail_subscription_token(mail_subscription_token)
+    |> put_html_layout({ApiWeb.LayoutView, "email.html"})
+    |> put_text_layout(false)
+    |> subject("you have new unseen notifications ^_^")
+    |> render("notification_notice.html")
+    |> premail()
+  end
+
   def new_email_confirmation(user, mail_subscription_token, options) do
     new_email
     |> from({"trans time", "hi@transtime.is"})
@@ -88,7 +101,6 @@ defmodule Api.Mail.Email do
     new_email
     |> from({"trans time", "hi@transtime.is"})
     |> to({user.username, user.email})
-    # |> to({"my_username", "hi@transtime.is"})
     |> assign(:username, user.username)
     |> assign(:mail_unlock_token, options.mail_unlock_token.token)
     |> add_mail_subscription_token(mail_subscription_token)

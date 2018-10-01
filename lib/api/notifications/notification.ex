@@ -23,6 +23,7 @@ defmodule Api.Notifications.Notification do
 
 
   schema "notifications" do
+    field :is_emailed, :boolean, default: false
     field :is_read, :boolean, default: false
     field :is_seen, :boolean, default: false
     field :updated_at, :utc_datetime
@@ -55,8 +56,8 @@ defmodule Api.Notifications.Notification do
   @doc false
   def private_changeset(%Notification{} = notification, attrs) do
     notification
-    |> cast(attrs, [:user_id, :updated_at, :is_read, :is_seen])
-    |> validate_required([:user_id, :updated_at, :is_read, :is_seen])
+    |> cast(attrs, [:user_id, :updated_at, :is_emailed, :is_read, :is_seen])
+    |> validate_required([:user_id, :updated_at, :is_emailed, :is_read, :is_seen])
     |> assoc_constraint(:user)
   end
 end
