@@ -43,10 +43,10 @@ defmodule ApiWeb.NotificationView do
           join: pu in assoc(p, :user),
           select: %{
             id: c.id,
-            short_text: fragment("LEFT(?, 50)", c.text),
             user: u,
             parent: %{
               id: p.id,
+              short_text: fragment("LEFT(?, 50)", p.text),
               user: pu
             }
           }
@@ -155,7 +155,7 @@ defmodule ApiWeb.NotificationView do
       %{key: :notification_timeline_item_reaction_v2, view: NotificationTimelineItemReactionV2View},
       %{key: :user, view: UserView},
     ], %{}, fn(relationship, relationships) ->
-      if Ecto.assoc_loaded?(Map.get(user, relationship.key)) do
+      if Ecto.assoc_loaded?(Map.get(user, relationship.key)) && Map.get(user, relationship.key) != nil do
         Map.put(relationships, relationship.key, %HasMany{
           serializer: relationship.view,
           include: true,

@@ -6,11 +6,11 @@ defmodule ApiWeb.PostView do
   attributes [:short_text, :text]
 
   def attributes(post, conn) do
-    if (Map.has_key?(post, :short_text)) do
+    if (Map.has_key?(post, :text)) do
       super(post, conn)
-      |> Map.take([:short_text])
     else
       super(post, conn)
+      |> Map.take([:short_text])
     end
   end
 
@@ -24,7 +24,7 @@ defmodule ApiWeb.PostView do
       %{key: :text_versions, view: TextVersionView},
       %{key: :timeline_item, view: TimelineItemView}
     ], %{}, fn(relationship, relationships) ->
-      if Ecto.assoc_loaded?(Map.get(user, relationship.key)) do
+      if Ecto.assoc_loaded?(Map.get(user, relationship.key)) && Map.get(user, relationship.key) != nil do
         Map.put(relationships, relationship.key, %HasMany{
           serializer: relationship.view,
           include: true,

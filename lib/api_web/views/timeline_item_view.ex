@@ -22,7 +22,7 @@ defmodule ApiWeb.TimelineItemView do
       %{key: :users, view: UserView},
       %{key: :post, view: PostView}
     ], %{}, fn(relationship, relationships) ->
-      if Ecto.assoc_loaded?(Map.get(user, relationship.key)) do
+      if Ecto.assoc_loaded?(Map.get(user, relationship.key)) && Map.get(user, relationship.key) != nil do
         Map.put(relationships, relationship.key, %HasMany{
           serializer: relationship.view,
           include: true,

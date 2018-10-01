@@ -6,11 +6,11 @@ defmodule ApiWeb.CommentView do
   attributes [:inserted_at, :is_marked_for_deletion, :is_under_moderation, :short_text, :text, :comment_count, :moon_count, :star_count, :sun_count, :reaction_count]
 
   def attributes(comment, conn) do
-    if (Map.has_key?(comment, :short_text)) do
+    if (Map.has_key?(comment, :text)) do
       super(comment, conn)
-      |> Map.take([:short_text])
     else
       super(comment, conn)
+      |> Map.take([:short_text])
     end
   end
 
@@ -27,7 +27,7 @@ defmodule ApiWeb.CommentView do
       %{key: :text_versions, view: TextVersionView},
       %{key: :user, view: UserView}
     ], %{}, fn(relationship, relationships) ->
-      if Ecto.assoc_loaded?(Map.get(user, relationship.key)) do
+      if Ecto.assoc_loaded?(Map.get(user, relationship.key)) && Map.get(user, relationship.key) != nil do
         Map.put(relationships, relationship.key, %HasMany{
           serializer: relationship.view,
           include: true,
