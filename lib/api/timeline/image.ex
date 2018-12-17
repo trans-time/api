@@ -7,6 +7,7 @@ defmodule Api.Timeline.Image do
   @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "images" do
+    field :caption, :string
     field :order, :integer
     field :src, Api.Timeline.ImageFile.Type
     field :is_marked_for_deletion, :boolean, default: false
@@ -21,7 +22,7 @@ defmodule Api.Timeline.Image do
   @doc false
   def changeset(%Image{} = image, attrs) do
     image
-    |> cast(attrs, [:order, :post_id, :is_marked_for_deletion])
+    |> cast(attrs, [:caption, :order, :post_id, :is_marked_for_deletion])
     |> cast_attachments(attrs, [:src])
     |> validate_required([:order, :is_marked_for_deletion, :is_marked_for_deletion_by_moderator, :is_marked_for_deletion_by_user])
   end

@@ -147,7 +147,7 @@ defmodule ApiWeb.TimelineItemController do
   end
 
   def get_limit_and_offset(qp, query) do
-    limit = 10
+    limit = 15
     from_id = qp["from_timeline_item_id"]
     should_progress = qp["should_progress"]
 
