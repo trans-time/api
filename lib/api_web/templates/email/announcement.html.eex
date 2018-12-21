@@ -1,0 +1,1 @@
+<%= raw assigns.body %>

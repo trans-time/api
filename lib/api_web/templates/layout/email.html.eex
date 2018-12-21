@@ -91,7 +91,7 @@
 
         <%= render @view_module, @view_template, assigns %>
 
-        <p class="muted">-celeste and the `trans time` team</p>
+        <p class="muted">-the trans time team</p>
       </div>
 
       <footer class="footer">

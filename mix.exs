@@ -42,6 +42,7 @@ defmodule Api.Mixfile do
       {:corsica, "~> 1.0"},
       {:cowboy, "~> 1.0"},
       {:distillery, "~> 1.5", runtime: false},
+      {:earmark, "~> 1.3.0"},
       {:ex_aws, "~> 2.0", override: true},
       {:ex_aws_s3, "~> 2.0"},
       {:ex_machina, "~> 2.1"},

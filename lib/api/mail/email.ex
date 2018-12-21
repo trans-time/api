@@ -27,6 +27,20 @@ defmodule Api.Mail.Email do
     |> premail()
   end
 
+  def announcement(user, mail_subscription_token, options) do
+    new_email
+    |> from({"trans time", "hi@transtime.is"})
+    |> to({user.username, user.email})
+    |> assign(:username, user.username)
+    |> assign(:body, options.body)
+    |> add_mail_subscription_token(mail_subscription_token)
+    |> put_html_layout({ApiWeb.LayoutView, "email.html"})
+    |> put_text_layout(false)
+    |> subject(options.subject)
+    |> render("announcement.html")
+    |> premail()
+  end
+
   def notification_notice(user, mail_subscription_token, options) do
     new_email
     |> from({"trans time", "hi@transtime.is"})

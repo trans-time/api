@@ -20,6 +20,7 @@ defmodule Api.Accounts.User do
     field :follower_count, :integer, default: 0
     field :display_name, :string
     field :email_is_confirmed, :boolean, default: false
+    field :is_admin, :boolean, default: false
     field :is_banned, :boolean, default: false
     field :is_locked, :boolean, default: false
     field :is_moderator, :boolean, default: false

@@ -31,6 +31,13 @@ defmodule ApiWeb.Router do
     plug JaSerializer.Deserializer
   end
 
+  pipeline :json_api_admin_auth do
+    plug :accepts, ["json", "json-api"]
+    plug ApiWeb.Guardian.AdminAuthPipeline
+    plug JaSerializer.ContentTypeNegotiation
+    plug JaSerializer.Deserializer
+  end
+
   pipeline :json_api_moderator_auth do
     plug :accepts, ["json", "json-api"]
     plug ApiWeb.Guardian.ModeratorAuthPipeline
@@ -88,6 +95,11 @@ defmodule ApiWeb.Router do
   scope "/v1", ApiWeb, as: :api do
     pipe_through :json_api_moderator_auth
     resources "/verdicts", VerdictController, only: [:create]
+  end
+
+  scope "/v1", ApiWeb, as: :api do
+    pipe_through :json_api_admin_auth
+    resources "/announcements", AnnouncementController, only: [:create]
   end
 
   scope "/v1/auth", ApiWeb do
