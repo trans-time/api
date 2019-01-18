@@ -45,8 +45,17 @@ defmodule ApiWeb.ReactionController do
     order_by(query, [{^direction, :inserted_at}])
   end
 
-  def handle_index_query(%{query_params: qp}, query) do
+  def handle_index_query(%{query_params: qp} = conn, query) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
+    query = if current_user_id == -1, do: hide_private_accounts(conn, query), else: query
+
     repo().paginate(query, qp)
+  end
+
+  def hide_private_accounts(_conn, query) do
+    query
+    |> join(:inner, [f], u in assoc(f, :user), u.is_public == ^true)
+    |> group_by([ti], [ti.id])
   end
 
   def serialization_opts(_conn, params, models) do

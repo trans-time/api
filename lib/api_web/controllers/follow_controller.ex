@@ -36,13 +36,6 @@ defmodule ApiWeb.FollowController do
     end
   end
 
-  def hide_private_accounts(_conn, query) do
-    query
-    |> join(:inner, [f], u in assoc(f, :followed), u.is_public == ^true)
-    |> join(:inner, [f], u in assoc(f, :follower), u.is_public == ^true)
-    |> group_by([ti], [ti.id])
-  end
-
   def filter(_conn, query, "followed_id", followed_id) do
     where(query, followed_id: ^followed_id)
   end
@@ -64,6 +57,13 @@ defmodule ApiWeb.FollowController do
     query = if current_user_id == -1, do: hide_private_accounts(conn, query), else: query
 
     repo().paginate(query, qp)
+  end
+
+  def hide_private_accounts(_conn, query) do
+    query
+    |> join(:inner, [f], u in assoc(f, :followed), u.is_public == ^true)
+    |> join(:inner, [f], u in assoc(f, :follower), u.is_public == ^true)
+    |> group_by([ti], [ti.id])
   end
 
   def serialization_opts(_conn, params, models) do
