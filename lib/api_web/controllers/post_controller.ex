@@ -1,3 +1,5 @@
+import Ecto.Query
+
 defmodule ApiWeb.PostController do
   use ApiWeb, :controller
   use JaResource # Optionally put in web/web.ex
@@ -28,6 +30,21 @@ defmodule ApiWeb.PostController do
         transaction = Api.Repo.transaction(multi)
         if Kernel.elem(transaction, 0) === :ok, do: Kernel.elem(transaction, 1).timelineable, else: transaction
       _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
+    end
+  end
+
+  def handle_show(conn, id) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
+
+    if (current_user_id == -1) do
+      query = Post
+      |> where([p], p.id == ^id)
+      |> join(:inner, [p], ti in assoc(p, :timeline_item), p.timeline_item_id == ti.id)
+      |> join(:inner, [p, ti], u in assoc(ti, :user), u.is_public == ^true)
+      |> group_by([p], [p.id])
+      repo().one(query)
+    else
+      repo().get(Post, id)
     end
   end
 end

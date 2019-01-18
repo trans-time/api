@@ -129,6 +129,7 @@ defmodule ApiWeb.TimelineItemController do
 
   def handle_index_query(%{query_params: qp} = conn, query) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
+    query = if current_user_id == -1, do: hide_private_accounts(conn, query), else: query
 
     [limit, offset] = get_limit_and_offset(qp, query)
 
@@ -137,6 +138,26 @@ defmodule ApiWeb.TimelineItemController do
     query = preload_current_user_reaction(conn, query, current_user_id)
 
     repo().all(query)
+  end
+
+  def handle_show(conn, id) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
+
+    if (current_user_id == -1) do
+      query = TimelineItem
+      |> where([ti], ti.id == ^id)
+      |> join(:inner, [ti], u in assoc(ti, :user), u.is_public == ^true)
+      |> group_by([ti], [ti.id])
+      repo().one(query)
+    else
+      repo().get(TimelineItem, id)
+    end
+  end
+
+  def hide_private_accounts(_conn, query) do
+    query
+    |> join(:inner, [ti], u in assoc(ti, :user), u.is_public == ^true)
+    |> group_by([ti], [ti.id])
   end
 
   def preload_current_user_reaction(_conn, query, current_user_id) do

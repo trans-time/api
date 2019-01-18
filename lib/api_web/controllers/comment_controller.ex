@@ -60,8 +60,30 @@ defmodule ApiWeb.CommentController do
 
   def handle_index_query(%{query_params: qp} = conn, query) do
     current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
+    query = if current_user_id == -1, do: hide_private_accounts(conn, query), else: query
 
     repo().all(preload_current_user_reaction(conn, query, current_user_id))
+  end
+
+  def handle_show(conn, id) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
+
+    if (current_user_id == -1) do
+      query = Comment
+      |> where([c], c.id == ^id)
+      |> join(:inner, [c], ti in assoc(c, :timeline_item), c.timeline_item_id == ti.id)
+      |> join(:inner, [c, ti], u in assoc(ti, :user), u.is_public == ^true)
+      |> group_by([c], [c.id])
+      repo().one(query)
+    else
+      repo().get(Comment, id)
+    end
+  end
+
+  def hide_private_accounts(_conn, query) do
+    query
+    |> join(:inner, [c], u in assoc(c, :user), u.is_public == ^true)
+    |> group_by([c], [c.id])
   end
 
   defp filter_blocked(_conn, query, current_user_id) do

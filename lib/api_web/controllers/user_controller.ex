@@ -32,6 +32,26 @@ defmodule ApiWeb.UserController do
     end
   end
 
+  def handle_index_query(conn, query) do
+    current_user_id = String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
+    query = if current_user_id == -1, do: hide_private_accounts(conn, query), else: query
+
+    repo().all(query)
+  end
+
+  def handle_update(conn, user, attributes) do
+    current_user_id =  String.to_integer(Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] || "-1")
+    case user.id do
+      ^current_user_id -> Api.Repo.update(User.public_update_changeset(user, attributes))
+      _                -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
+    end
+  end
+
+  def hide_private_accounts(_conn, query) do
+    query
+    |> where([u], u.is_public == ^true)
+  end
+
   defp invalid_recaptcha(conn) do
     conn
     |> put_status(401)

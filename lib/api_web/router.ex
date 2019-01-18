@@ -85,7 +85,7 @@ defmodule ApiWeb.Router do
     resources "/subscription-types", SubscriptionTypeController, only: [:index]
     resources "/tags", TagController, only: [:index]
     resources "/timeline-items", TimelineItemController, only: [:index, :show]
-    resources "/users", UserController, only: [:create, :index]
+    resources "/users", UserController, only: [:create, :index, :update]
     resources "/user-identities", UserIdentityController, only: [:create, :delete, :update]
     resources "/user-profiles", UserProfileController, only: [:index, :update]
     resources "/user-passwords", UserPasswordController, only: [:create]
