@@ -31,9 +31,8 @@ defmodule ApiWeb.Services.PostManager do
     post_changeset = Post.changeset(%Post{}, attributes)
     tags = gather_tags("#", Map.get(post_changeset.changes, :text))
     users = gather_tags("@", Map.get(post_changeset.changes, :text))
-    content_warnings = gather_content_warnings(attributes["content_warnings"])
 
-    TimelineItemManager.insert(attributes, tags, users, content_warnings, user)
+    TimelineItemManager.insert(attributes, tags, users, user)
     |> Multi.run(:timelineable, fn %{timeline_item: timeline_item} ->
       Api.Repo.insert(Ecto.Changeset.merge(post_changeset, Post.private_changeset(%Post{}, %{"timeline_item_id" => timeline_item.id})))
     end)
@@ -48,11 +47,9 @@ defmodule ApiWeb.Services.PostManager do
   end
 
   def update(record, attributes, user) do
-    record = Api.Repo.preload(record, [timeline_item: [:content_warnings]])
+    record = Api.Repo.preload(record, [:timeline_item])
     timeline_item = record.timeline_item
     post_changeset = Post.changeset(record, attributes)
-    old_content_warnings = Enum.map(timeline_item.content_warnings, fn(cw) -> cw.name end)
-    current_content_warnings = gather_content_warnings(attributes["content_warnings"])
 
     if Map.has_key?(post_changeset.changes, :text) do
       old_tags = gather_tags("#", Map.get(record, :text))
@@ -74,7 +71,7 @@ defmodule ApiWeb.Services.PostManager do
           {:ok, record}
         end
       end)
-      |> Multi.append(TimelineItemManager.update(timeline_item, attributes, old_tags, current_tags, old_users, current_users, old_content_warnings, current_content_warnings, user))
+      |> Multi.append(TimelineItemManager.update(timeline_item, attributes, old_tags, current_tags, old_users, current_users, user))
       |> Multi.append(Libra.review(attributes["text"]))
       |> Multi.merge(fn
         %{:libra_has_infractions => true} -> delete_notifications(timeline_item)
@@ -86,7 +83,7 @@ defmodule ApiWeb.Services.PostManager do
 
       Multi.new
       |> Multi.update(:timelineable, post_changeset)
-      |> Multi.append(TimelineItemManager.update(timeline_item, attributes, old_tags, old_tags, old_users, old_users, old_content_warnings, current_content_warnings, user))
+      |> Multi.append(TimelineItemManager.update(timeline_item, attributes, old_tags, old_tags, old_users, old_users, user))
     end
   end
 
@@ -107,9 +104,5 @@ defmodule ApiWeb.Services.PostManager do
   def gather_tags(leading_char, text \\ "") do
     text = text || ""
     Enum.filter(Enum.uniq(List.flatten(Regex.scan(Regex.compile!("#{leading_char}([a-zA-Z0-9_]+)"), text))), fn (item) -> String.at(item, 0) != leading_char end)
-  end
-
-  defp gather_content_warnings(content_warnings) do
-    Enum.filter(Enum.map(String.split(content_warnings, ","), fn (cw) -> String.trim(cw) end), fn (cw) -> cw != "" end)
   end
 end

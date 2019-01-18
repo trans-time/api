@@ -5,7 +5,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
   alias Api.Accounts.User
   alias Api.Profile.{UserProfile, UserTagSummary, UserTagSummaryTag, UserTagSummaryUser}
   alias Api.Timeline.{Post, Tag, TimelineItem}
-  alias ApiWeb.Services.{ContentWarningManager, Libra, PostManager}
+  alias ApiWeb.Services.{Libra, PostManager}
   alias Ecto.Multi
 
   def delete(timeline_item, attributes) do
@@ -86,17 +86,16 @@ defmodule ApiWeb.Services.TimelineItemManager do
     |> Multi.update(:timeline_item, TimelineItem.private_changeset(timeline_item, attributes))
 
     {tags, users} = gather_tags_and_users(timeline_item)
-    content_warnings = Api.Repo.preload(timeline_item, :content_warnings).content_warnings
     user = Api.Repo.preload(timeline_item, :user).user
 
-    Multi.append(timeline_item_multi, insert_metadata(tags, users, content_warnings, user))
+    Multi.append(timeline_item_multi, insert_metadata(tags, users, user))
   end
 
-  def insert(attributes, tags, users, content_warnings, user) do
+  def insert(attributes, tags, users, user) do
     timeline_item_multi = Multi.new
     |> Multi.insert(:timeline_item, TimelineItem.changeset(%TimelineItem{}, attributes))
 
-    Multi.append(timeline_item_multi, insert_metadata(tags, users, content_warnings, user))
+    Multi.append(timeline_item_multi, insert_metadata(tags, users, user))
   end
 
   defp gather_tags_and_users(timeline_item) do
@@ -104,7 +103,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
     {PostManager.gather_tags("#", text), PostManager.gather_tags("@", text)}
   end
 
-  defp insert_metadata(tags, users, content_warnings, user) do
+  defp insert_metadata(tags, users, user) do
     tag_records = Api.Repo.all(from t in Tag, where: t.name in ^tags)
     tag_record_ids = Enum.map(tag_records, fn (tag) -> tag.id end)
     user_records = Api.Repo.all(from u in User, where: u.username in ^users)
@@ -117,9 +116,6 @@ defmodule ApiWeb.Services.TimelineItemManager do
     user_tag_summary_user_records = Api.Repo.all(from utst in UserTagSummaryUser, where: utst.user_tag_summary_id in ^user_tag_summary_ids and utst.user_id in ^[user.id | user_record_ids])
 
     multi = Multi.new
-    |> Multi.merge(fn %{timeline_item: timeline_item} ->
-      ContentWarningManager.insert(timeline_item, content_warnings)
-    end)
     |> Multi.update_all(:user_profile, Ecto.assoc(user, :user_profile), inc: [post_count: 1])
     |> Multi.run(:user_tag_summary, fn %{timeline_item: timeline_item} ->
       add_or_remove_from_private_timeline_item_ids(user_tag_summary_record, timeline_item)
@@ -150,7 +146,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
       |> multi_find_or_create_tag_summary_tag("find_or_create_user_tag_summary_tag_#{tag}", tag, :user_tag_summary)
     end)
     |> Multi.run(:put_tag_associations, fn %{timeline_item: timeline_item, aggregated_tag_records: aggregated_tag_records} ->
-      Api.Repo.preload(timeline_item, [:content_warnings, :tags, :users])
+      Api.Repo.preload(timeline_item, [:tags, :users])
       |> Ecto.Changeset.change
       |> Ecto.Changeset.put_assoc(:tags, aggregated_tag_records)
       |> Ecto.Changeset.put_assoc(:users, [user | user_records])
@@ -186,7 +182,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
     end)
   end
 
-  def update(timeline_item, attributes, old_tags, current_tags, old_users, current_users, old_content_warnings, current_content_warnings, user) do
+  def update(timeline_item, attributes, old_tags, current_tags, old_users, current_users, user) do
     timeline_item_changeset = TimelineItem.changeset(timeline_item, attributes)
     timeline_item_private_changeset = TimelineItem.private_changeset(timeline_item, %{is_ignoring_flags: false})
 
@@ -211,9 +207,6 @@ defmodule ApiWeb.Services.TimelineItemManager do
 
     multi = Multi.new
     |> Multi.update(:timeline_item, Ecto.Changeset.merge(timeline_item_changeset, timeline_item_private_changeset))
-    |> Multi.merge(fn %{timeline_item: timeline_item} ->
-      ContentWarningManager.update(timeline_item, current_content_warnings, old_content_warnings)
-    end)
     |> Multi.run(:user_tag_summary, fn %{timeline_item: timeline_item} ->
       add_or_remove_from_private_timeline_item_ids(user_tag_summary_record, timeline_item)
     end)
@@ -241,7 +234,7 @@ defmodule ApiWeb.Services.TimelineItemManager do
       {:ok, Enum.map(removed_tags, fn (tag) -> Enum.find(aggregated_tag_records, fn (tag_record) -> tag_record.name == tag end) end)}
     end)
     |> Multi.run(:put_tag_associations, fn %{timeline_item: timeline_item, added_tag_records: added_tag_records, removed_tag_records: removed_tag_records} ->
-      timeline_item = Api.Repo.preload(timeline_item, [:content_warnings, :tags, :users])
+      timeline_item = Api.Repo.preload(timeline_item, [:tags, :users])
       added_user_records = Enum.map(added_users, fn (username) -> Enum.find(user_records, fn (user_record) -> user_record.username == username end)end)
       removed_user_records = Enum.map(removed_users, fn (username) -> Enum.find(user_records, fn (user_record) -> user_record.username == username end)end)
       timeline_item

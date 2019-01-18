@@ -1,7 +1,7 @@
 defmodule ApiWeb.TimelineItemView do
   use ApiWeb, :view
   use JaSerializer.PhoenixView
-  alias ApiWeb.{CommentView, ContentWarningView, PostView, ReactionView, TagView, UserView}
+  alias ApiWeb.{CommentView, PostView, ReactionView, TagView, UserView}
 
   attributes [:date, :inserted_at, :is_marked_for_deletion, :is_private, :text, :comments_are_locked, :comment_count, :moon_count, :star_count, :sun_count, :reaction_count, :is_under_moderation]
 
@@ -17,7 +17,6 @@ defmodule ApiWeb.TimelineItemView do
       %{key: :comments, view: CommentView},
       %{key: :latest_comment, view: CommentView},
       %{key: :reactions, view: ReactionView},
-      %{key: :content_warnings, view: ContentWarningView},
       %{key: :tags, view: TagView},
       %{key: :users, view: UserView},
       %{key: :post, view: PostView}

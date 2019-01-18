@@ -2,7 +2,7 @@ defmodule Api.Timeline.TimelineItem do
   use Api.Schema
   import Ecto.Changeset
   alias Api.Moderation.{ModerationReport}
-  alias Api.Timeline.{Comment, ContentWarning, Image, Post, Reaction, Tag, TimelineItem}
+  alias Api.Timeline.{Comment, Image, Post, Reaction, Tag, TimelineItem}
   alias Api.Accounts.User
   alias Api.Notifications.{NotificationTimelineItemAt}
 
@@ -25,7 +25,6 @@ defmodule Api.Timeline.TimelineItem do
 
     many_to_many :tags, Tag, join_through: "timeline_items_tags", on_replace: :delete
     many_to_many :users, User, join_through: "timeline_items_users", on_replace: :delete
-    many_to_many :content_warnings, ContentWarning, join_through: "timeline_items_content_warnings", on_replace: :delete
     many_to_many :watchers, User, join_through: "timeline_item_watchers", join_keys: [watched_id: :id, watcher_id: :id]
     has_many :comments, Comment
     has_many :moderation_reports, ModerationReport
