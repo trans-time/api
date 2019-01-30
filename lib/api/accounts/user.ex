@@ -15,6 +15,7 @@ defmodule Api.Accounts.User do
 
   schema "users" do
     field :avatar, Api.Profile.Avatar.Type
+    field :birthday, :utc_datetime, null: false
     field :consecutive_failed_logins, :integer, default: 0
     field :email, :string
     field :follower_count, :integer, default: 0
@@ -77,13 +78,14 @@ defmodule Api.Accounts.User do
   @doc false
   def public_update_changeset(%User{} = user, attrs) do
     user
-    |> cast(attrs, [:is_public])
+    |> cast(attrs, [:birthday, :is_public])
+    |> validate_birthday
   end
 
   @doc false
   defp public_shared_changeset(user, attrs) do
     user
-    |> cast(attrs, [:display_name, :email, :pronouns, :is_trans, :is_public])
+    |> cast(attrs, [:birthday, :display_name, :email, :pronouns, :is_trans, :is_public])
     |> cast_attachments(attrs, [:avatar])
     |> validate_required([:email])
     |> validate_length(:display_name, max: 100, message: "remote.errors.detail.length.length")
@@ -91,6 +93,7 @@ defmodule Api.Accounts.User do
     |> validate_format(:email, ~r/^[A-Za-z0-9._%+-+']+@[A-Za-z0-9.-]+\.[A-Za-z]+$/, message: "remote.errors.detail.format.email")
     |> validate_length(:pronouns, max: 64, message: "remote.errors.detail.length.length")
     |> unique_constraint(:email)
+    |> validate_birthday
   end
 
   @doc false
@@ -98,5 +101,16 @@ defmodule Api.Accounts.User do
     user
     |> cast(attrs, [:is_banned, :is_locked, :consecutive_failed_logins, :email_is_confirmed])
     |> public_shared_changeset(attrs)
+  end
+
+  defp validate_birthday(changeset) do
+    birthday = get_field(changeset, :birthday)
+
+    cond do
+      Date.compare(birthday, DateTime.utc_now()) === :gt ->
+        add_error(changeset, :birthday, "remote.errors.detail.invalid.dateAfterNow")
+      true ->
+        changeset
+    end
   end
 end

@@ -4,7 +4,7 @@ FROM bitwalker/alpine-elixir-phoenix as builder
 ENV MIX_ENV=prod
 
 COPY . .
-
+ENV HEX_HTTP_TIMEOUT=1200
 RUN mix do deps.get, deps.compile
 
 RUN MIX_ENV=prod mix phx.digest
