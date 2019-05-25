@@ -67,26 +67,24 @@ defmodule Api.Accounts.User do
   @doc false
   def public_insert_changeset(%User{} = user, attrs) do
     user
-    |> cast(attrs, [:username])
-    |> validate_required([:username])
-    |> validate_length(:username, max: 64, message: "remote.errors.detail.length.length")
-    |> validate_format(:username, ~r/^[a-zA-Z0-9_]*$/, message: "remote.errors.detail.format.alphanumericUnderscore")
-    |> unique_constraint(:username)
     |> public_shared_changeset(attrs)
   end
 
   @doc false
   def public_update_changeset(%User{} = user, attrs) do
     user
-    |> cast(attrs, [:birthday, :is_public])
-    |> validate_birthday
+    |> public_shared_changeset(attrs)
   end
 
   @doc false
   defp public_shared_changeset(user, attrs) do
     user
-    |> cast(attrs, [:birthday, :display_name, :email, :pronouns, :is_trans, :is_public])
+    |> cast(attrs, [:birthday, :display_name, :email, :pronouns, :is_trans, :is_public, :username])
     |> cast_attachments(attrs, [:avatar])
+    |> validate_required([:username])
+    |> validate_length(:username, max: 64, message: "remote.errors.detail.length.length")
+    |> validate_format(:username, ~r/^[a-zA-Z0-9_]*$/, message: "remote.errors.detail.format.alphanumericUnderscore")
+    |> unique_constraint(:username)
     |> validate_required([:email])
     |> validate_length(:display_name, max: 100, message: "remote.errors.detail.length.length")
     |> validate_length(:email, max: 1000, message: "remote.errors.detail.length.length")
