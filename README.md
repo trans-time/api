@@ -11,6 +11,12 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 Ready to run in production? Please [check our deployment guides](http://www.phoenixframework.org/docs/deployment).
 
+# Deploying
+
+* `docker build -t transtime/phoenix-alpine .`
+* `docker push transtime/phoenix-alpine`
+* AWS console: rebuild
+
 ## Learn more
 
   * Official website: http://www.phoenixframework.org/
