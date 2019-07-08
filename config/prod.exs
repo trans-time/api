@@ -39,9 +39,6 @@ config :api, Api.Mail.Mailer,
   username: "${SMTP_USERNAME}",
   password: "${SMTP_PASSWORD}"
 
-config :recaptcha,
-  secret: "${RECAPTCHA_SECRET}"
-
 config :api, Api.Accounts.Guardian,
   secret_key: "${GUARDIAN_SECRET}"
 

@@ -14,22 +14,18 @@ defmodule ApiWeb.UserController do
   def model, do: User
 
   def handle_create(conn, attributes) do
-    case Recaptcha.verify(attributes["re_captcha_response"]) do
-      {:ok, response} ->
-        case Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] do
-          nil ->
-            transaction = Api.Repo.transaction(UserManager.insert_user(attributes))
-            if (Kernel.elem(transaction, 0) === :ok) do
-              user = Kernel.elem(transaction, 1).user
-              auth_conn = Guardian.Plug.sign_in(conn, user)
-              jwt = Guardian.Plug.current_token(auth_conn)
-              Map.put(user, :token, jwt)
-            else
-              transaction
-            end
-          _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
+    case Api.Accounts.Guardian.Plug.current_claims(conn)["sub"] do
+      nil ->
+        transaction = Api.Repo.transaction(UserManager.insert_user(attributes))
+        if (Kernel.elem(transaction, 0) === :ok) do
+          user = Kernel.elem(transaction, 1).user
+          auth_conn = Guardian.Plug.sign_in(conn, user)
+          jwt = Guardian.Plug.current_token(auth_conn)
+          Map.put(user, :token, jwt)
+        else
+          transaction
         end
-      {:error, errors} -> invalid_recaptcha(conn)
+      _ -> {:error, [%{status: "403", source: %{pointer: "/data/relationships/user/data/id"}, title: "remote.errors.title.forbidden", detail: "remote.errors.detail.forbidden.mismatchedTokenAndUserId"}]}
     end
   end
 
@@ -51,12 +47,6 @@ defmodule ApiWeb.UserController do
   def hide_private_accounts(_conn, query) do
     query
     |> where([u], u.is_public == ^true)
-  end
-
-  defp invalid_recaptcha(conn) do
-    conn
-    |> put_status(401)
-    |> json(%{errors: [%{title: "remote.errors.title.invalid", detail: "remote.errors.detail.invalid.recaptcha", status: "401"}]})
   end
 
   def sort(_conn, query, "post_count", direction) do

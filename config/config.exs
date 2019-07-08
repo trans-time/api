@@ -65,9 +65,6 @@ config :api, Api.Scheduler,
     # {"@daily", {Api.CronJobs.DeleteContentMarkedForDeletion, :call, []}}
   ]
 
-config :recaptcha,
-  public_key: "6LfCT28UAAAAAN28PKrUUx1vrCCufEDBjHK-I-Hc"
-
 config :api, Api.Mail.Mailer,
   adapter: Bamboo.SMTPAdapter,
   tls: :always, # can be `:always` or `:never`
